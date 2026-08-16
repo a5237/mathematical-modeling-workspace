@@ -8,7 +8,7 @@
 
 本参考库采用扁平化的“按模型分类”存储方式，所有论文和摘要直接存放在对应的大类文件夹中。
 ```
-paper_library/
+paper-library/
 ├── README.md
 ├── 01-运筹与决策优化/
 │ ├── README.md
