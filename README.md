@@ -36,7 +36,7 @@
 - [数学建模论文写作规范](数学建模论文写作_Agent强制规范.md)
 - [项目命名规则](paper-system/NAMING.md)
 - [论文生产流程](paper-system/README.md)
-- [优质论文参考库](优质论文参考库/README.md)
+- [优质论文参考库](paper-library/README.md)
 
 ## 常用命令
 
