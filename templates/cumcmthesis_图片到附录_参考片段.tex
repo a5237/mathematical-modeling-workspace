@@ -1,0 +1,495 @@
+% !TEX program = xelatex
+% CUMCM 2026 论文生成模板（电子版）
+% 使用说明：
+% 1. 建议将本文件复制到标准项目的 06-paper/ 后再填写。
+% 2. 正式提交前必须替换全部“【……】”占位符，删除未使用的示例块，并逐页检查最终 PDF。
+% 3. 电子版论文不包含承诺书和编号专用页；纸质版所需专用页按赛区要求另行处理。
+% 4. 子问题数量、图表、公式和附录按赛题实际增减，不得机械保留四问示例。
+% 5. 论文中的具体数值、图表、结论、引用和检验必须来自已保存且可复现的真实产物。
+
+\documentclass[UTF8,a4paper,12pt,zihao=-4]{ctexart}
+
+% ---------- 页面、字体与数学字体 ----------
+\usepackage[top=2.5cm,bottom=2.5cm,left=2.5cm,right=2.5cm]{geometry}
+\usepackage{fontspec}
+\usepackage{unicode-math}
+
+% Windows 优先使用宋体和 Times New Roman；其它系统使用相近的可移植后备字体。
+% 发布前必须检查最终 PDF 字体属性，确认中文为宋体、英文与数字为 Times 系列。
+\IfFontExistsTF{Times New Roman}
+  {\setmainfont{Times New Roman}}
+  {\setmainfont{TeX Gyre Termes}}
+\IfFontExistsTF{SimSun}{
+  \setCJKmainfont[AutoFakeBold=2.5]{SimSun}
+  \setCJKsansfont[AutoFakeBold=2.5]{SimSun}
+  \setCJKmonofont{SimSun}
+}{
+  \setCJKmainfont[AutoFakeBold=2.5]{FandolSong-Regular}
+  \setCJKsansfont[AutoFakeBold=2.5]{FandolSong-Regular}
+  \setCJKmonofont{FandolFang-Regular}
+}
+\IfFontExistsTF{Consolas}{\setmonofont{Consolas}}{\setmonofont{Latin Modern Mono}}
+\setmathfont{TeX Gyre Termes Math}
+
+% ---------- 公式、图表、列表、代码与引用 ----------
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{subcaption}
+\usepackage{booktabs,longtable,tabularx,array,multirow}
+\usepackage{enumitem}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{fancyhdr}
+\usepackage{hyperref}
+\usepackage[nameinlink,noabbrev]{cleveref}
+
+% ---------- 全文样式 ----------
+\setlength{\parindent}{2em}
+\setlength{\parskip}{0pt}
+\linespread{1.25}
+\setlist{nosep,leftmargin=2em}
+\setlength{\emergencystretch}{2em}
+
+\ctexset{
+  section={
+    name={,、},
+    number=\chinese{section},
+    format=\centering\bfseries\zihao{4},
+    beforeskip=1.5ex,
+    afterskip=1.0ex
+  },
+  subsection={
+    format=\raggedright\bfseries\zihao{4},
+    beforeskip=1.2ex,
+    afterskip=0.8ex
+  },
+  subsubsection={
+    format=\raggedright\bfseries\zihao{-4},
+    beforeskip=1.0ex,
+    afterskip=0.6ex
+  }
+}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+
+\captionsetup{
+  font=small,
+  labelfont=bf,
+  labelsep=quad,
+  justification=centering,
+  singlelinecheck=true
+}
+\captionsetup[subfigure]{font=small,labelfont=normalfont,labelsep=space}
+
+\hypersetup{
+  hidelinks,
+  unicode=true,
+  pdfauthor={},
+  pdfsubject={},
+  pdfkeywords={},
+  pdftitle={CUMCM 论文}
+}
+
+\crefname{figure}{图}{图}
+\crefname{table}{表}{表}
+\crefname{equation}{式}{式}
+\crefname{section}{节}{节}
+
+\lstset{
+  basicstyle=\ttfamily\small,
+  numbers=left,
+  numberstyle=\ttfamily\scriptsize,
+  numbersep=8pt,
+  frame=single,
+  breaklines=true,
+  breakatwhitespace=false,
+  columns=fullflexible,
+  keepspaces=true,
+  showstringspaces=false,
+  tabsize=4,
+  captionpos=t
+}
+
+% ---------- 模板变量与安全占位 ----------
+\newcommand{\TemplateField}[1]{\textbf{【#1】}}
+\newcommand{\PaperTitle}{\TemplateField{填写准确、具体的论文题目}}
+
+% 根据实际情况设置 AI 使用状态。使用本模板生成或修改论文时不得作虚假声明。
+\newif\ifusedai
+\usedaitrue
+\newcommand{\AIUsageSummary}{语言润色、代码调试与排版核验等}
+
+% 根据实际情况设置程序和支撑材料状态；三者必须与附录及提交压缩包一致。
+\newif\ifusedprogram
+\usedprogramtrue
+\newif\ifhassupportmaterials
+\hassupportmaterialstrue
+
+% 图片缺失时仍可编译，但会显示醒目的占位框；正式提交前不得保留占位框。
+\newcommand{\safeincludegraphics}[2][]{%
+  \IfFileExists{#2}{%
+    \includegraphics[#1]{#2}%
+  }{%
+    \fbox{%
+      \begin{minipage}[c][4cm][c]{0.82\linewidth}
+        \centering
+        \textbf{图像占位}\par
+        \texttt{\detokenize{#2}}\par
+        正式提交前必须替换为实际图片
+      \end{minipage}%
+    }%
+  }%
+}
+
+% 从支撑材料源文件直接排印完整代码；缺失时显示阻断提示。
+\newcommand{\includecode}[3]{%
+  \IfFileExists{#3}{%
+    \lstinputlisting[language=#1,caption={#2}]{#3}%
+  }{%
+    \par\noindent
+    \fbox{%
+      \begin{minipage}{0.94\linewidth}
+        \textbf{代码缺失：}\texttt{\detokenize{#3}}。正式提交前必须补齐完整、可运行且与论文结果一致的源程序。
+      \end{minipage}%
+    }
+    \par
+  }%
+}
+
+\begin{document}
+\pagenumbering{arabic}
+\setcounter{page}{1}
+
+% ============================================================
+% 摘要专用页：标题、摘要正文和关键词共同独占本页。
+% 摘要应逐问写明任务、模型、求解、关键结果和可信度；不得引用图、表、公式或文献。
+% 核心模型、关键数值、最终方案和结论性短语必须加粗。
+% ============================================================
+\thispagestyle{fancy}
+\begin{center}
+  {\bfseries\zihao{-2}\PaperTitle\par}
+  \vspace{1.2em}
+  {\bfseries\zihao{4}摘要\par}
+\end{center}
+
+\TemplateField{用两至三句话概括研究对象、总体建模主线和主要成果。}
+
+针对问题一，\TemplateField{说明任务和关键转化}，建立\textbf{【核心模型一】}，采用\TemplateField{求解方法}得到\textbf{【关键数值、单位或明确结论】}；通过\TemplateField{检验方法及指标}验证结果可信。
+
+针对问题二，\TemplateField{说明与前问的继承关系及新增任务}，构建\textbf{【核心模型二】}，得到\textbf{【最终方案、排序、预测或分类结果】}；\TemplateField{给出误差、稳健性或约束检查结论}。
+
+针对问题三，\TemplateField{说明情景变化和模型调整}，使用\textbf{【核心模型三】}求得\textbf{【关键结果】}；\TemplateField{说明比较或敏感性分析结果}。
+
+针对问题四，\TemplateField{说明开放任务或决策目标}，提出\textbf{【最终策略或方案】}；\TemplateField{说明适用范围、可信度和主要限制}。
+
+综上，\textbf{【概括模型体系的主要价值、边界与可推广结论】}。
+
+\vspace{0.8em}
+\noindent\textbf{关键词：}\TemplateField{研究对象}；\TemplateField{核心模型}；\TemplateField{求解算法}；\TemplateField{验证方法}；\TemplateField{决策主题}
+
+\clearpage
+
+% ============================================================
+% 正文：正式提交稿不设目录；正文不超过 30 页，附录不计入该上限。
+% ============================================================
+\section{问题重述}
+
+\subsection{问题背景}
+\TemplateField{用自己的语言概括背景、研究对象和应用意义，不照抄赛题，不提前展开模型和结果。}
+相关背景事实、公开数据和专业判断必须就近引用经核验来源，例如\cite{topic-ref-1,topic-ref-2}。
+
+\subsection{问题要求}
+\begin{enumerate}[label=\arabic*.]
+  \item \TemplateField{问题一：写清输入、条件、约束和输出。}
+  \item \TemplateField{问题二：写清与问题一的依赖关系及新增输出。}
+  \item \TemplateField{问题三：写清情景变化、约束和输出。}
+  \item \TemplateField{问题四：写清最终决策、附件或评价要求。}
+\end{enumerate}
+
+\section{问题分析}
+
+\subsection{问题一的分析}
+\TemplateField{说明数学本质、数据或机理特征、核心困难、候选模型、选择理由、预期输出和验证路径。}
+
+\subsection{问题二的分析}
+\TemplateField{说明继承的变量、参数和结果，以及新增目标、约束和验证路径。}
+
+\subsection{问题三的分析}
+\TemplateField{说明情景变化如何映射到参数、指标或模型结构。}
+
+\subsection{问题四的分析}
+\TemplateField{说明开放任务如何转化为可计算、可评价的数学问题。}
+
+% 保留的单图写法：图必须先在正文中引用，后出现，并在图后解释其作用。
+总体建模流程如\cref{fig:overall-flow}所示，该图用于说明各子问题的数据和模型继承关系。
+\begin{figure}[htbp]
+  \centering
+  \safeincludegraphics[width=0.72\textwidth]{figures/overall-flow.pdf}
+  \caption{总体建模流程}
+  \label{fig:overall-flow}
+\end{figure}
+\TemplateField{解释流程图中的关键路径，不得用流程图替代模型说明。}
+
+\section{模型假设}
+\begin{enumerate}[label=\textbf{假设\arabic*.}]
+  \item \TemplateField{必要假设及其物理、业务或统计依据。}
+  \item \TemplateField{必要假设及其合理性；不得用假设直接消除题目核心难点。}
+  \item \TemplateField{对结果影响显著的假设，并在后文灵敏度或模型评价中回扣。}
+\end{enumerate}
+
+\section{符号说明}
+% 符号表优先采用“符号—含义—单位”三列；局部临时变量可在公式附近定义。
+\begin{table}[htbp]
+  \centering
+  \caption{主要符号及其含义}
+  \label{tab:symbols}
+  \begin{tabularx}{0.88\textwidth}{>{\centering\arraybackslash}p{0.18\textwidth}X>{\centering\arraybackslash}p{0.18\textwidth}}
+    \toprule[1.2pt]
+    符号 & 含义 & 单位 \\
+    \midrule[0.8pt]
+    $x_i$ & \TemplateField{第 $i$ 个核心变量的含义} & \TemplateField{单位或—} \\
+    $p_j$ & \TemplateField{第 $j$ 个模型参数的含义} & \TemplateField{单位或—} \\
+    $f(\symbf{x})$ & \TemplateField{目标函数或评价指标的含义} & \TemplateField{单位或—} \\
+    \bottomrule[1.2pt]
+  \end{tabularx}
+\end{table}
+
+\section{模型的建立与求解}
+
+\subsection{问题一模型的建立与求解}
+
+\subsubsection{问题一模型的分析}
+\TemplateField{用三至四行完成本问就近数学化，说明模型输入、输出和选择理由。}
+模型抽象和算法设计可参考数学建模基础教材\cite{modelbook,algobook}，但具体关系必须由本题数据、机理和约束推导。
+
+\subsubsection{问题一模型的建立}
+\TemplateField{依次定义变量和指标，推导局部关系，然后集中汇总完整模型。公式前写依据，公式后解释含义。}
+
+\noindent\textbf{完整模型汇总：}\TemplateField{集中列出本问的核心方程、变量范围、参数条件、输入与输出；优化模型还须列出目标函数和全部约束。}
+
+% 保留并规范的优化模型汇总写法：非优化问题不得机械使用目标函数和 s.t.。
+若本问属于优化问题，可将完整模型集中写为
+\begin{equation}
+\label{eq:q1-model}
+\begin{aligned}
+\min_{\symbf{x}}\quad & f(\symbf{x}) \\
+\mathrm{s.t.}\quad &
+\left\{
+\begin{aligned}
+g_1(\symbf{x}) &\leq 0,\\
+g_2(\symbf{x}) &\leq 0,\\
+h_1(\symbf{x}) &= 0,\\
+\symbf{x} &\in \Omega .
+\end{aligned}
+\right.
+\end{aligned}
+\end{equation}
+\cref{eq:q1-model}中，$f(\symbf{x})$表示\TemplateField{目标的实际含义}，$g_1$、$g_2$和$h_1$分别描述\TemplateField{资源、业务或机理约束}，$\Omega$为\TemplateField{变量定义域}。正式论文应替换整组公式，不得保留无关示例。
+
+\subsubsection{问题一模型的求解}
+\TemplateField{写明求解方法、关键步骤、影响结果的参数或容差、约束与边界检查；复杂算法可配编号步骤。}
+
+\subsubsection{问题一结果的分析}
+先直接回答本问：\textbf{【填写问题一的最终数值、单位、方案或结论】}。
+
+% 保留的三线结果表写法：表题在上，单位放入表头，小数位和有效数字统一。
+主要结果见\cref{tab:q1-results}。
+\begin{table}[htbp]
+  \centering
+  \caption{问题一主要结果}
+  \label{tab:q1-results}
+  \begin{tabular}{cccc}
+    \toprule[1.2pt]
+    对象 & 核心指标（单位） & 误差或状态（单位） & 最终结论 \\
+    \midrule[0.8pt]
+    \TemplateField{对象1} & \TemplateField{数值} & \TemplateField{数值或状态} & \TemplateField{结论} \\
+    \TemplateField{对象2} & \TemplateField{数值} & \TemplateField{数值或状态} & \TemplateField{结论} \\
+    \bottomrule[1.2pt]
+  \end{tabular}
+\end{table}
+\TemplateField{解释表中主要发现、实际意义、判据和不确定性，不逐行朗读。}
+\TemplateField{至少给出两类适用的结果分析、误差分析、模型检验、敏感性或等效验证。}
+
+\subsection{问题二模型的建立与求解}
+
+\subsubsection{问题二模型的分析}
+\TemplateField{说明继承问题一的内容及本问新增的目标、约束、参数和输出。}
+
+\subsubsection{问题二模型的建立}
+\TemplateField{完成“问题转化—变量指标—局部关系—完整模型汇总”，并引用经核验的题目相关方法来源\cite{topic-ref-3}。}
+
+\noindent\textbf{完整模型汇总：}\TemplateField{集中列出问题二的目标函数或核心方程、约束或初边值条件、定义域、参数条件、输入与输出。}
+
+% 保留的并排子图写法：各子图与总图均有唯一标签。
+模型结构或方案比较如\cref{fig:q2-comparison}所示。
+\begin{figure}[htbp]
+  \centering
+  \begin{subfigure}[t]{0.31\textwidth}
+    \centering
+    \safeincludegraphics[width=0.95\linewidth]{figures/q2-case-a.pdf}
+    \caption{情景一}
+    \label{fig:q2-case-a}
+  \end{subfigure}\hfill
+  \begin{subfigure}[t]{0.31\textwidth}
+    \centering
+    \safeincludegraphics[width=0.95\linewidth]{figures/q2-case-b.pdf}
+    \caption{情景二}
+    \label{fig:q2-case-b}
+  \end{subfigure}\hfill
+  \begin{subfigure}[t]{0.31\textwidth}
+    \centering
+    \safeincludegraphics[width=0.95\linewidth]{figures/q2-case-c.pdf}
+    \caption{情景三}
+    \label{fig:q2-case-c}
+  \end{subfigure}
+  \caption{问题二不同情景的结果比较}
+  \label{fig:q2-comparison}
+\end{figure}
+\TemplateField{分别解释各子图差异，并说明它们如何支撑问题二结论。}
+
+\subsubsection{问题二模型的求解}
+\TemplateField{写明实际算法、参数选择、数据划分或求解器设置，以及约束、泄漏、收敛或边界检查。}
+
+\subsubsection{问题二结果的分析}
+先直接回答本问：\textbf{【填写问题二最终结果】}。\TemplateField{给出至少两类适用分析或等效验证。}
+
+\subsection{问题三模型的建立与求解}
+
+\subsubsection{问题三模型的分析}
+\TemplateField{说明情景变化、继承关系和本问模型调整。}
+
+\subsubsection{问题三模型的建立}
+\TemplateField{定义新增变量与参数，推导并汇总完整模型；相关专业依据引用经核验来源\cite{topic-ref-4}。}
+
+\noindent\textbf{完整模型汇总：}\TemplateField{集中列出问题三的目标函数或核心方程、约束或初边值条件、定义域、参数条件、输入与输出。}
+
+\subsubsection{问题三模型的求解}
+\TemplateField{写明求解流程、关键参数和可行性检查。}
+
+\subsubsection{问题三结果的分析}
+先直接回答本问：\textbf{【填写问题三最终结果】}。\TemplateField{报告敏感性、稳健性、误差或其它等效证据。}
+
+\subsection{问题四模型的建立与求解}
+
+\subsubsection{问题四模型的分析}
+\TemplateField{将开放任务转化为明确的评价、预测、优化、仿真或决策任务。}
+
+\subsubsection{问题四模型的建立}
+\TemplateField{给出变量、指标、局部关系与完整模型汇总，说明输出如何对应题目要求。}
+
+\noindent\textbf{完整模型汇总：}\TemplateField{集中列出问题四的目标函数或核心方程、约束或初边值条件、定义域、参数条件、输入与输出。}
+
+\subsubsection{问题四模型的求解}
+\TemplateField{写明实际求解或方案生成过程。}
+
+\subsubsection{问题四结果的分析}
+先直接回答本问：\textbf{【填写问题四最终方案或结论】}。\TemplateField{说明验证、适用条件和主要限制。}
+
+\section{模型的评价与推广}
+
+\subsection{模型的优点}
+\TemplateField{每项优点对应具体模型结构、运行结果或检验证据，不写空泛评价。}
+
+\subsection{模型的缺点}
+\TemplateField{如实说明假设、数据、参数、数值方法和适用边界的限制。}
+
+\subsection{模型的改进与推广}
+\TemplateField{说明推广对象、需调整的变量和约束、需补充的数据及推广后的验证方式。}
+
+% ============================================================
+% 2026 AI 新规：AI 工具使用声明必须放在参考文献之前，二选一。
+% 使用 AI 时，支撑材料中必须同时提交“AI工具使用详情.pdf”。
+% ============================================================
+\clearpage
+\section*{AI工具使用声明}
+\ifusedai
+本参赛队在竞赛过程中使用了AI工具，主要用于\AIUsageSummary，详细使用情况见支撑材料。
+\else
+本参赛队在竞赛过程中未使用任何AI工具。
+\fi
+
+% 参考文献原则上不少于 6 篇；所有条目必须真实核验并在正文实际引用。
+% 除两本指定教材外，至少 4 篇应与题目背景、模型、算法、参数或验证直接相关。
+\renewcommand{\refname}{七、参考文献}
+\begin{thebibliography}{99}
+  \bibitem{modelbook}
+  姜启源, 谢金星, 叶俊.
+  \newblock 数学模型（第五版）[M].
+  \newblock 北京: 高等教育出版社, 2018.
+
+  \bibitem{algobook}
+  司守奎.
+  \newblock 数学建模算法与应用[M].
+  \newblock 北京: 国防工业出版社, 2011.
+
+  \bibitem{topic-ref-1}
+  \TemplateField{作者. 与题目背景直接相关的文献题名[类型]. 出版信息或期刊信息, 年份.}
+
+  \bibitem{topic-ref-2}
+  \TemplateField{作者或机构. 经核验的数据、标准或权威资料题名[类型]. 年份. URL/DOI及访问日期.}
+
+  \bibitem{topic-ref-3}
+  \TemplateField{作者. 与核心模型或算法直接相关的文献题名[类型]. 期刊或出版社, 年份. DOI.}
+
+  \bibitem{topic-ref-4}
+  \TemplateField{作者. 与参数、验证或应用场景直接相关的文献题名[类型]. 期刊或出版社, 年份. DOI.}
+\end{thebibliography}
+
+% ============================================================
+% 附录：总体另起一页，每个独立附录再次另起一页。
+% 支撑材料清单、实际压缩包、论文引用和代码必须完全一致。
+% ============================================================
+\clearpage
+\section*{附录A\quad 支撑材料文件清单}
+\ifhassupportmaterials
+\begin{longtable}{>{\centering\arraybackslash}p{0.08\textwidth}p{0.34\textwidth}p{0.46\textwidth}}
+  \caption{支撑材料文件清单}\label{tab:support-files}\\
+  \toprule[1.2pt]
+  序号 & 相对路径或文件名 & 内容及其与正文的对应关系 \\
+  \midrule[0.8pt]
+  \endfirsthead
+  \multicolumn{3}{c}{续表\quad 支撑材料文件清单}\\
+  \toprule[1.2pt]
+  序号 & 相对路径或文件名 & 内容及其与正文的对应关系 \\
+  \midrule[0.8pt]
+  \endhead
+  \midrule
+  \multicolumn{3}{r}{续下页}\\
+  \endfoot
+  \bottomrule[1.2pt]
+  \endlastfoot
+  1 & \texttt{code/q1.py} & \TemplateField{问题一求解程序，对应式、表或图编号} \\
+  2 & \texttt{code/q2.py} & \TemplateField{问题二求解程序，对应式、表或图编号} \\
+  3 & \texttt{data/processed-data.csv} & \TemplateField{自主查阅或处理后的必要数据；不得重复提交赛题原始数据} \\
+  \ifusedai
+  4 & \texttt{AI工具使用详情.pdf} & 2026 年规定要求的 AI 工具使用详情说明 \\
+  \fi
+  \TemplateField{序号} & \TemplateField{其余实际文件名} & \TemplateField{用途及正文对应关系} \\
+\end{longtable}
+\else
+本论文没有支撑材料。
+\fi
+
+\clearpage
+\section*{附录B\quad 建模所用完整源程序}
+\ifusedprogram
+% 正式提交前按实际文件逐一调用；不得只附伪代码、核心片段或无法运行的节选。
+% 路径按“模板已复制到项目 06-paper/”设置，必要时按项目实际结构调整。
+\subsection*{B.1\quad 问题一源程序}
+本程序用于\TemplateField{说明所解决的子问题以及与正文公式、图表和结果的对应关系}。
+\includecode{Python}{问题一完整源程序}{../03-models/q1.py}
+
+\subsection*{B.2\quad 问题二源程序}
+本程序用于\TemplateField{说明所解决的子问题以及与正文公式、图表和结果的对应关系}。
+\includecode{Python}{问题二完整源程序}{../03-models/q2.py}
+
+% 若存在问题三、问题四或绘图、数据处理程序，应继续逐一完整列出。
+\else
+本论文没有用到程序。
+\fi
+
+\end{document}
