@@ -1,0 +1,4 @@
+interface:
+  display_name: "数模论文生产"
+  short_description: "用证据链驱动数学建模、计算、写作、复核与可复现交付"
+  default_prompt: "使用 $cumcm-paper-production 从赛题与数据建立可复现的数学建模论文项目。"

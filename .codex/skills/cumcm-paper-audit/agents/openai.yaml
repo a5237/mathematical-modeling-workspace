@@ -1,0 +1,4 @@
+interface:
+  display_name: "数模论文独立审校"
+  short_description: "独立审计论文结果、引用、格式、匿名性以及证据链一致性"
+  default_prompt: "使用 $cumcm-paper-audit 独立审校当前数学建模论文并输出阻断项。"
