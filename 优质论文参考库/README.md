@@ -9,7 +9,7 @@
 ## 目录结构
 
 ```text
-paper_library/
+paper-library/
 ├── 01_运筹与决策优化/        # 对应 B 题、D 题
 │   ├── README.md            # 本类算法索引（0-1规划、遗传算法、动态规划）
 │   ├── XXX.pdf         # 近5年精选标杆论文（存全文，给 Agent 当完整代码参考）
