@@ -2,7 +2,7 @@
 
 > 适用范围：数学建模项目的文件路由、数据保护、环境记录、代码运行、产物保存、证据追溯、复现、审校和交付。
 >
-> 不适用范围：论文正文的章节写法、摘要表达、公式排版和图表叙述。这些要求由《数学建模论文写作_Agent强制规范.md》管理。
+> 不适用范围：论文正文的章节写法、摘要表达、公式排版和图表叙述。这些要求由 `docs/standards/paper-writing.md` 管理。
 >
 > 核心原则：**论文保持学术表达，工程信息留在工作区；所有结果可运行、可定位、可核验、可交付。**
 
@@ -33,12 +33,12 @@
 
 1. 比赛当届官方规则与用户当前明确要求；
 2. 本工作区规范；
-3. `paper-system/NAMING.md`；
-4. `数模环境说明.md`；
+3. `docs/standards/naming.md`；
+4. `docs/architecture/workspace-layout.md`；
 5. 项目内 `00-admin/` 的明确约定；
 6. 工具默认行为。
 
-涉及论文写作时，同时读取《数学建模论文写作_Agent强制规范.md》；涉及发布审校时读取 `.codex/skills/cumcm-paper-audit/SKILL.md`。
+涉及论文写作时，同时读取 `docs/standards/paper-writing.md`；涉及发布审校时读取 `.codex/skills/cumcm-paper-audit/SKILL.md`。
 
 ---
 
@@ -46,16 +46,16 @@
 
 ### 2.1 文件路由
 
-- 新收到、尚未归类的需求与附件放入 `00-inbox/<yyyy-mm-dd>-<short-name>/`。
-- 正式项目只放在 `projects/<contest>-<year>-<problem>/`。
+- 新收到、尚未归类的需求与附件放入 `workspace/inbox/<yyyy-mm-dd>-<short-name>/`。
+- 正式项目只放在 `workspace/projects/<contest>-<year>-<problem>/`。
 - 原题放 `01-problem/`；原始数据放 `02-data/raw/`；处理数据放 `02-data/processed/`。
 - 项目代码、参数和算法实现放 `03-models/`。
 - 程序生成的图片、表格、指标和日志放 `04-results/` 对应子目录。
 - 证据、文献和 AI 使用台账放 `05-evidence/`。
 - 论文源及实际引用副本放 `06-paper/`；审校记录放 `07-review/`；可提交成品放 `08-delivery/`。
-- 临时渲染、缓存和调试截图只放工作区 `tmp/`，任务结束清理。
+- 临时渲染、缓存和调试截图只放工作区 `var/tmp/`，任务结束清理。
 
-详细目录职责见 `数模环境说明.md`，稳定命名见 `paper-system/NAMING.md`。
+详细目录职责见 `docs/architecture/workspace-layout.md`，稳定命名见 `docs/standards/naming.md`。
 
 ### 2.2 一个权威来源
 
@@ -275,7 +275,7 @@
 3. 未运行代码却声称“计算得到”或“验证通过”；
 4. 手工修改图表数据、模型输出或指标以迎合结论；
 5. 使用个人绝对路径、未登记外部文件或隐式交互步骤；
-6. 将项目脚本、结果、论文或临时文件散落在工作区根目录；
+6. 将项目脚本、结果、论文、依赖清单、专题文档或临时文件散落在工作区根目录；
 7. 引用未实际检索核验的文献；
 8. 在任务结束时才补写证据或 AI 使用记录；
 9. 将工作区工程说明整段复制进论文正文；
@@ -314,4 +314,3 @@
 - [ ] 最终 PDF 已逐页渲染并完成字体、匿名性和元数据检查。
 - [ ] 独立审校无未关闭的关键或重大问题。
 - [ ] `08-delivery/` 仅包含当届要求的成品和准确文件清单。
-

@@ -12,7 +12,7 @@ from pathlib import Path
 
 
 WORKSPACE_ROOT = Path(__file__).resolve().parent.parent
-CACHE_ROOT = WORKSPACE_ROOT / "tmp"
+CACHE_ROOT = WORKSPACE_ROOT / "var" / "tmp"
 (CACHE_ROOT / "matplotlib").mkdir(parents=True, exist_ok=True)
 os.environ.setdefault("MPLCONFIGDIR", str(CACHE_ROOT / "matplotlib"))
 

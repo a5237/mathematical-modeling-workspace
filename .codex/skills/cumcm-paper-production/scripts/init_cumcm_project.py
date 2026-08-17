@@ -20,6 +20,7 @@ DIRS = (
     "04-results/logs",
     "05-evidence",
     "06-paper/figures",
+    "06-paper/tables",
     "07-review",
     "08-delivery/support-materials",
 )
@@ -40,7 +41,7 @@ FILES = {
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--root", default="projects")
+    parser.add_argument("--root", default="workspace/projects")
     parser.add_argument("--contest", default="cumcm")
     parser.add_argument("--year", type=int, required=True)
     parser.add_argument("--problem", required=True)

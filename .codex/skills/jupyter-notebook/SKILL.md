@@ -82,8 +82,8 @@ Script path:
 - `$JUPYTER_NOTEBOOK_CLI` (installed default: `$CODEX_HOME/skills/jupyter-notebook/scripts/new_notebook.py`)
 
 ## Temp and output conventions
-- Use `tmp/jupyter-notebook/` for intermediate files; delete when done.
-- Write final artifacts under `output/jupyter-notebook/` when working in this repo.
+- Use `var/tmp/jupyter-notebook/` for intermediate files; delete when done.
+- Write final modeling notebooks under the relevant project's `03-models/notebooks/` directory.
 - Use stable, descriptive filenames (for example, `ablation-temperature.ipynb`).
 
 ## Dependencies (install only when needed)

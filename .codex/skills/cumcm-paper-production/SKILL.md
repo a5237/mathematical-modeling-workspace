@@ -5,7 +5,7 @@ description: Build and operate an evidence-driven production system for CUMCM an
 
 # CUMCM Paper Production
 
-Read the workspace `数学建模工作区_Agent强制规范.md` first and treat it as the operational baseline. When the task involves paper content, formatting, or appendices, also read `数学建模论文写作_Agent强制规范.md` and treat it as the paper-writing baseline.
+Read the workspace `docs/standards/workspace-governance.md` first and treat it as the operational baseline. When the task involves paper content, formatting, or appendices, also read `docs/standards/paper-writing.md` and treat it as the paper-writing baseline.
 
 Keep the boundary strict: environments, dependency versions, run entry points, file paths, logs, evidence ledgers, and full reproduction instructions belong to the workspace record. Put them in the paper only when they directly affect the model, result, or an official appendix requirement.
 
@@ -27,7 +27,7 @@ Keep the boundary strict: environments, dependency versions, run entry points, f
 - Run `scripts/init_cumcm_project.py` to create a normalized project tree.
 - Read `references/evidence-contract.md` before producing concrete results or citations.
 - Read `references/current-cumcm-rules.md` for the verified 2026 format and AI disclosure baseline; browse the official site again immediately before a real submission.
-- Follow the workspace `paper-system/NAMING.md` for all stable artifact names.
+- Follow the workspace `docs/standards/naming.md` for all stable artifact names.
 
 ## Stop conditions
 

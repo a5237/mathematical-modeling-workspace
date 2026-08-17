@@ -9,7 +9,7 @@ Act as an independent reviewer. Do not silently repair the paper while auditing 
 
 ## Audit order
 
-1. Read the problem statement, `数学建模工作区_Agent强制规范.md`, `数学建模论文写作_Agent强制规范.md`, project manifest, problem checklist, and paper.
+1. Read the problem statement, `docs/standards/workspace-governance.md`, `docs/standards/paper-writing.md`, project manifest, problem checklist, and paper.
 2. Run `scripts/audit_cumcm_project.py <project> --phase release` and preserve its report in `07-review/`.
 3. Re-run the documented computation entry point when feasible. Compare generated hashes, metrics, tables, and figures with cited evidence.
 4. Trace every abstract number and conclusion through the body to a `verified` evidence row and an existing source artifact.

@@ -1,48 +1,51 @@
-# 全国大学生数学建模大赛工作区
+# 全国大学生数学建模工作区
 
-这是一个用于全国大学生数学建模大赛（CUMCM）的私人工作区，用于按项目组织赛题、数据、模型、结果、论文和交付材料。
+这是一个面向长期复用的数学建模工作区。仓库按“文档、配置、工具、资源、工作数据、运行时产物”分层，正式赛题仍在各自项目内使用 `00-admin` 至 `08-delivery` 的可复现生产结构。
 
-## 目录约定
+## 仓库分层
 
-- `00-inbox/`：新收到、尚未归类的需求与附件。
-- `projects/`：正式项目，采用 `<contest>-<year>-<problem>` 命名。
-- `templates/`：可复用模板。
-- `shared-tools/`：跨项目通用工具。
-- `paper-library/`：按竞赛、年份和题号整理的优秀论文参考材料。
-- `archive/`：历史归档，不作为当前项目来源。
-- `paper-system/`：工作区的项目结构与命名规则。
-- `tmp/`：临时渲染、缓存和调试产物，仅长期保留说明文件。
+```text
+.
+├── config/                 # 依赖锁定与工作区级配置
+├── docs/                   # 架构、规范与操作指南
+├── resources/              # 模板和优秀论文参考库
+├── tools/                  # 跨项目通用工具
+├── workspace/              # inbox、正式项目和历史归档
+├── var/                    # 可删除的运行时与临时产物
+├── .codex/                 # Codex 本地 Skills
+├── .venv-modeling/         # 本机 Python 建模环境，不纳入 Git
+├── .venv-modelingREADME.md # 虚拟环境重建说明，由独立贡献者维护
+├── AGENTS.md               # Agent 入口与强制路由
+├── README.md               # 仓库入口
+└── setup.bat               # Windows 环境引导脚本，由独立贡献者维护
+```
 
-## 项目内文件路由
-
-每个正式项目使用 `projects/<contest>-<year>-<problem>/` 目录，并按以下路径归档：
-
-- `00-admin/`：项目配置、运行说明和管理记录。
-- `01-problem/`：题目与题意核对材料。
-- `02-data/raw/`：原始附件，只读保存；`02-data/processed/`：清洗后的数据。
-- `03-models/`：可运行的模型、参数和算法实现。
-- `04-results/`：程序生成的图、表、指标和日志。
-- `05-evidence/`：证据索引、文献登记和工具使用记录。
-- `06-paper/`：论文源文件及其引用的图表副本。
-- `07-review/`：审校记录与发布检查结果。
-- `08-delivery/`：最终交付材料。
-
-新建的脚本、图片、表格、PDF 和临时文件不应散落在根目录；应先按上述目录归档后再纳入版本控制。`tmp/` 仅用于临时产物，除说明文件外不保留长期内容。
+完整职责和项目目录树见[工作区架构](docs/architecture/workspace-layout.md)，文档总索引见[文档中心](docs/README.md)。
 
 ## 快速入口
 
-- [数模环境说明](数模环境说明.md)
-- [数学建模工作区规范](数学建模工作区_Agent强制规范.md)
-- [数学建模论文写作规范](数学建模论文写作_Agent强制规范.md)
-- [项目命名规则](paper-system/NAMING.md)
-- [论文生产流程](paper-system/README.md)
-- [优质论文参考库](paper-library/README.md)
+- [工作区治理规范](docs/standards/workspace-governance.md)
+- [论文写作规范](docs/standards/paper-writing.md)
+- [命名规范](docs/standards/naming.md)
+- [建模环境指南](docs/guides/modeling-environment.md)
+- [论文生产流程](docs/guides/paper-production.md)
+- [项目区](workspace/projects/README.md)
+- [资源区](resources/README.md)
 
 ## 常用命令
 
 ```powershell
+# 安装或同步建模依赖
+.\.venv-modeling\Scripts\python.exe -m pip install -r config/python/requirements-modeling.txt
+
 # 检查建模环境、依赖和外部工具
-.\.venv-modeling\Scripts\python.exe shared-tools/check-modeling-env.py
+.\.venv-modeling\Scripts\python.exe tools/check-modeling-env.py
+
+# 检查工作区层级、根目录白名单和命名
+.\.venv-modeling\Scripts\python.exe tools/check-workspace-layout.py
+
+# 创建标准项目
+.\.venv-modeling\Scripts\python.exe .codex/skills/cumcm-paper-production/scripts/init_cumcm_project.py --root workspace/projects --contest cumcm --year 2026 --problem a
 ```
 
-具体项目的计算、编译和审校命令应记录在该项目的 `00-admin/runbook.md` 中，不在工作区 README 中绑定某一道历史赛题。
+具体项目的计算、编译和审校命令必须记录在该项目的 `00-admin/runbook.md` 中。根目录不得放置项目脚本、论文、结果、临时文件或新增的专题文档。

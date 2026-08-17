@@ -1,0 +1,108 @@
+# 工作区架构与目录职责
+
+本文档定义仓库级结构；项目内部结构由同一套约定继续约束。设计目标是让稳定文档、配置、工具和资源与频繁变化的项目数据、运行缓存分离。
+
+## 设计原则
+
+1. **根目录只做入口。** 根目录只保留 `README.md`、`AGENTS.md`、版本控制文件、隐藏环境目录、一级职责层，以及由独立贡献者维护的 `setup.bat` 和 `.venv-modelingREADME.md` 环境入口。
+2. **稳定资产与工作数据分离。** 规范、配置、工具和模板不与赛题项目混放。
+3. **项目彼此隔离。** 每个正式需求只有一个项目目录，项目代码不得读取其他项目的隐式产物。
+4. **原始数据只读。** 原题与原始附件进入项目后保持不变，派生数据必须可再生。
+5. **运行时产物可删除。** 缓存、渲染页和调试输出统一进入 `var/tmp/`，不得成为唯一证据。
+
+## 仓库目录树
+
+```text
+.
+├── config/
+│   └── python/
+│       └── requirements-modeling.txt
+├── docs/
+│   ├── architecture/
+│   ├── guides/
+│   └── standards/
+├── resources/
+│   ├── paper-library/
+│   └── templates/
+├── tools/
+├── workspace/
+│   ├── inbox/
+│   ├── projects/
+│   └── archive/
+├── var/
+│   └── tmp/
+├── .codex/
+├── .venv-modeling/
+├── .venv-modelingREADME.md
+├── AGENTS.md
+├── README.md
+└── setup.bat
+```
+
+## 一级目录职责
+
+| 路径 | 职责 | 允许内容 | 禁止内容 |
+|---|---|---|---|
+| `config/` | 工作区级配置 | 依赖锁定、静态配置 | 项目参数、运行结果 |
+| `docs/` | 稳定文档 | 架构、规范、指南 | 赛题草稿、临时记录 |
+| `resources/` | 只读或低频复用资产 | 模板、优秀论文参考 | 当前项目论文、正式引用台账 |
+| `tools/` | 跨项目工具 | 环境自检、通用转换和审计辅助 | 单题模型代码 |
+| `workspace/inbox/` | 新需求入口 | 尚未归类的需求和原始附件 | 长期项目成果 |
+| `workspace/projects/` | 正式项目总库 | 独立、可复现的项目目录 | 跨项目共享工具 |
+| `workspace/archive/` | 历史归档 | 停用版本和迁移快照 | 当前权威来源 |
+| `var/tmp/` | 可删除运行时目录 | 缓存、渲染页、调试截图 | 唯一副本、原始数据、交付物 |
+| `.codex/` | 本地自动化能力 | Skills、脚本和相关参考 | 赛题项目文件 |
+| `.venv-modeling/` | 本机 Python 环境 | 解释器和已安装依赖 | 项目代码与数据 |
+| `.venv-modelingREADME.md`、`setup.bat` | 环境引导入口 | 由独立贡献者维护的环境重建说明和 Windows 引导脚本 | 项目代码、数据和运行结果 |
+
+## 正式项目结构
+
+正式项目路径固定为 `workspace/projects/<contest>-<year>-<problem>/`：
+
+```text
+<project-id>/
+├── 00-admin/               # 清单、环境、运行手册和状态
+├── 01-problem/             # 原题、附件清单和问题核对
+├── 02-data/
+│   ├── raw/                # 只读原始数据
+│   └── processed/          # 可由程序再生的数据
+├── 03-models/              # 代码、算法、配置和参数
+├── 04-results/
+│   ├── figures/
+│   ├── tables/
+│   ├── metrics/
+│   └── logs/
+├── 05-evidence/            # 证据、文献和 AI 使用台账
+├── 06-paper/
+│   ├── figures/
+│   └── tables/
+├── 07-review/              # 独立审校记录
+└── 08-delivery/            # 仅保留可提交成品
+```
+
+项目目录的细化职责、证据要求和交付门禁见 `docs/standards/workspace-governance.md`。
+
+## 需求生命周期
+
+1. 在 `workspace/inbox/<yyyy-mm-dd>-<short-name>/` 保存新需求和附件。
+2. 明确赛题后，用初始化脚本在 `workspace/projects/` 创建唯一项目。
+3. 将原题和附件分别归入项目 `01-problem/`、`02-data/raw/`。
+4. 清空对应 inbox 子目录，避免维护两份原始材料。
+5. 项目不再活跃且确认无当前依赖后，才可移入 `workspace/archive/`。
+
+## 放置决策
+
+- 影响所有项目的规则或说明：`docs/`。
+- 影响所有项目的固定配置：`config/`。
+- 能跨项目执行的程序：`tools/`。
+- 可复用但不直接执行的材料：`resources/`。
+- 只服务某一道题的数据、代码或论文：对应项目目录。
+- 随时可重新生成且无需保留的文件：`var/tmp/`。
+
+任何无法归入上述类别的文件都不应直接留在根目录；先明确其生命周期和权威来源，再决定位置。
+
+可在仓库根目录运行以下命令验证结构：
+
+```powershell
+.\.venv-modeling\Scripts\python.exe tools/check-workspace-layout.py
+```

@@ -6,12 +6,12 @@
 # Local modeling environment and plotting cache
 .venv-modeling/
 .mplconfig/
-tmp/*
-!tmp/README.md
+var/tmp/*
+!var/tmp/README.md
 
 # LaTeX intermediates (keep .tex and final PDFs)
 *.aux
-projects/*/06-paper/*.log
+workspace/projects/*/06-paper/*.log
 *.out
 *.toc
 *.xdv
