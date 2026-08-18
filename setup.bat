@@ -118,14 +118,15 @@ if !NEED_REBUILD!==1 (
     
     echo.
     echo [4/6] 安装依赖...
-    if not exist "requirements-modeling.txt" (
-        echo [错误] requirements-modeling.txt 不存在。
+    if not exist "config\python\requirements-modeling.txt" (
+        echo [错误] config\python\requirements-modeling.txt 不存在。
+        echo 请确认依赖清单位置是否正确。
         pause
         exit /b 1
     )
     
     .\.venv-modeling\Scripts\python.exe -m pip install --upgrade pip >nul 2>&1
-    .\.venv-modeling\Scripts\python.exe -m pip install -r requirements-modeling.txt
+    .\.venv-modeling\Scripts\python.exe -m pip install -r config/python/requirements-modeling.txt
     if errorlevel 1 (
         echo [错误] 依赖安装失败，请检查上方错误信息。
         pause
@@ -134,7 +135,11 @@ if !NEED_REBUILD!==1 (
     
     echo.
     echo [5/6] 运行环境检查...
-    .\.venv-modeling\Scripts\python.exe shared-tools\check-modeling-env.py
+    if not exist "tools\check-modeling-env.py" (
+        echo [警告] tools\check-modeling-env.py 不存在，跳过环境检查。
+        goto :skip_check
+    )
+    .\.venv-modeling\Scripts\python.exe tools\check-modeling-env.py
     if errorlevel 1 (
         echo [警告] 环境检查存在部分问题，请查看上方输出。
     ) else (
@@ -145,6 +150,7 @@ if !NEED_REBUILD!==1 (
     echo 跳过虚拟环境重建，使用现有环境。
 )
 
+:skip_check
 :skip_venv
 echo.
 
@@ -187,7 +193,7 @@ echo.
 echo 虚拟环境: .\.venv-modeling\Scripts\python.exe
 echo.
 echo 常用命令：
-echo   环境检查: .\.venv-modeling\Scripts\python.exe shared-tools\check-modeling-env.py
-echo   运行模型: .\.venv-modeling\Scripts\python.exe projects\...\03-models\q00-run-all.py
+echo   环境检查: .\.venv-modeling\Scripts\python.exe tools\check-modeling-env.py
+echo   运行模型: .\.venv-modeling\Scripts\python.exe workspace\projects\...\03-models\q00-run-all.py
 echo.
 pause

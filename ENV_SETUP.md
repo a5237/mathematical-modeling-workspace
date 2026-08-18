@@ -16,8 +16,8 @@
 如果你是一个 AI Agent，在开始任何建模或论文任务前，请执行以下操作：
 
 1. 检查根目录是否存在 `.venv-modeling\Scripts\python.exe`。
-2. 如果不存在，或用户报告环境问题，引导用户运行 `.\setup.bat`（如存在），或按下方“手动重建”步骤操作。
-3. 确认环境检查脚本 `shared-tools\check-modeling-env.py` 输出 `RESULT: PASS` 后再继续。
+2. 如果不存在，或用户报告环境问题，引导用户运行 `.\setup.bat`。
+3. 确认环境检查脚本 `tools\check-modeling-env.py` 输出 `RESULT: PASS` 后再继续。
 
 ## 快速重建（人类操作）
 
