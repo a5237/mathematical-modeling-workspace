@@ -4,7 +4,7 @@
 
 ## 设计原则
 
-1. **根目录只做入口。** 根目录只保留 `README.md`、`AGENTS.md`、版本控制文件、隐藏环境目录、一级职责层，以及由独立贡献者维护的 `setup.bat` 和 `.venv-modelingREADME.md` 环境入口。
+1. **根目录只做入口。** 根目录只保留 `README.md`、`AGENTS.md`、版本控制文件、隐藏环境目录和一级职责层。
 2. **稳定资产与工作数据分离。** 规范、配置、工具和模板不与赛题项目混放。
 3. **项目彼此隔离。** 每个正式需求只有一个项目目录，项目代码不得读取其他项目的隐式产物。
 4. **原始数据只读。** 原题与原始附件进入项目后保持不变，派生数据必须可再生。
@@ -33,10 +33,8 @@
 │   └── tmp/
 ├── .codex/
 ├── .venv-modeling/
-├── .venv-modelingREADME.md
 ├── AGENTS.md
-├── README.md
-└── setup.bat
+└── README.md
 ```
 
 ## 一级目录职责
@@ -53,7 +51,6 @@
 | `var/tmp/` | 可删除运行时目录 | 缓存、渲染页、调试截图 | 唯一副本、原始数据、交付物 |
 | `.codex/` | 本地自动化能力 | Skills、脚本和相关参考 | 赛题项目文件 |
 | `.venv-modeling/` | 本机 Python 环境 | 解释器和已安装依赖 | 项目代码与数据 |
-| `.venv-modelingREADME.md`、`setup.bat` | 环境引导入口 | 由独立贡献者维护的环境重建说明和 Windows 引导脚本 | 项目代码、数据和运行结果 |
 
 ## 正式项目结构
 
@@ -76,11 +73,13 @@
 ├── 06-paper/
 │   ├── figures/
 │   └── tables/
-├── 07-review/              # 独立审校记录
+├── 07-review/              # 自动审计、独立审校、论文质量与国奖竞争力审查记录
 └── 08-delivery/            # 仅保留可提交成品
 ```
 
 项目目录的细化职责、证据要求和交付门禁见 `docs/standards/workspace-governance.md`。
+
+`07-review/` 至少维护 `review-log.md`、发布审校报告和 `paper-quality-audit.md`。论文质量审查统一遵循 `docs/standards/paper-quality-audit.md`，不得用作者自评或单一总分替代硬性合规、内容质量和逐图视觉检查。
 
 ## 需求生命周期
 

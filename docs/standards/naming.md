@@ -18,7 +18,7 @@ cumcm-2026-a/
 ├── 04-results/     # tables、figures、metrics、logs
 ├── 05-evidence/    # 主张证据、文献、AI 使用台账
 ├── 06-paper/       # tex、bib、图片引用与编译产物
-├── 07-review/      # 自动审计与人工审稿记录
+├── 07-review/      # 自动审计、发布审校与论文质量审查记录
 └── 08-delivery/    # 最终论文与支撑材料副本
 ```
 
@@ -31,6 +31,7 @@ cumcm-2026-a/
 - 指标：`q01-metrics.json`。
 - 日志：`q01-run-<yyyymmddThhmmss>.log`。
 - 论文源文件：`main.tex`；文献库：`references.bib`。
+- 审稿台账：`review-log.md`；发布审校：`release-audit.md`；论文质量与国奖竞争力审查：`paper-quality-audit.md`。
 
 ## 稳定标识
 
