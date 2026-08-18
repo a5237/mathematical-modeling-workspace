@@ -1,10 +1,17 @@
 @echo off
 setlocal enabledelayedexpansion
 
-:: åˆ‡æ¢åˆ°è„šæœ¬æ‰€åœ¨ç›®å½•ï¼ˆå³é¡¹ç›®æ ¹ç›®å½•ï¼‰
 cd /d "%~dp0"
 
-echo [1/7] Searching for compatible Python version (3.10, 3.11, 3.12, 3.13)...
+echo ============================================================
+echo ÊıÑ§½¨Ä£¹¤×÷Çø»·¾³´î½¨
+echo ============================================================
+echo.
+
+:: ============================================================
+:: µÚÒ»²½£º¼ì²â Python »·¾³
+:: ============================================================
+echo [1/6] ¼ì²â Python »·¾³...
 
 set PY_CMD=
 for %%v in (3.13 3.12 3.11 3.10) do (
@@ -12,124 +19,175 @@ for %%v in (3.13 3.12 3.11 3.10) do (
     if not errorlevel 1 (
         set PY_CMD=py -%%v
         for /f "delims=" %%i in ('py -%%v -c "import sys; print(sys.version.split()[0])"') do set PY_VER=%%i
-        echo Found Python !PY_VER!
+        echo ÕÒµ½ Python !PY_VER!
         goto :pyfound
     )
 )
 
-:: å›é€€åˆ°é»˜è®¤ py
+:: »ØÍË¼ì²â
 py -c "print(1)" >nul 2>&1
 if not errorlevel 1 (
     set PY_CMD=py
     for /f "delims=" %%i in ('py -c "import sys; print(sys.version.split()[0])"') do set PY_VER=%%i
-    echo Found default Python !PY_VER! via py launcher.
+    echo ÕÒµ½Ä¬ÈÏ Python !PY_VER!
     goto :check_version
 )
 
-:: å›é€€åˆ° PATH ä¸­çš„ python
 python -c "print(1)" >nul 2>&1
 if not errorlevel 1 (
     set PY_CMD=python
     for /f "delims=" %%i in ('python -c "import sys; print(sys.version.split()[0])"') do set PY_VER=%%i
-    echo Found default Python !PY_VER! via PATH.
+    echo ÕÒµ½ÏµÍ³ Python !PY_VER!
     goto :check_version
 )
 
-echo ERROR: No Python found. Please install Python 3.10 to 3.13.
+echo [´íÎó] Î´ÕÒµ½ Python¡£
+echo Çë°²×° Python 3.10 ~ 3.13£¬²¢È·±£ py Æô¶¯Æ÷¿ÉÓÃ¡£
 pause
 exit /b 1
 
 :check_version
 echo !PY_VER! | findstr /r "^3\.1[4-9] ^3\.[2-9][0-9]" >nul
 if not errorlevel 1 (
-    echo ERROR: Python !PY_VER! is not supported.
-    echo This project requires Python 3.10, 3.11, 3.12, or 3.13.
-    echo.
-    echo Please install one of the following:
-    echo   - Python 3.12.10: https://www.python.org/downloads/release/python-31210/
-    echo   - Python 3.11.x: https://www.python.org/downloads/
-    echo.
+    echo [´íÎó] Python !PY_VER! ²»±»Ö§³Ö¡£
+    echo ±¾ÏîÄ¿ĞèÒª Python 3.10¡¢3.11¡¢3.12 »ò 3.13¡£
+    echo Çë°²×°ÊÜÖ§³ÖµÄ°æ±¾ºóÖØÊÔ¡£
     pause
     exit /b 1
 )
 
 :pyfound
-echo Using Python version: !PY_VER!
+echo Ê¹ÓÃ Python °æ±¾: !PY_VER!
+echo.
 
-echo [2/7] Removing old virtual environment (if exists)...
-if exist ".venv-modeling" (
-    rmdir /s /q ".venv-modeling"
+:: ============================================================
+:: µÚ¶ş²½£º¼ì²éĞéÄâ»·¾³×´Ì¬
+:: ============================================================
+echo [2/6] ¼ì²éĞéÄâ»·¾³×´Ì¬...
+
+set VENV_EXISTS=0
+if exist ".venv-modeling\Scripts\python.exe" set VENV_EXISTS=1
+
+if !VENV_EXISTS!==1 (
+    echo ĞéÄâ»·¾³ÒÑ´æÔÚ¡£
+    .\.venv-modeling\Scripts\python.exe -c "import numpy, scipy, pandas, matplotlib" >nul 2>&1
     if errorlevel 1 (
-        echo ERROR: Failed to remove old .venv-modeling directory.
-        echo Please close any programs using files in this directory and try again.
+        echo [¾¯¸æ] ĞéÄâ»·¾³´æÔÚµ«ºËĞÄÒÀÀµÈ±Ê§£¬ĞèÒªÖØ½¨¡£
+        set NEED_REBUILD=1
+    ) else (
+        echo ĞéÄâ»·¾³ÍêÕû£¬ºËĞÄÒÀÀµ¿ÉÓÃ¡£
+        set NEED_REBUILD=0
+    )
+) else (
+    echo ĞéÄâ»·¾³²»´æÔÚ£¬ĞèÒª´´½¨¡£
+    set NEED_REBUILD=1
+)
+
+if !NEED_REBUILD!==1 (
+    echo.
+    echo ÊÇ·ñÖØ½¨ĞéÄâ»·¾³£¿
+    echo   y - É¾³ı¾É»·¾³²¢ÖØĞÂ´´½¨
+    echo   n - Ìø¹ı£¨½ö¼ì²â»·¾³£©
+    set /p CHOICE="ÇëÊäÈë y »ò n [y]: "
+    if "!CHOICE!"=="" set CHOICE=y
+    if /i not "!CHOICE!"=="y" (
+        echo Ìø¹ıĞéÄâ»·¾³ÖØ½¨¡£
+        goto :skip_venv
+    )
+    
+    echo.
+    echo [3/6] ÖØ½¨ĞéÄâ»·¾³...
+    if exist ".venv-modeling" (
+        echo É¾³ı¾É»·¾³...
+        rmdir /s /q ".venv-modeling"
+        if errorlevel 1 (
+            echo [´íÎó] ÎŞ·¨É¾³ı .venv-modeling Ä¿Â¼¡£
+            echo Çë¹Ø±ÕÕ¼ÓÃ¸ÃÄ¿Â¼µÄ³ÌĞòºóÖØÊÔ¡£
+            pause
+            exit /b 1
+        )
+    )
+    
+    echo ´´½¨ĞÂĞéÄâ»·¾³...
+    %PY_CMD% -m venv .venv-modeling
+    if errorlevel 1 (
+        echo [´íÎó] ´´½¨ĞéÄâ»·¾³Ê§°Ü¡£
         pause
         exit /b 1
     )
-)
-
-echo [3/7] Creating new virtual environment...
-%PY_CMD% -m venv .venv-modeling
-if errorlevel 1 (
-    echo ERROR: Failed to create virtual environment.
-    pause
-    exit /b 1
-)
-
-echo [4/7] Installing dependencies from requirements-modeling.txt...
-if not exist "requirements-modeling.txt" (
-    echo ERROR: requirements-modeling.txt not found in project root.
-    pause
-    exit /b 1
-)
-
-.\.venv-modeling\Scripts\python.exe -m pip install --upgrade pip
-if errorlevel 1 (
-    echo WARNING: Pip upgrade failed, continuing with existing pip.
-)
-
-.\.venv-modeling\Scripts\python.exe -m pip install -r requirements-modeling.txt
-if errorlevel 1 (
-    echo ERROR: Failed to install some dependencies.
-    echo Please check the error messages above.
-    pause
-    exit /b 1
-)
-
-echo [5/7] Running pip check...
-.\.venv-modeling\Scripts\python.exe -m pip check
-if errorlevel 1 (
-    echo WARNING: Some dependencies have conflicts.
-    echo Please check the output above and resolve manually.
-    pause
-)
-
-echo [6/7] Running environment check script...
-if not exist "shared-tools\check-modeling-env.py" (
-    echo ERROR: shared-tools\check-modeling-env.py not found.
-    echo Please ensure the file exists in the project root.
-    pause
-    exit /b 1
-)
-
-.\.venv-modeling\Scripts\python.exe shared-tools\check-modeling-env.py
-if errorlevel 1 (
-    echo WARNING: Environment check reported issues.
-    echo See output above for details.
-    pause
+    
+    echo.
+    echo [4/6] °²×°ÒÀÀµ...
+    if not exist "requirements-modeling.txt" (
+        echo [´íÎó] requirements-modeling.txt ²»´æÔÚ¡£
+        pause
+        exit /b 1
+    )
+    
+    .\.venv-modeling\Scripts\python.exe -m pip install --upgrade pip >nul 2>&1
+    .\.venv-modeling\Scripts\python.exe -m pip install -r requirements-modeling.txt
+    if errorlevel 1 (
+        echo [´íÎó] ÒÀÀµ°²×°Ê§°Ü£¬Çë¼ì²éÉÏ·½´íÎóĞÅÏ¢¡£
+        pause
+        exit /b 1
+    )
+    
+    echo.
+    echo [5/6] ÔËĞĞ»·¾³¼ì²é...
+    .\.venv-modeling\Scripts\python.exe shared-tools\check-modeling-env.py
+    if errorlevel 1 (
+        echo [¾¯¸æ] »·¾³¼ì²é´æÔÚ²¿·ÖÎÊÌâ£¬Çë²é¿´ÉÏ·½Êä³ö¡£
+    ) else (
+        echo »·¾³¼ì²éÈ«²¿Í¨¹ı¡£
+    )
 ) else (
-    echo SUCCESS: All checks passed.
+    echo.
+    echo Ìø¹ıĞéÄâ»·¾³ÖØ½¨£¬Ê¹ÓÃÏÖÓĞ»·¾³¡£
 )
 
-echo [7/7] Recording environment fingerprint...
-.\.venv-modeling\Scripts\python.exe -c "import sys, json; print(json.dumps({'python_version': sys.version.split()[0]}))" > tmp\env_fingerprint.json 2>nul
-if not errorlevel 1 (
-    echo Environment fingerprint saved to tmp\env_fingerprint.json
+:skip_venv
+echo.
+
+:: ============================================================
+:: µÚÁù²½£º¼ì²â LaTeX »·¾³
+:: ============================================================
+echo [6/6] ¼ì²â LaTeX »·¾³...
+
+where xelatex >nul 2>&1
+if errorlevel 1 (
+    echo [ÌáÊ¾] Î´ÕÒµ½ xelatex¡£
+    echo.
+    echo ÂÛÎÄ±àÒëĞèÒª LaTeX »·¾³¡£ÄãÒÑ°²×° LaTeX ÁËÂğ£¿
+    echo   y - ÒÑ°²×°µ« xelatex ²»ÔÚ PATH ÖĞ£¨Ìø¹ı¼ì²â£©
+    echo   n - Î´°²×°£¬ĞèÒª°²×° LaTeX
+    set /p LATEX_CHOICE="ÇëÊäÈë y »ò n [n]: "
+    if "!LATEX_CHOICE!"=="" set LATEX_CHOICE=n
+    if /i "!LATEX_CHOICE!"=="y" (
+        echo ÒÑÌø¹ı LaTeX ¼ì²â£¨Ê¹ÓÃ·Ç±ê×¼ PATH °²×°£©¡£
+    ) else (
+        echo.
+        echo Çë×ÔĞĞ°²×° LaTeX »·¾³£º
+        echo   - Windows: °²×° MikTeX »ò TeX Live
+        echo   - °²×°ºóÈ·±£ xelatex ÔÚ PATH ÖĞ
+        echo.
+        echo [¾¯¸æ] LaTeX Î´ÅäÖÃ£¬½«ÎŞ·¨±àÒë PDF ÂÛÎÄ¡£
+        echo Äã¿ÉÒÔÉÔºó°²×° LaTeX£¬È»ºóÖØĞÂÔËĞĞ±¾½Å±¾¼ì²â¡£
+    )
+) else (
+    for /f "delims=" %%i in ('xelatex --version ^| findstr /i "version"') do set XELATEX_VER=%%i
+    echo ÕÒµ½ xelatex: !XELATEX_VER!
+    echo LaTeX »·¾³¿ÉÓÃ¡£
 )
 
 echo.
-echo Virtual environment setup completed.
-echo Using Python version: !PY_VER!
-echo To use it, run: .\.venv-modeling\Scripts\python.exe your_script.py
+echo ============================================================
+echo »·¾³´î½¨Íê³É
+echo ============================================================
 echo.
-
+echo ĞéÄâ»·¾³: .\.venv-modeling\Scripts\python.exe
+echo.
+echo ³£ÓÃÃüÁî£º
+echo   »·¾³¼ì²é: .\.venv-modeling\Scripts\python.exe shared-tools\check-modeling-env.py
+echo   ÔËĞĞÄ£ĞÍ: .\.venv-modeling\Scripts\python.exe projects\...\03-models\q00-run-all.py
+echo.
 pause
