@@ -5,7 +5,7 @@
 1. `docs/standards/workspace-governance.md`；
 2. `.codex/skills/cumcm-paper-production/SKILL.md`；
 3. 涉及论文内容、排版或附录时，再读取 `docs/standards/paper-writing.md`；
-4. 涉及最终审校时，再读取 `.codex/skills/cumcm-paper-audit/SKILL.md`。
+4. 涉及最终审校时，再读取 `.codex/skills/cumcm-paper-audit/SKILL.md` 和 `docs/standards/paper-quality-audit.md`。
 
 工作区规范负责目录、环境、版本、入口、日志、证据、复现和交付；论文写作规范只负责评审可见的论文内容与版式。工程记录不得因工作区要求而自动写入论文正文。
 
@@ -26,6 +26,7 @@
 - 参考文献原则上不少于 6 篇；《数学模型（第五版）》与《数学建模算法与应用》必须列入并在正文实际引用，其余至少 4 篇须与题目直接相关。
 - 重构、拆分或精简规范时，不得删除或降低论文结构、论证、验证、图表、文献、公式和排版质量门禁；只能迁移职责明确属于工作区工程管理的内容。
 - 发布前必须渲染逐页检查分页，并检查最终 PDF 的字体属性，不能只核对源文件。
+- `07-review/` 必须包含论文质量审查；审查须分别判定 `paper-writing.md` 硬性合规与国奖竞争力，并逐图确认清晰、直观、无重叠、遮挡和歧义。
 
 项目目录和文件命名遵循 `docs/standards/naming.md`。新项目优先使用生产 Skill 的初始化脚本创建。
 
@@ -36,10 +37,10 @@
 - 原题放项目 `01-problem/`；原始数据只放 `02-data/raw/` 且保持只读；清洗数据只放 `02-data/processed/`。
 - 可运行代码、参数与算法实现只放 `03-models/`；不得把项目代码散落在仓库根目录。
 - 程序生成的图片、表格、指标和日志只放 `04-results/figures|tables|metrics|logs/`；论文引用副本放 `06-paper/figures|tables/`。
-- 论文源文件只放 `06-paper/`；审校记录只放 `07-review/`；可提交成品只放 `08-delivery/`。
+- 论文源文件只放 `06-paper/`；自动审计、发布审校和论文质量审查记录只放 `07-review/`；可提交成品只放 `08-delivery/`。
 - 优质论文只放 `resources/paper-library/`；通用模板只放 `resources/templates/`；跨项目工具只放 `tools/`。
 - 临时渲染、缓存和调试截图只放 `var/tmp/`，任务结束必须清理；历史旧结构只放 `workspace/archive/`，禁止作为当前权威来源。
 - 工作区级依赖和配置只放 `config/`；规范、架构和指南只放 `docs/`。
-- 仓库根目录只保留入口文件、环境引导文件和系统目录；`setup.bat` 与 `.venv-modelingREADME.md` 由独立贡献者维护，不新增其它专题 Markdown、依赖清单、项目产物或临时文件。
+- 仓库根目录只保留入口文件和系统目录，不新增专题 Markdown、依赖清单、项目产物或临时文件。
 
 详细目录职责见 `docs/architecture/workspace-layout.md`，环境准备见 `docs/guides/modeling-environment.md`。

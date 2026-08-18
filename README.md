@@ -14,10 +14,8 @@
 ├── var/                    # 可删除的运行时与临时产物
 ├── .codex/                 # Codex 本地 Skills
 ├── .venv-modeling/         # 本机 Python 建模环境，不纳入 Git
-├── .venv-modelingREADME.md # 虚拟环境重建说明，由独立贡献者维护
 ├── AGENTS.md               # Agent 入口与强制路由
-├── README.md               # 仓库入口
-└── setup.bat               # Windows 环境引导脚本，由独立贡献者维护
+└── README.md               # 仓库入口
 ```
 
 完整职责和项目目录树见[工作区架构](docs/architecture/workspace-layout.md)，文档总索引见[文档中心](docs/README.md)。

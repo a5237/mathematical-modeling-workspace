@@ -35,6 +35,7 @@ FILES = {
     "06-paper/main.tex": "% 仅从 verified 证据写入具体数值。正式模板按当年竞赛要求配置。\n",
     "06-paper/references.bib": "",
     "07-review/review-log.md": "# 审稿记录\n\n| date | reviewer | severity | location | finding | evidence | resolution |\n|---|---|---|---|---|---|---|\n",
+    "07-review/paper-quality-audit.md": "# 论文质量审查报告\n\n> 按 `docs/standards/paper-quality-audit.md` 审查最终 PDF；论文或图表变更后必须更新本报告。\n\n## 机器可读门禁\n\n- audit_date: `待填写`\n- final_pdf: `08-delivery/paper.pdf`\n- final_pdf_sha256: `待填写`\n- paper_writing_compliance: `BLOCKED`\n- national_award_competitiveness: `待审查`\n- full_pdf_render_review: `BLOCKED`\n- figure_clarity_and_intuitiveness: `BLOCKED`\n- overlap_and_clipping: `BLOCKED`\n- flowchart_logic: `BLOCKED`\n- open_critical: `0`\n- open_major: `0`\n- open_presentation_minor: `0`\n- release_decision: `BLOCKED`\n\n## 一、结论\n\n待填写。\n\n## 二、硬性合规矩阵\n\n待填写。\n\n## 三、国奖竞争力评分\n\n待填写。\n\n## 四、图表逐项审查\n\n待填写。\n\n## 五、发现项\n\n待填写。\n\n## 六、最终判定依据与免责声明\n\n本结论是内部竞争力预审，不构成官方获奖保证。\n",
     "08-delivery/file-list.md": "# 支撑材料文件清单\n\n发布前列出每个文件、用途及其对应论文位置。\n",
 }
 

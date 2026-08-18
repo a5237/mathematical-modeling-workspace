@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import hashlib
 import re
 import sys
 from pathlib import Path
@@ -12,9 +13,91 @@ from pathlib import Path
 
 REQUIRED_DIRS = ["00-admin", "01-problem", "02-data/raw", "03-models", "04-results", "05-evidence", "06-paper", "07-review", "08-delivery"]
 REQUIRED_FILES = ["00-admin/project.yaml", "01-problem/problem-checklist.md", "05-evidence/evidence-index.csv", "05-evidence/literature-ledger.csv", "05-evidence/ai-tool-log.md", "06-paper/main.tex", "07-review/review-log.md", "08-delivery/file-list.md"]
+RELEASE_REQUIRED_FILES = ["07-review/paper-quality-audit.md"]
 PLACEHOLDER = re.compile(r"TODO|TBD|FIXME|待填写|待补|占位|XX+", re.IGNORECASE)
+QUALITY_FIELD = re.compile(r"^\s*-\s*([a-z0-9_]+):\s*`([^`]*)`\s*$", re.MULTILINE)
 CLAIM_COLUMNS = {"claim_id", "question_id", "claim", "evidence_type", "source_path", "generator", "generated_at", "status"}
 LIT_COLUMNS = {"citation_key", "title", "authors", "year", "doi_or_url", "retrieved_at", "used_in", "verified"}
+QUALITY_REQUIRED_FIELDS = {
+    "audit_date",
+    "final_pdf",
+    "final_pdf_sha256",
+    "paper_writing_compliance",
+    "national_award_competitiveness",
+    "full_pdf_render_review",
+    "figure_clarity_and_intuitiveness",
+    "overlap_and_clipping",
+    "flowchart_logic",
+    "open_critical",
+    "open_major",
+    "open_presentation_minor",
+    "release_decision",
+}
+
+
+def sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for block in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(block)
+    return digest.hexdigest()
+
+
+def audit_quality_report(root: Path, delivery_pdf: Path | None, errors: list[str]) -> None:
+    path = root / "07-review/paper-quality-audit.md"
+    if not path.is_file():
+        return
+    text = path.read_text(encoding="utf-8", errors="replace")
+    fields = dict(QUALITY_FIELD.findall(text))
+    missing = sorted(QUALITY_REQUIRED_FIELDS - fields.keys())
+    if missing:
+        errors.append(f"MAJOR {path}: missing quality-gate fields {missing}")
+        return
+    if PLACEHOLDER.search(text):
+        errors.append("MAJOR unresolved placeholder in 07-review/paper-quality-audit.md")
+
+    expected = {
+        "paper_writing_compliance": {"PASS"},
+        "national_award_competitiveness": {
+            "MEETS_NATIONAL_AWARD_COMPETITIVE_STANDARD",
+            "DOES_NOT_MEET_NATIONAL_AWARD_COMPETITIVE_STANDARD",
+        },
+        "full_pdf_render_review": {"PASS"},
+        "figure_clarity_and_intuitiveness": {"PASS"},
+        "overlap_and_clipping": {"PASS"},
+        "flowchart_logic": {"PASS", "NOT_APPLICABLE"},
+        "open_critical": {"0"},
+        "open_major": {"0"},
+        "open_presentation_minor": {"0"},
+        "release_decision": {"READY"},
+    }
+    for key, allowed in expected.items():
+        if fields[key] not in allowed:
+            errors.append(f"MAJOR quality gate {key}: expected {sorted(allowed)}, found {fields[key]!r}")
+
+    if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", fields["audit_date"]):
+        errors.append("MAJOR quality gate audit_date must use YYYY-MM-DD")
+    if not re.fullmatch(r"[0-9a-fA-F]{64}", fields["final_pdf_sha256"]):
+        errors.append("MAJOR quality gate final_pdf_sha256 must contain 64 hexadecimal characters")
+
+    relative_pdf = Path(fields["final_pdf"])
+    if relative_pdf.is_absolute() or ".." in relative_pdf.parts:
+        errors.append("CRITICAL quality gate final_pdf is unsafe")
+        return
+    reported_pdf = (root / relative_pdf).resolve()
+    try:
+        reported_pdf.relative_to(root)
+    except ValueError:
+        errors.append("CRITICAL quality gate final_pdf escapes the project root")
+        return
+    if not reported_pdf.is_file():
+        errors.append(f"CRITICAL quality gate final_pdf does not exist: {relative_pdf}")
+        return
+    if delivery_pdf is not None and reported_pdf != delivery_pdf.resolve():
+        errors.append("MAJOR quality gate final_pdf is not the sole delivery PDF")
+    actual_hash = sha256(reported_pdf)
+    if fields["final_pdf_sha256"].lower() != actual_hash:
+        errors.append("CRITICAL quality gate PDF hash does not match the reviewed delivery PDF")
 
 
 def read_csv(path: Path, required: set[str], errors: list[str]) -> list[dict[str, str]]:
@@ -46,6 +129,10 @@ def main() -> int:
     for relative in REQUIRED_FILES:
         if not (root / relative).is_file():
             errors.append(f"MAJOR missing file: {relative}")
+    if args.phase == "release":
+        for relative in RELEASE_REQUIRED_FILES:
+            if not (root / relative).is_file():
+                errors.append(f"MAJOR missing release file: {relative}")
 
     evidence_path = root / "05-evidence/evidence-index.csv"
     if evidence_path.is_file():
@@ -85,6 +172,7 @@ def main() -> int:
             errors.append(f"MAJOR delivery must contain exactly one PDF, found {len(pdfs)}")
         elif pdfs[0].stat().st_size > 20 * 1024 * 1024:
             errors.append("CRITICAL delivery PDF exceeds 20 MiB")
+        audit_quality_report(root, pdfs[0] if len(pdfs) == 1 else None, errors)
 
     print(f"Audit root: {root}")
     if errors:
@@ -92,7 +180,7 @@ def main() -> int:
         for item in errors:
             print(f"- {item}")
         return 1
-    print("PASS (static checks only; manual and reproducibility review still required)")
+    print("PASS (static evidence contract; quality-report assertions still require independent human review)")
     return 0
 
 
