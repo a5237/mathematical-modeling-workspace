@@ -13,7 +13,11 @@ from pathlib import Path
 
 REQUIRED_DIRS = ["00-admin", "01-problem", "02-data/raw", "03-models", "04-results", "05-evidence", "06-paper", "07-review", "08-delivery"]
 REQUIRED_FILES = ["00-admin/project.yaml", "01-problem/problem-checklist.md", "05-evidence/evidence-index.csv", "05-evidence/literature-ledger.csv", "05-evidence/ai-tool-log.md", "06-paper/main.tex", "07-review/review-log.md", "08-delivery/file-list.md"]
-RELEASE_REQUIRED_FILES = ["07-review/paper-quality-audit.md"]
+RELEASE_REQUIRED_FILES = [
+    "00-admin/pre-writing-learning.md",
+    "03-models/model-selection.md",
+    "07-review/paper-quality-audit.md",
+]
 PLACEHOLDER = re.compile(r"TODO|TBD|FIXME|待填写|待补|占位|XX+", re.IGNORECASE)
 QUALITY_FIELD = re.compile(r"^\s*-\s*([a-z0-9_]+):\s*`([^`]*)`\s*$", re.MULTILINE)
 CLAIM_COLUMNS = {"claim_id", "question_id", "claim", "evidence_type", "source_path", "generator", "generated_at", "status"}
@@ -33,6 +37,64 @@ QUALITY_REQUIRED_FIELDS = {
     "open_presentation_minor",
     "release_decision",
 }
+
+
+def audit_workflow_gate(root: Path, relative: str, status_key: str, errors: list[str]) -> None:
+    path = root / relative
+    if not path.is_file():
+        return
+    text = path.read_text(encoding="utf-8", errors="replace")
+    fields = dict(QUALITY_FIELD.findall(text))
+    if fields.get(status_key) != "COMPLETE":
+        errors.append(f"MAJOR workflow gate {relative}: {status_key} must be COMPLETE")
+    completed_at = fields.get("completed_at", "")
+    if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", completed_at):
+        errors.append(f"MAJOR workflow gate {relative}: completed_at must use YYYY-MM-DD")
+    if PLACEHOLDER.search(text):
+        errors.append(f"MAJOR unresolved placeholder in {relative}")
+
+    table_lines = text.splitlines()
+    checklist_path = root / "01-problem/problem-checklist.md"
+    checklist_text = checklist_path.read_text(encoding="utf-8", errors="replace") if checklist_path.is_file() else ""
+    expected_questions = set(re.findall(r"^\|\s*(q\d+)\s*\|", checklist_text, re.MULTILINE))
+    if status_key == "learning_status":
+        sample_rows = [
+            [cell.strip() for cell in line.strip().strip("|").split("|")]
+            for line in table_lines
+            if re.match(r"^\|\s*sample-\d+\s*\|", line)
+        ]
+        reviewed_rows = [
+            cells
+            for cells in sample_rows
+            if len(cells) >= 6
+            and cells[1].replace("\\", "/").startswith("resources/paper-library/")
+            and cells[-1].lower() in {"yes", "true", "1"}
+        ]
+        if len(reviewed_rows) < 2:
+            errors.append(
+                f"MAJOR workflow gate {relative}: fewer than two reviewed same-type papers from resources/paper-library"
+            )
+        learned_questions = set(re.findall(r"^\|\s*(q\d+)\s*\|", text, re.MULTILINE))
+        missing_learning = sorted(expected_questions - learned_questions)
+        if missing_learning:
+            errors.append(f"MAJOR workflow gate {relative}: missing algorithm review for {missing_learning}")
+    elif status_key == "selection_status":
+        selection_rows = [
+            [cell.strip() for cell in line.strip().strip("|").split("|")]
+            for line in table_lines
+            if re.match(r"^\|\s*q\d+\s*\|", line)
+        ]
+        if not selection_rows:
+            errors.append(f"MAJOR workflow gate {relative}: no subproblem selection record")
+        elif any(
+            len(cells) < 3 or not cells[2].replace("\\", "/").startswith("resources/algorithm-library/")
+            for cells in selection_rows
+        ):
+            errors.append(f"MAJOR workflow gate {relative}: subproblem row missing algorithm-library resource path")
+        selected_questions = {cells[0] for cells in selection_rows if cells}
+        missing_selection = sorted(expected_questions - selected_questions)
+        if missing_selection:
+            errors.append(f"MAJOR workflow gate {relative}: missing model selection for {missing_selection}")
 
 
 def sha256(path: Path) -> str:
@@ -133,6 +195,8 @@ def main() -> int:
         for relative in RELEASE_REQUIRED_FILES:
             if not (root / relative).is_file():
                 errors.append(f"MAJOR missing release file: {relative}")
+        audit_workflow_gate(root, "03-models/model-selection.md", "selection_status", errors)
+        audit_workflow_gate(root, "00-admin/pre-writing-learning.md", "learning_status", errors)
 
     evidence_path = root / "05-evidence/evidence-index.csv"
     if evidence_path.is_file():

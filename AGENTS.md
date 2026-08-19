@@ -4,8 +4,9 @@
 
 1. `docs/standards/workspace-governance.md`；
 2. `.codex/skills/cumcm-paper-production/SKILL.md`；
-3. 涉及论文内容、排版或附录时，再读取 `docs/standards/paper-writing.md`；
-4. 涉及最终审校时，再读取 `.codex/skills/cumcm-paper-audit/SKILL.md` 和 `docs/standards/paper-quality-audit.md`。
+3. 涉及模型建立或代码编写时，先读取 `resources/algorithm-library/index.md`，再只读取与当前问题匹配的算法说明；
+4. 涉及论文内容、排版或附录时，再读取 `docs/standards/paper-writing.md` 和 `docs/guides/pre-writing-learning.md`；
+5. 涉及最终审校时，再读取 `.codex/skills/cumcm-paper-audit/SKILL.md` 和 `docs/standards/paper-quality-audit.md`。
 
 工作区规范负责目录、环境、版本、入口、日志、证据、复现和交付；论文写作规范只负责评审可见的论文内容与版式。工程记录不得因工作区要求而自动写入论文正文。
 
@@ -15,6 +16,9 @@
 - 具体数值只能来自已保存、可复现的程序输出。
 - 灵敏度、误差和检验结论必须有对应运行产物。
 - 文献只有在实际检索并登记后才能引用。
+- 建模和编码前必须完成 `03-models/model-selection.md`；资源库中存在适用算法时优先采用，库外算法必须记录偏离理由和验证方案。
+- 每个子问题最多两个独立主模型体系；同一物理机制的不同精度展开按一个模型族计数，基准、消融和验证对照不计入主模型数量。
+- 正式写作前必须按 `docs/guides/pre-writing-learning.md` 阅读至少 2 篇同类优秀论文和相关算法资料，并完成 `00-admin/pre-writing-learning.md`。
 - 每个论文主张必须能在证据索引中追溯到数据、代码、日志、表格、图或文献。
 - 写作与终审分离，发布前必须运行独立审校。
 - 竞赛规则可能变化，提交前以全国组委会官网最新文件为准。
@@ -39,6 +43,7 @@
 - 程序生成的图片、表格、指标和日志只放 `04-results/figures|tables|metrics|logs/`；论文引用副本放 `06-paper/figures|tables/`。
 - 论文源文件只放 `06-paper/`；自动审计、发布审校和论文质量审查记录只放 `07-review/`；可提交成品只放 `08-delivery/`。
 - 优质论文只放 `resources/paper-library/`；通用模板只放 `resources/templates/`；跨项目工具只放 `tools/`。
+- 跨项目算法说明只放 `resources/algorithm-library/`；资源库示例不得替代项目 `03-models/` 中的正式代码和真实运行产物。
 - 临时渲染、缓存和调试截图只放 `var/tmp/`，任务结束必须清理；历史旧结构只放 `workspace/archive/`，禁止作为当前权威来源。
 - 工作区级依赖和配置只放 `config/`；规范、架构和指南只放 `docs/`。
 - 仓库根目录只保留入口文件和系统目录，不新增专题 Markdown、依赖清单、项目产物或临时文件。

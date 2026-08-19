@@ -11,10 +11,10 @@
 
 ```text
 cumcm-2026-a/
-├── 00-admin/       # 项目清单、环境、运行记录
+├── 00-admin/       # 项目清单、环境、运行记录、写作前学习记录
 ├── 01-problem/     # 原题副本、附件清单、问题清单
 ├── 02-data/        # raw 只读；processed 可再生
-├── 03-models/      # q01、q02…模型代码与参数
+├── 03-models/      # 模型选择记录、q01、q02…模型代码与参数
 ├── 04-results/     # tables、figures、metrics、logs
 ├── 05-evidence/    # 主张证据、文献、AI 使用台账
 ├── 06-paper/       # tex、bib、图片引用与编译产物
@@ -25,6 +25,8 @@ cumcm-2026-a/
 ## 产物命名
 
 - 程序：`q01-<purpose>.py`，入口优先为 `run-all.py`。
+- 模型与算法选择记录：`03-models/model-selection.md`。
+- 写作前学习记录：`00-admin/pre-writing-learning.md`。
 - 参数：`q01-parameters.yaml`；随机种子必须显式记录。
 - 表格：`q01-table-001-<topic>.csv`。
 - 图片：`q01-figure-001-<topic>.png`，建议同时保留 PDF/SVG 矢量版。
