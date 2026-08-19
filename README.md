@@ -8,7 +8,7 @@
 .
 ├── config/                 # 依赖锁定与工作区级配置
 ├── docs/                   # 架构、规范与操作指南
-├── resources/              # 模板和优秀论文参考库
+├── resources/              # 算法资料、模板和优秀论文参考库
 ├── tools/                  # 跨项目通用工具
 ├── workspace/              # inbox、正式项目和历史归档
 ├── var/                    # 可删除的运行时与临时产物
@@ -29,6 +29,8 @@
 - [命名规范](docs/standards/naming.md)
 - [建模环境指南](docs/guides/modeling-environment.md)
 - [论文生产流程](docs/guides/paper-production.md)
+- [算法资源库索引](resources/algorithm-library/index.md)
+- [写作前强制学习流程](docs/guides/pre-writing-learning.md)
 - [项目区](workspace/projects/README.md)
 - [资源区](resources/README.md)
 
