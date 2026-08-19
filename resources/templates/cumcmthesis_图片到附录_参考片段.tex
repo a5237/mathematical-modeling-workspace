@@ -46,7 +46,8 @@
 % ---------- 全文样式 ----------
 \setlength{\parindent}{2em}
 \setlength{\parskip}{0pt}
-\linespread{1.25}
+% 小四正文按约 20 pt 基线距排印，对应写作规范的紧凑 1.5 倍视觉节奏。
+\linespread{1.38}
 \setlist{nosep,leftmargin=2em}
 \setlength{\emergencystretch}{2em}
 
@@ -54,12 +55,12 @@
   section={
     name={,、},
     number=\chinese{section},
-    format=\centering\bfseries\zihao{4},
+    format=\centering\bfseries\zihao{-3},
     beforeskip=1.5ex,
     afterskip=1.0ex
   },
   subsection={
-    format=\raggedright\bfseries\zihao{4},
+    format=\raggedright\bfseries\zihao{-4},
     beforeskip=1.2ex,
     afterskip=0.8ex
   },
@@ -171,7 +172,7 @@
 % ============================================================
 \thispagestyle{fancy}
 \begin{center}
-  {\bfseries\zihao{-2}\PaperTitle\par}
+  {\bfseries\zihao{3}\PaperTitle\par}
   \vspace{1.2em}
   {\bfseries\zihao{4}摘要\par}
 \end{center}
@@ -262,11 +263,12 @@
 
 \subsection{问题一模型的建立与求解}
 
-\subsubsection{问题一模型的分析}
-\TemplateField{用三至四行完成本问就近数学化，说明模型输入、输出和选择理由。}
+\subsubsection{问题一的建模准备}
+\TemplateField{给出本问正式建模前必需的坐标、几何判定、数据变换、指标口径、预备公式、继承关系或输入输出；简单问题可用三至八行，复杂内容可配公式和示意图。}
 模型抽象和算法设计可参考数学建模基础教材\cite{modelbook,algobook}，但具体关系必须由本题数据、机理和约束推导。
 
 \subsubsection{问题一模型的建立}
+\noindent\TemplateField{局部模型名称——说明本模型在问题一中的作用}
 \TemplateField{依次定义变量和指标，推导局部关系，然后集中汇总完整模型。公式前写依据，公式后解释含义。}
 
 \noindent\textbf{完整模型汇总：}\TemplateField{集中列出本问的核心方程、变量范围、参数条件、输入与输出；优化模型还须列出目标函数和全部约束。}
@@ -316,10 +318,11 @@ h_1(\symbf{x}) &= 0,\\
 
 \subsection{问题二模型的建立与求解}
 
-\subsubsection{问题二模型的分析}
-\TemplateField{说明继承问题一的内容及本问新增的目标、约束、参数和输出。}
+\subsubsection{问题二的建模准备}
+\TemplateField{说明从问题一继承的变量、参数、结果或预备方法，并给出本问新增的坐标、变换、指标、约束、参数和输出。}
 
 \subsubsection{问题二模型的建立}
+\noindent\TemplateField{局部模型名称——说明本模型在问题二中的作用}
 \TemplateField{完成“问题转化—变量指标—局部关系—完整模型汇总”，并引用经核验的题目相关方法来源\cite{topic-ref-3}。}
 
 \noindent\textbf{完整模型汇总：}\TemplateField{集中列出问题二的目标函数或核心方程、约束或初边值条件、定义域、参数条件、输入与输出。}
@@ -359,10 +362,11 @@ h_1(\symbf{x}) &= 0,\\
 
 \subsection{问题三模型的建立与求解}
 
-\subsubsection{问题三模型的分析}
-\TemplateField{说明情景变化、继承关系和本问模型调整。}
+\subsubsection{问题三的建模准备}
+\TemplateField{说明情景变化对应的变量、参数、边界或数据口径变化，以及从前问继承的预备关系。}
 
 \subsubsection{问题三模型的建立}
+\noindent\TemplateField{局部模型名称——说明本模型在问题三中的作用}
 \TemplateField{定义新增变量与参数，推导并汇总完整模型；相关专业依据引用经核验来源\cite{topic-ref-4}。}
 
 \noindent\textbf{完整模型汇总：}\TemplateField{集中列出问题三的目标函数或核心方程、约束或初边值条件、定义域、参数条件、输入与输出。}
@@ -375,10 +379,11 @@ h_1(\symbf{x}) &= 0,\\
 
 \subsection{问题四模型的建立与求解}
 
-\subsubsection{问题四模型的分析}
-\TemplateField{将开放任务转化为明确的评价、预测、优化、仿真或决策任务。}
+\subsubsection{问题四的建模准备}
+\TemplateField{给出开放任务正式建模前所需的评价口径、候选方案表示、输入输出、情景边界或前问继承关系。}
 
 \subsubsection{问题四模型的建立}
+\noindent\TemplateField{局部模型名称——说明本模型在问题四中的作用}
 \TemplateField{给出变量、指标、局部关系与完整模型汇总，说明输出如何对应题目要求。}
 
 \noindent\textbf{完整模型汇总：}\TemplateField{集中列出问题四的目标函数或核心方程、约束或初边值条件、定义域、参数条件、输入与输出。}
