@@ -28,6 +28,8 @@ ALLOWED_ROOT_DIRS = {
 }
 
 REQUIRED_PATHS = (
+    ".codex/skills/cumcm-paper-audit/SKILL.md",
+    ".codex/skills/cumcm-paper-production/SKILL.md",
     "config/python/requirements-modeling.txt",
     "docs/architecture/workspace-layout.md",
     "docs/guides/modeling-environment.md",
@@ -52,6 +54,18 @@ REQUIRED_PATHS = (
     "workspace/inbox",
     "workspace/projects",
 )
+
+AGENT_PATH_POLICY_MARKERS = {
+    "AGENTS.md": "Agent 工具路径约定",
+    ".codex/skills/cumcm-paper-production/SKILL.md": (
+        "All backticked repository paths in this skill are logical paths relative "
+        "to the current workspace root."
+    ),
+    ".codex/skills/cumcm-paper-audit/SKILL.md": (
+        "All backticked repository paths in this skill are logical paths relative "
+        "to the current workspace root."
+    ),
+}
 
 DEPRECATED_ROOT_PATHS = (
     "00-inbox",
@@ -88,6 +102,11 @@ def main() -> int:
         if not (WORKSPACE_ROOT / relative).exists():
             errors.append(f"missing required path: {relative}")
 
+    for relative, marker in AGENT_PATH_POLICY_MARKERS.items():
+        path = WORKSPACE_ROOT / relative
+        if path.is_file() and marker not in path.read_text(encoding="utf-8"):
+            errors.append(f"missing Agent absolute-path policy: {relative}")
+
     for relative in DEPRECATED_ROOT_PATHS:
         if (WORKSPACE_ROOT / relative).exists():
             errors.append(f"deprecated root path returned: {relative}")
@@ -114,6 +133,7 @@ def main() -> int:
     print("[Workspace layout]")
     print("  OK   root allowlist")
     print("  OK   required layers and entry files")
+    print("  OK   Agent absolute-path policy")
     print("  OK   deprecated root paths absent")
     print("  OK   project and inbox directory names")
     print("\nRESULT: PASS")

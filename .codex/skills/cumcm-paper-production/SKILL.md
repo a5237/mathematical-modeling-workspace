@@ -5,6 +5,8 @@ description: Build and operate an evidence-driven production system for CUMCM an
 
 # CUMCM Paper Production
 
+All backticked repository paths in this skill are logical paths relative to the current workspace root. Before passing one to a file read, view, or edit tool that requires an absolute path, resolve it against the tool-recognized workspace root. Never pass `docs/...` or `.codex/...` unchanged to such a tool, and never guess `/docs/...` or `/.codex/...`; use the actual mounted or host workspace root reported by the environment. Relative paths remain appropriate for shell commands only when their working directory is explicitly the workspace root, and for project code that resolves paths reproducibly.
+
 Read the workspace `docs/standards/workspace-governance.md` first and treat it as the operational baseline. Before model construction or code implementation, read `resources/algorithm-library/index.md` and then only the algorithm documents matching the current subproblems. When the task involves paper content, formatting, or appendices, also read `docs/standards/paper-writing.md` and `docs/guides/pre-writing-learning.md` and treat them as the writing baseline and startup gate.
 
 Keep the boundary strict: environments, dependency versions, run entry points, file paths, logs, evidence ledgers, and full reproduction instructions belong to the workspace record. Put them in the paper only when they directly affect the model, result, or an official appendix requirement.

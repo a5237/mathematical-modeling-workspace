@@ -51,6 +51,16 @@
 - 文献真实性、正文实际引用、指定教材、AI 披露和匿名性；
 - 最终 PDF 的逐页渲染、字体属性、页边距、溢出、重叠和交付完整性。
 
+### 3.1 正文篇幅与图表数量硬性门禁
+
+以下要求是本工作区新增的论文质量门禁，不冒充全国组委会统一规定；当届官方或赛区要求更严格时，从其规定：
+
+1. 正文叙述性内容不得少于 **15000 字**。统计范围为“问题重述”起至“模型的评价与推广”结束的可读正文文字；摘要、关键词、参考文献、附录、代码、纯公式符号以及图表内部文字不计入。中文汉字、独立英文单词和数字串均按 1 字计，审查报告必须记录统计工具、统计范围和统计结果。
+2. 正文必须至少包含 **5 个图**和 **3 个表**。只统计正文中已编号、被正文实际引用并承担分析、建模、求解、结果或验证功能的图表；附录图表不计。一个多子图组合按一个图号计，跨页延续的同一张表按一个表号计。重复、拆分或装饰性图表不得用于凑数。
+3. 正文必须为 **20—30 页**，上下限均包含。页数从摘要专用页后的“问题重述”首页起，计算至“参考文献”末页止；摘要专用页和全部附录不计入正文页数。
+4. 审查必须以拟交付最终 PDF 为准，记录正文起止页、正文页数、正文统计字数、图号清单和表号清单。仅依据源文件估算不得判定通过。
+5. 任一项不满足，至少记为 `major`，`paper_writing_compliance` 必须判为 `BLOCKED`，并阻断发布。不得通过缩小字号、压缩行距、缩窄页边距、重复图表、拆分图号或填充无关文字满足数量要求。
+
 结论只能为：
 
 - `PASS`：所有硬性项通过，且不存在未关闭的 `critical` 或 `major`；
@@ -154,6 +164,12 @@
 - audit_date: `YYYY-MM-DD`
 - final_pdf: `08-delivery/paper.pdf`
 - final_pdf_sha256: `<64 位 SHA-256>`
+- body_word_count: `<整数，必须不少于 15000>`
+- body_page_range: `<起始页-结束页>`
+- body_page_count: `<整数，必须为 20--30>`
+- body_figure_count: `<整数，必须不少于 5>`
+- body_table_count: `<整数，必须不少于 3>`
+- body_length_and_visual_count_gate: `PASS` 或 `BLOCKED`
 - paper_writing_compliance: `PASS` 或 `BLOCKED`
 - national_award_competitiveness: `MEETS_NATIONAL_AWARD_COMPETITIVE_STANDARD` 或 `DOES_NOT_MEET_NATIONAL_AWARD_COMPETITIVE_STANDARD`
 - full_pdf_render_review: `PASS`
@@ -198,6 +214,7 @@
 满足以下全部条件才可发布：
 
 - `paper-writing.md` 合规为 `PASS`；
+- 正文字数不少于 15000 字，正文图不少于 5 个、表不少于 3 个，正文页数为 20—30 页，且 `body_length_and_visual_count_gate` 为 `PASS`；
 - 质量审查报告存在，且 PDF 哈希与拟交付文件一致；
 - 机器可读门禁中的逐页渲染、图形清晰直观、重叠裁切和流程逻辑检查均为 `PASS` 或适用时为 `NOT_APPLICABLE`；
 - 所有 `critical`、`major` 和影响正式呈现的 `minor` 已关闭；

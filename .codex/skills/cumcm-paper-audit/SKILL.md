@@ -7,6 +7,8 @@ description: Independently audit CUMCM and similar mathematical modeling papers 
 
 Act as an independent reviewer. Do not silently repair the paper while auditing it.
 
+All backticked repository paths in this skill are logical paths relative to the current workspace root. Before passing one to a file read, view, or edit tool that requires an absolute path, resolve it against the tool-recognized workspace root. Never pass `docs/...` or `.codex/...` unchanged to such a tool, and never guess `/docs/...` or `/.codex/...`; use the actual mounted or host workspace root reported by the environment. Relative paths remain appropriate for shell commands only when their working directory is explicitly the workspace root, and for project code that resolves paths reproducibly.
+
 ## Audit order
 
 1. Read the problem statement, `docs/standards/workspace-governance.md`, `docs/standards/paper-writing.md`, `docs/standards/paper-quality-audit.md`, project manifest, problem checklist, `03-models/model-selection.md`, `00-admin/pre-writing-learning.md`, and paper.
