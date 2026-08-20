@@ -14,19 +14,21 @@
 resources/paper-library/
 ├── 00-format-layout/              # 跨题型格式与排版参考；不得作为模型或结果来源
 │   ├── README.md                  # 样例角色、使用边界与文件校验
-│   └── a165-format-layout-reference.pdf
+│   ├── A165.pdf
+│   ├── A092.pdf
+│   └── A127.pdf
 │
 ├── 01_运筹与决策优化/        # 对应 B 题、D 题
 │   ├── README.md            # 本类算法索引（0-1规划、遗传算法、动态规划）
-│   ├── XXX.pdf         # 近5年精选标杆论文（存全文，给 Agent 当完整代码参考）
-│   └── XXX.md     # 2010-2020年老论文算法摘录（只留公式与避坑点）
+│   ├── abstract/       # 论文精读摘要与算法摘录
+│   └── full/           # 完整论文或全文 Markdown 资料
 │
 ├── 02_物理机理与仿真/        # 对应 A 题
 │   ├── README.md            # 本类算法索引（微分方程、物理反演、几何运动学）
-│   ├── XXX.pdf
-│   └── XXX.md
+│   ├── abstract/       # 论文精读摘要与算法摘录
+│   └── full/           # 完整论文或全文 Markdown 资料
 │
 └── 03_统计推断与数据驱动/    # 对应 C 题、E 题
     ├── README.md            # 本类算法索引（混合效应、机器学习、回归预测）
-    └── XXX.pdf
+    └── full/           # 完整论文或全文 Markdown 资料
 ```
