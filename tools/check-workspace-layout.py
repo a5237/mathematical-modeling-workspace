@@ -34,7 +34,10 @@ REQUIRED_PATHS = (
     "docs/architecture/workspace-layout.md",
     "docs/guides/modeling-environment.md",
     "docs/guides/pre-writing-learning.md",
+    "docs/standards/cumcm-current-rules.md",
+    "docs/standards/evidence-contract.md",
     "docs/standards/naming.md",
+    "docs/standards/paper-quality-audit.md",
     "docs/standards/paper-writing.md",
     "docs/standards/workspace-governance.md",
     "resources/paper-library",
@@ -57,14 +60,8 @@ REQUIRED_PATHS = (
 
 AGENT_PATH_POLICY_MARKERS = {
     "AGENTS.md": "Agent 工具路径约定",
-    ".codex/skills/cumcm-paper-production/SKILL.md": (
-        "All backticked repository paths in this skill are logical paths relative "
-        "to the current workspace root."
-    ),
-    ".codex/skills/cumcm-paper-audit/SKILL.md": (
-        "All backticked repository paths in this skill are logical paths relative "
-        "to the current workspace root."
-    ),
+    ".codex/skills/cumcm-paper-production/SKILL.md": "follow the resolution convention in `AGENTS.md`",
+    ".codex/skills/cumcm-paper-audit/SKILL.md": "follow the resolution convention in `AGENTS.md`",
 }
 
 DEPRECATED_ROOT_PATHS = (
@@ -105,7 +102,7 @@ def main() -> int:
     for relative, marker in AGENT_PATH_POLICY_MARKERS.items():
         path = WORKSPACE_ROOT / relative
         if path.is_file() and marker not in path.read_text(encoding="utf-8"):
-            errors.append(f"missing Agent absolute-path policy: {relative}")
+            errors.append(f"missing Agent path-policy reference: {relative}")
 
     for relative in DEPRECATED_ROOT_PATHS:
         if (WORKSPACE_ROOT / relative).exists():
@@ -133,7 +130,7 @@ def main() -> int:
     print("[Workspace layout]")
     print("  OK   root allowlist")
     print("  OK   required layers and entry files")
-    print("  OK   Agent absolute-path policy")
+    print("  OK   Agent path-policy references")
     print("  OK   deprecated root paths absent")
     print("  OK   project and inbox directory names")
     print("\nRESULT: PASS")

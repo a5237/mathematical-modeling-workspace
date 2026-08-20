@@ -18,16 +18,16 @@
 
 退出码为 0 才表示通过自动门禁；自动检查不能替代人工阅读和重新运行模型。
 
-建模和编码前先打开 `resources/algorithm-library/index.md`，按题型只读取匹配说明，并完成 `03-models/model-selection.md`。适用时优先使用库内算法；库外算法必须记录偏离理由和验证方案。正式写作前执行 `docs/guides/pre-writing-learning.md`，阅读至少 2 篇同类优秀论文和相关算法资料，并完成 `00-admin/pre-writing-learning.md`。
+建模、写作和发布的启动条件分别执行 `WG-MODEL-001`、`PWL-GATE-001` 和 `PQA-RELEASE-001`。本指南只说明用户操作顺序，不重新定义模型数量、学习数量、论文格式或审校阈值。
 
 ## 阶段门禁
 
 1. `intake`：题目、附件、问题清单齐全。
-2. `design`：每问输入、输出、指标、候选模型和选择理由齐全；已查阅匹配的算法资源并完成模型选择记录。
+2. `design`：问题设计完成并通过 `WG-MODEL-001`。
 3. `compute`：代码可运行，随机种子、参数、环境和日志已保存。
-4. `validate`：每问至少完成两项适用的结果分析、误差分析、模型检验、灵敏度/稳健性分析或等效验证，且均有运行产物或可核验推导支撑。
-5. `write`：写作前学习记录已完成；证据索引先于具体数值写作，图表均有解释。
+4. `validate`：结果与证据通过 `WG-EVID-001` 和 `PW-VAL-001`。
+5. `write`：`PWL-GATE-001` 已通过，按 `docs/standards/paper-writing.md` 从核验证据写作。
 6. `audit`：由独立审校流程检查一致性、引用、匿名性和格式。
-7. `release`：论文、支撑材料、AI 使用详情和文件清单一致。
+7. `release`：`OFFICIAL-CUMCM-001` 与 `PQA-RELEASE-001` 均已通过。
 
-格式与写作门禁包括：摘要页独立、各附录分别新起一页、中文宋体、西文与数字 Times New Roman、摘要重点加粗、各子问题的模型汇总公式，以及不少于 6 篇参考文献；优化模型先列目标函数，下一行以 `s.t.` 集中列约束；《数学模型（第五版）》与《数学建模算法与应用》必须列入并在正文实际引用，其余至少 4 篇与题目直接相关。详细命名见 `docs/standards/naming.md`；工程与复现门禁以 `docs/standards/workspace-governance.md` 为准，论文内容与排版以 `docs/standards/paper-writing.md` 为准。
+完整权威分工见 `docs/README.md`：命名、工程与复现、证据、论文内容与排版、官方规则、学习流程和质量审查分别以矩阵指定文件为准。

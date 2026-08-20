@@ -407,18 +407,17 @@ h_1(\symbf{x}) &= 0,\\
 
 % ============================================================
 % 2026 AI 新规：AI 工具使用声明必须放在参考文献之前，二选一。
-% 使用 AI 时，支撑材料中必须同时提交“AI工具使用详情.pdf”。
+% 使用 AI 时，支撑材料中必须同时提交“AI 工具使用详情.pdf”。
 % ============================================================
 \clearpage
-\section*{AI工具使用声明}
+\section*{AI 工具使用声明}
 \ifusedai
-本参赛队在竞赛过程中使用了AI工具，主要用于\AIUsageSummary，详细使用情况见支撑材料。
+本参赛队在竞赛过程中使用了 AI 工具，主要用于\AIUsageSummary，详细使用情况见支撑材料。
 \else
-本参赛队在竞赛过程中未使用任何AI工具。
+本参赛队在竞赛过程中未使用任何 AI 工具。
 \fi
 
-% 参考文献原则上不少于 6 篇；所有条目必须真实核验并在正文实际引用。
-% 除两本指定教材外，至少 4 篇应与题目背景、模型、算法、参数或验证直接相关。
+% 文献组成、核验和正文引用执行 PW-CITE-001 与 WG-EVID-001。
 \renewcommand{\refname}{七、参考文献}
 \begin{thebibliography}{99}
   \bibitem{modelbook}
@@ -471,7 +470,7 @@ h_1(\symbf{x}) &= 0,\\
   2 & \texttt{code/q2.py} & \TemplateField{问题二求解程序，对应式、表或图编号} \\
   3 & \texttt{data/processed-data.csv} & \TemplateField{自主查阅或处理后的必要数据；不得重复提交赛题原始数据} \\
   \ifusedai
-  4 & \texttt{AI工具使用详情.pdf} & 2026 年规定要求的 AI 工具使用详情说明 \\
+  4 & \texttt{AI 工具使用详情.pdf} & 2026 年规定要求的 AI 工具使用详情说明 \\
   \fi
   \TemplateField{序号} & \TemplateField{其余实际文件名} & \TemplateField{用途及正文对应关系} \\
 \end{longtable}

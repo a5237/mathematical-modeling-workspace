@@ -7,20 +7,9 @@
 - 文件名仅使用小写 ASCII 字母、数字和连字符；扩展名保持小写。
 - 文中中文标题不受此限制；提交文件名另以当年官方要求为准。
 
-## 标准目录
+## 标准目录名
 
-```text
-cumcm-2026-a/
-├── 00-admin/       # 项目清单、环境、运行记录、写作前学习记录
-├── 01-problem/     # 原题副本、附件清单、问题清单
-├── 02-data/        # raw 只读；processed 可再生
-├── 03-models/      # 模型选择记录、q01、q02…模型代码与参数
-├── 04-results/     # tables、figures、metrics、logs
-├── 05-evidence/    # 主张证据、文献、AI 使用台账
-├── 06-paper/       # tex、bib、图片引用与编译产物
-├── 07-review/      # 自动审计、发布审校与论文质量审查记录
-└── 08-delivery/    # 最终论文与支撑材料副本
-```
+项目固定使用 `00-admin` 至 `08-delivery` 的目录名；完整目录树、子目录和职责只以 `docs/architecture/workspace-layout.md` 为准。本文件不重复维护目录用途。
 
 ## 产物命名
 

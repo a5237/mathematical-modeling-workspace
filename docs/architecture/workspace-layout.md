@@ -2,12 +2,12 @@
 
 本文档定义仓库级结构；项目内部结构由同一套约定继续约束。设计目标是让稳定文档、配置、工具和资源与频繁变化的项目数据、运行缓存分离。
 
-## 设计原则
+## 设计原则（`LAYOUT-001`）
 
 1. **根目录只做入口。** 根目录只保留 `README.md`、`AGENTS.md`、版本控制文件、隐藏环境目录和一级职责层。
 2. **稳定资产与工作数据分离。** 规范、配置、工具和模板不与赛题项目混放。
 3. **项目彼此隔离。** 每个正式需求只有一个项目目录，项目代码不得读取其他项目的隐式产物。
-4. **原始数据只读。** 原题与原始附件进入项目后保持不变，派生数据必须可再生。
+4. **原始数据受保护。** 具体不可变性和派生数据规则执行 `docs/standards/workspace-governance.md` 的 `WG-DATA-001`。
 5. **运行时产物可删除。** 缓存、渲染页和调试输出统一进入 `var/tmp/`，不得成为唯一证据。
 
 ## 仓库目录树
@@ -78,9 +78,7 @@
 └── 08-delivery/            # 仅保留可提交成品
 ```
 
-项目目录的细化职责、证据要求和交付门禁见 `docs/standards/workspace-governance.md`。
-
-`07-review/` 至少维护 `review-log.md`、发布审校报告和 `paper-quality-audit.md`。论文质量审查统一遵循 `docs/standards/paper-quality-audit.md`，不得用作者自评或单一总分替代硬性合规、内容质量和逐图视觉检查。
+项目目录的工程门禁见 `docs/standards/workspace-governance.md`，证据字段见 `docs/standards/evidence-contract.md`，论文质量审查见 `docs/standards/paper-quality-audit.md`。本文件只定义位置和生命周期，不重复各规范的内容门禁。
 
 ## 需求生命周期
 

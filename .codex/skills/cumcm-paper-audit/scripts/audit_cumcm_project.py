@@ -26,6 +26,12 @@ QUALITY_REQUIRED_FIELDS = {
     "audit_date",
     "final_pdf",
     "final_pdf_sha256",
+    "body_word_count",
+    "body_page_range",
+    "body_page_count",
+    "body_figure_count",
+    "body_table_count",
+    "body_length_and_visual_count_gate",
     "paper_writing_compliance",
     "national_award_competitiveness",
     "full_pdf_render_review",
@@ -119,6 +125,7 @@ def audit_quality_report(root: Path, delivery_pdf: Path | None, errors: list[str
         errors.append("MAJOR unresolved placeholder in 07-review/paper-quality-audit.md")
 
     expected = {
+        "body_length_and_visual_count_gate": {"PASS"},
         "paper_writing_compliance": {"PASS"},
         "national_award_competitiveness": {
             "MEETS_NATIONAL_AWARD_COMPETITIVE_STANDARD",
@@ -136,6 +143,34 @@ def audit_quality_report(root: Path, delivery_pdf: Path | None, errors: list[str
     for key, allowed in expected.items():
         if fields[key] not in allowed:
             errors.append(f"MAJOR quality gate {key}: expected {sorted(allowed)}, found {fields[key]!r}")
+
+    integer_limits = {
+        "body_word_count": (15000, None),
+        "body_page_count": (20, 30),
+        "body_figure_count": (5, None),
+        "body_table_count": (3, None),
+    }
+    parsed_counts: dict[str, int] = {}
+    for key, (minimum, maximum) in integer_limits.items():
+        try:
+            value = int(fields[key])
+        except ValueError:
+            errors.append(f"MAJOR quality gate {key} must be an integer")
+            continue
+        parsed_counts[key] = value
+        if value < minimum or (maximum is not None and value > maximum):
+            expected_range = f">= {minimum}" if maximum is None else f"{minimum}..{maximum}"
+            errors.append(f"MAJOR quality gate {key}: expected {expected_range}, found {value}")
+
+    page_range = re.fullmatch(r"\s*(\d+)\s*[-–—]\s*(\d+)\s*", fields["body_page_range"])
+    if page_range is None:
+        errors.append("MAJOR quality gate body_page_range must use <start>-<end>")
+    else:
+        start_page, end_page = map(int, page_range.groups())
+        if end_page < start_page:
+            errors.append("MAJOR quality gate body_page_range ends before it starts")
+        elif "body_page_count" in parsed_counts and end_page - start_page + 1 != parsed_counts["body_page_count"]:
+            errors.append("MAJOR quality gate body_page_range does not match body_page_count")
 
     if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", fields["audit_date"]):
         errors.append("MAJOR quality gate audit_date must use YYYY-MM-DD")
