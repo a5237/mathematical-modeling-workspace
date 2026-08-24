@@ -10,6 +10,8 @@
 .\.venv-modeling\Scripts\python.exe .\.codex\skills\cumcm-paper-production\scripts\init_cumcm_project.py --root workspace\projects --contest cumcm --year 2026 --problem a
 ```
 
+初始化脚本会将 `resources/templates/cumcm-paper-framework.tex` 复制为项目 `06-paper/main.tex`，并将 `resources/templates/figure-selection-record.md` 复制为 `00-admin/figure-selection-record.md`。完成写作门禁后直接在论文副本上持续写作和修订，并用选图决策记录逐图落实 `PW-FIG-001`。
+
 完成计算后，把论文中的关键主张登记到 `05-evidence/evidence-index.csv`，把文献登记到 `05-evidence/literature-ledger.csv`。发布前运行：
 
 ```powershell
@@ -18,16 +20,4 @@
 
 退出码为 0 才表示通过自动门禁；自动检查不能替代人工阅读和重新运行模型。
 
-建模、写作和发布的启动条件分别执行 `WG-MODEL-001`、`PWL-GATE-001` 和 `PQA-RELEASE-001`。本指南只说明用户操作顺序，不重新定义模型数量、学习数量、论文格式或审校阈值。
-
-## 阶段门禁
-
-1. `intake`：题目、附件、问题清单齐全。
-2. `design`：问题设计完成并通过 `WG-MODEL-001`。
-3. `compute`：代码可运行，随机种子、参数、环境和日志已保存。
-4. `validate`：结果与证据通过 `WG-EVID-001` 和 `PW-VAL-001`。
-5. `write`：`PWL-GATE-001` 已通过，按 `docs/standards/paper-writing.md` 从核验证据写作。
-6. `audit`：由独立审校流程检查一致性、引用、匿名性和格式。
-7. `release`：`OFFICIAL-CUMCM-001` 与 `PQA-RELEASE-001` 均已通过。
-
-完整权威分工见 `docs/README.md`：命名、工程与复现、证据、论文内容与排版、官方规则、学习流程和质量审查分别以矩阵指定文件为准。
+Agent 阶段顺序与停止条件只以 `.codex/skills/cumcm-paper-production/SKILL.md` 为准；本指南只保留用户命令。各门禁及权威分工见 `docs/README.md`。

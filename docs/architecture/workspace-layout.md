@@ -55,11 +55,11 @@
 
 ## 正式项目结构
 
-正式项目路径固定为 `workspace/projects/<contest>-<year>-<problem>/`：
+正式项目路径固定为 `workspace/projects/<project-id>/`，其中 `<project-id>` 执行 `docs/standards/naming.md`：
 
 ```text
 <project-id>/
-├── 00-admin/               # 清单、环境、运行手册、写作前学习记录和状态
+├── 00-admin/               # 清单、环境、运行手册、写作学习与选图决策记录和状态
 ├── 01-problem/             # 原题、附件清单和问题核对
 ├── 02-data/
 │   ├── raw/                # 只读原始数据

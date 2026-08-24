@@ -40,7 +40,7 @@
 
 ## 3. 使用规则
 
-1. 论文内容与排版要求由 `docs/standards/paper-writing.md` 在本官方基线上增补，不得冒充官方统一要求。
+1. 论文内容、通用排版与图片要求分别由 `docs/standards/paper-writing.md`、`docs/standards/paper-figures.md` 在本官方基线上增补，不得冒充官方统一要求。
 2. 工程记录、AI 台账、匿名性和交付路由由 `docs/standards/workspace-governance.md` 管理。
 3. 生产和审校 Skill 只引用本文件，不维护第二套年度规则摘要。
 4. 每次正式提交前更新 `last_verified`，并记录新旧规则的生效日期；不得只改年份而不重新打开来源。

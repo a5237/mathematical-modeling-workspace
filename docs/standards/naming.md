@@ -16,11 +16,13 @@
 - 程序：`q01-<purpose>.py`，入口优先为 `run-all.py`。
 - 模型与算法选择记录：`03-models/model-selection.md`。
 - 写作前学习记录：`00-admin/pre-writing-learning.md`。
+- 选图决策记录：`00-admin/figure-selection-record.md`。
 - 参数：`q01-parameters.yaml`；随机种子必须显式记录。
 - 表格：`q01-table-001-<topic>.csv`。
-- 图片：`q01-figure-001-<topic>.png`，建议同时保留 PDF/SVG 矢量版。
+- 图片文件名主干：`q01-figure-001-<topic>`；扩展名与正式导出组合执行 `docs/standards/paper-figures.md` 的 `PW-FIG-001`。
 - 指标：`q01-metrics.json`。
 - 日志：`q01-run-<yyyymmddThhmmss>.log`。
+- 通用论文框架：`resources/templates/cumcm-paper-framework.tex`；复制到正式项目后固定命名为 `06-paper/main.tex`。
 - 论文源文件：`main.tex`；文献库：`references.bib`。
 - 审稿台账：`review-log.md`；发布审校：`release-audit.md`；论文质量与国奖竞争力审查：`paper-quality-audit.md`。
 

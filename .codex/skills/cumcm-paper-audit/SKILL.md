@@ -17,12 +17,13 @@ Repository paths in this skill are logical paths relative to the current workspa
 4. Verify `WG-MODEL-001` and `PWL-GATE-001` from substantive record contents; labels without evidence fail.
 5. Trace paper claims and citations under `WG-EVID-001`, opening cited sources and confirming support for adjacent claims.
 6. Check each subproblem against `PW-VAL-001` and the complete modeling requirements in `docs/standards/paper-writing.md`.
-7. Check the reference list and in-text use against `PW-CITE-001` without inventing or padding sources.
-8. Render the final delivery PDF page by page. Inspect page order, margins, overflow, figure/table captions, equation numbering, references, page count, and every figure's clarity and intuitiveness. Explicitly check for overlapping or clipped text, nodes, arrows, connectors, legends, labels, and ambiguous flowchart branches; source-file inspection is not sufficient.
-9. Search paper, source, comments, filenames, metadata and support materials for identity information, and enforce `OFFICIAL-CUMCM-001`.
-10. Compare the appendix file list with the delivery archive and test runnable source code from a clean directory.
-11. Classify findings using `references/audit-rubric.md`. Block release on any critical or major finding.
-12. Write or update `07-review/paper-quality-audit.md` under `PQA-REPORT-001` and determine release under `PQA-RELEASE-001`.
-13. If any paper, figure, table, or pagination changes after review, invalidate the prior PDF hash, re-render the affected output, and refresh both verdicts before release.
+7. Check every paper figure against `docs/standards/paper-figures.md` and determine `PW-FIG-001` from the final rendered PDF.
+8. Check the reference list and in-text use against `PW-CITE-001` without inventing or padding sources.
+9. Render the final delivery PDF page by page. Inspect page order, margins, overflow, table captions, equation numbering, references and page count; do not substitute source-file inspection for final-page review.
+10. Search paper, source, comments, filenames, metadata and support materials for identity information, and enforce `OFFICIAL-CUMCM-001`.
+11. Compare the appendix file list with the delivery archive and test runnable source code from a clean directory.
+12. Classify findings using `references/audit-rubric.md`. Block release on any critical or major finding.
+13. Write or update `07-review/paper-quality-audit.md` under `PQA-REPORT-001` and determine release under `PQA-RELEASE-001`.
+14. If any paper, figure, table, or pagination changes after review, invalidate the prior PDF hash, re-render the affected output, and refresh both verdicts before release.
 
 Never create missing experimental results, citations, checks, or sensitivity analyses as part of an audit. Report the absence and the exact evidence needed to clear it.

@@ -27,6 +27,7 @@
 - [工作区治理规范](docs/standards/workspace-governance.md)
 - [证据契约](docs/standards/evidence-contract.md)
 - [论文写作规范](docs/standards/paper-writing.md)
+- [论文图片与科研可视化规范](docs/standards/paper-figures.md)
 - [论文质量审查标准](docs/standards/paper-quality-audit.md)
 - [CUMCM 现行官方规则基线](docs/standards/cumcm-current-rules.md)
 - [命名规范](docs/standards/naming.md)

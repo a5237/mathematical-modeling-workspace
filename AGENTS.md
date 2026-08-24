@@ -8,14 +8,15 @@
 2. `.codex/skills/cumcm-paper-production/SKILL.md`；
 3. 涉及模型建立或代码编写时，先读取 `resources/algorithm-library/index.md`，再只读取与当前问题匹配的算法说明；
 4. 涉及论文内容、排版或附录时，再读取 `docs/standards/paper-writing.md` 和 `docs/guides/pre-writing-learning.md`；
-5. 涉及最终审校时，再读取 `.codex/skills/cumcm-paper-audit/SKILL.md` 和 `docs/standards/paper-quality-audit.md`；
-6. 涉及当届规则、提交格式、AI 披露或匿名性时，读取 `docs/standards/cumcm-current-rules.md` 并在正式提交前重新核对官网。
+5. 涉及论文图片、科研可视化、流程图、结构图或最终 PDF 图片检查时，再读取 `docs/standards/paper-figures.md`；
+6. 涉及最终审校时，再读取 `.codex/skills/cumcm-paper-audit/SKILL.md` 和 `docs/standards/paper-quality-audit.md`；
+7. 涉及当届规则、提交格式、AI 披露或匿名性时，读取 `docs/standards/cumcm-current-rules.md` 并在正式提交前重新核对官网。
 
-各文档的唯一权威职责见 `docs/README.md`。工作区规范负责环境、数据、代码、日志、证据、复现和交付；目录职责、命名、论文写作、学习流程、官方规则和质量审查分别由矩阵指定文件管理。工程记录不得因工作区要求而自动写入论文正文。
+各文档的唯一权威职责见 `docs/README.md`。工作区规范负责环境、数据、代码、日志、证据、复现和交付；目录职责、命名、论文写作、论文图片、学习流程、官方规则和质量审查分别由矩阵指定文件管理。工程记录不得因工作区要求而自动写入论文正文。
 
 ## 全局质量门禁
 
-- 必须执行 `WG-DATA-001`、`WG-MODEL-001`、`WG-EVID-001`、`PWL-GATE-001`、`PW-VAL-001` 与 `PQA-RELEASE-001`；控制编号对应的完整规则只以权威文件为准。
+- 必须执行 `WG-DATA-001`、`WG-MODEL-001`、`WG-EVID-001`、`PWL-GATE-001`、`PW-VAL-001`、`PW-FIG-001` 与 `PQA-RELEASE-001`；控制编号对应的完整规则只以权威文件为准。
 - 任何数值、验证、文献、AI 使用和审校结论都必须有权威记录或可核验证据，不得用聊天记忆、作者自述或未保存输出替代。
 - 重构、拆分或精简规范时，不得删除、放宽或绕过论文结构、论证、验证、图表、文献、公式、排版、匿名性和交付门禁；只允许迁移到职责明确的唯一权威文件。
 - 当届官方规则和用户当前明确要求优先；正式提交前必须重新核对全国组委会官网。

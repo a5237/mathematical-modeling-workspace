@@ -28,7 +28,7 @@
 在 `00-admin/pre-writing-learning.md` 至少记录：
 
 - 赛题类型和每个子问题的写作重点；
-- 至少 2 篇同类优秀论文的路径或来源及所学结构；
+- 已读同类优秀论文的路径或来源及所学结构；
 - 已阅读的算法资源文件、适用性结论和代码复核情况；
 - 可借鉴的论证与图表策略；
 - 明确禁止复制的内容；
@@ -43,4 +43,4 @@
 - `03-models/model-selection.md` 的 `selection_status` 为 `COMPLETE`；
 - `00-admin/pre-writing-learning.md` 的 `learning_status` 为 `COMPLETE`；
 - 具体数值、图表和结论已有可核验产物并进入证据链；
-- 写作遵循 `docs/standards/paper-writing.md`，不得把学习记录或工程路径原样写入论文正文。
+- 写作遵循 `docs/standards/paper-writing.md`，图片遵循 `docs/standards/paper-figures.md`，不得把学习记录或工程路径原样写入论文正文。

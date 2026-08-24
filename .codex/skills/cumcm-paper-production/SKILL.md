@@ -17,19 +17,23 @@ Read `docs/README.md` for the authority matrix and `docs/standards/workspace-gov
 4. Run computations and save stable, machine-readable outputs, parameters and logs.
 5. Complete the paper validation obligation `PW-VAL-001` using recorded runs or equally strong applicable evidence.
 6. Register claims and sources under `WG-EVID-001` before concrete results or citations enter the paper.
-7. Complete `PWL-GATE-001`, then write from verified evidence under `docs/standards/paper-writing.md`.
-8. Maintain the AI ledger under `WG-AI-001` and apply `OFFICIAL-CUMCM-001` for current disclosure and submission rules.
-9. Invoke the independent audit skill and clear `PQA-RELEASE-001` before release.
+7. Complete `PWL-GATE-001`. Before drafting, copy `resources/templates/cumcm-paper-framework.tex` to `06-paper/main.tex` unless the initializer already created that project copy. Continue editing that single source under `docs/standards/paper-writing.md`; preserve its fixed section framework and stateless-deliverable requirement instead of creating parallel drafts or extra top-level sections.
+8. Plan, generate, export and visually verify every paper figure under `docs/standards/paper-figures.md`; clear `PW-FIG-001` using the final PDF, not only source images.
+9. Maintain the AI ledger under `WG-AI-001` and apply `OFFICIAL-CUMCM-001` for current disclosure and submission rules.
+10. Invoke the independent audit skill and clear `PQA-RELEASE-001` before release.
 
 ## Use bundled resources
 
-- Run `scripts/init_cumcm_project.py` to create a normalized project tree.
+- Run `scripts/init_cumcm_project.py` to create a normalized project tree and copy `resources/templates/cumcm-paper-framework.tex` into it as `06-paper/main.tex`.
+- Treat `06-paper/main.tex` as the only paper source after initialization; never overwrite an existing project paper with a fresh framework copy.
+- Use the initialized `00-admin/figure-selection-record.md`, copied from `resources/templates/figure-selection-record.md`, to record figure-purpose, chart-selection and review decisions without duplicating `PW-FIG-001`.
 - Read `resources/algorithm-library/index.md` before model selection and then load only matching algorithm documents.
 - Read `docs/standards/evidence-contract.md` before producing concrete results or citations.
+- Read `docs/standards/paper-figures.md` before selecting, generating or reviewing paper figures.
 - Read `docs/guides/pre-writing-learning.md` immediately before paper drafting.
 - Read `docs/standards/cumcm-current-rules.md` for current format and AI disclosure; reopen its official sources before a real submission.
 - Follow the workspace `docs/standards/naming.md` for all stable artifact names.
 
 ## Stop conditions
 
-Stop whenever `WG-MODEL-001`, `WG-EVID-001`, `PWL-GATE-001` or `PQA-RELEASE-001` blocks the next stage. Do not create concrete numerical claims without a successful run or valid derivation, and do not claim validation or performance without the evidence required by `PW-VAL-001`.
+Stop whenever `WG-MODEL-001`, `WG-EVID-001`, `PWL-GATE-001`, `PW-FIG-001` or `PQA-RELEASE-001` blocks the next stage. Do not create concrete numerical claims without a successful run or valid derivation, and do not claim validation or performance without the evidence required by `PW-VAL-001`.
