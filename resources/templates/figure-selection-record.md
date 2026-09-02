@@ -88,6 +88,10 @@
 - 面板数量、排列和阅读顺序：`待填写`
 - 论文预计显示尺寸：`宽 × 高，单位待填写`
 - 正式导出格式与预览格式：`待填写`
+- style_reference_ids：`resources/figure-style-library/manifest.csv 中的标识；未使用写“—”`
+- adopted_style_attributes：`实际借鉴的字体层级、轴线、配色、线点尺度、留白、图例、注释或面板属性`
+- explicitly_not_copied：`未复制的参考图型、数据、模型、结论、注释或其它不适用元素`
+- final_size_comparison：`在论文预计显示尺寸下的清晰度、平衡和一致性检查；待生成时写“待检查”`
 
 #### 6. 统计与不确定性说明
 

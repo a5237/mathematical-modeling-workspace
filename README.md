@@ -8,7 +8,7 @@
 .
 ├── config/                 # 依赖锁定与工作区级配置
 ├── docs/                   # 架构、规范与操作指南
-├── resources/              # 算法资料、模板和优秀论文参考库
+├── resources/              # 算法资料、科研图风格参考、模板和优秀论文参考库
 ├── tools/                  # 跨项目通用工具
 ├── workspace/              # inbox、正式项目和历史归档
 ├── var/                    # 可删除的运行时与临时产物
@@ -28,6 +28,8 @@
 - [证据契约](docs/standards/evidence-contract.md)
 - [论文写作规范](docs/standards/paper-writing.md)
 - [论文图片与科研可视化规范](docs/standards/paper-figures.md)
+- [科研图片审美参考使用指南](docs/guides/scientific-figure-aesthetics.md)
+- [科研图片风格参考库](resources/figure-style-library/README.md)
 - [论文质量审查标准](docs/standards/paper-quality-audit.md)
 - [CUMCM 现行官方规则基线](docs/standards/cumcm-current-rules.md)
 - [命名规范](docs/standards/naming.md)

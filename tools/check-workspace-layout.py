@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import csv
 import re
 from pathlib import Path
 
@@ -33,6 +34,7 @@ REQUIRED_PATHS = (
     "config/python/requirements-modeling.txt",
     "docs/architecture/workspace-layout.md",
     "docs/guides/modeling-environment.md",
+    "docs/guides/scientific-figure-aesthetics.md",
     "docs/guides/pre-writing-learning.md",
     "docs/standards/cumcm-current-rules.md",
     "docs/standards/evidence-contract.md",
@@ -42,6 +44,9 @@ REQUIRED_PATHS = (
     "docs/standards/paper-writing.md",
     "docs/standards/workspace-governance.md",
     "resources/paper-library",
+    "resources/figure-style-library/README.md",
+    "resources/figure-style-library/manifest.csv",
+    "resources/figure-style-library/references/overview.png",
     "resources/algorithm-library/README.md",
     "resources/algorithm-library/index.md",
     "resources/algorithm-library/01-优化算法说明.md",
@@ -54,6 +59,7 @@ REQUIRED_PATHS = (
     "resources/templates",
     "resources/templates/figure-selection-record.md",
     "tools/check-modeling-env.py",
+    "tools/render-figure-style-library.py",
     "var/tmp/README.md",
     "workspace/archive",
     "workspace/inbox",
@@ -106,6 +112,23 @@ def main() -> int:
         if path.is_file() and marker not in path.read_text(encoding="utf-8"):
             errors.append(f"missing Agent path-policy reference: {relative}")
 
+    figure_library = WORKSPACE_ROOT / "resources" / "figure-style-library"
+    figure_manifest = figure_library / "manifest.csv"
+    if figure_manifest.is_file():
+        seen_ids: set[str] = set()
+        with figure_manifest.open(encoding="utf-8", newline="") as handle:
+            for row_number, row in enumerate(csv.DictReader(handle), start=2):
+                reference_id = (row.get("reference_id") or "").strip()
+                relative_file = (row.get("file") or "").strip()
+                if not reference_id or reference_id in seen_ids:
+                    errors.append(f"invalid or duplicate figure-style reference id at manifest row {row_number}")
+                seen_ids.add(reference_id)
+                if not relative_file or not (figure_library / relative_file).is_file():
+                    errors.append(f"missing figure-style reference file at manifest row {row_number}: {relative_file}")
+                for field in ("learn_from", "explicitly_do_not_copy", "provenance"):
+                    if not (row.get(field) or "").strip():
+                        errors.append(f"missing {field} at figure-style manifest row {row_number}")
+
     for relative in DEPRECATED_ROOT_PATHS:
         if (WORKSPACE_ROOT / relative).exists():
             errors.append(f"deprecated root path returned: {relative}")
@@ -133,6 +156,7 @@ def main() -> int:
     print("  OK   root allowlist")
     print("  OK   required layers and entry files")
     print("  OK   Agent path-policy references")
+    print("  OK   figure-style manifest and reference files")
     print("  OK   deprecated root paths absent")
     print("  OK   project and inbox directory names")
     print("\nRESULT: PASS")

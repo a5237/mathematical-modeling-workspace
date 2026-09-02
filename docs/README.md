@@ -12,6 +12,7 @@
 | 主张证据和文献台账字段 | `standards/evidence-contract.md` | 治理规范规定路由，脚本校验字段 |
 | 论文内容、结构、公式、表格、通用字体和文献组成 | `standards/paper-writing.md` | 生产流程引用，质量审查判定 |
 | 论文图片与科研可视化的选择、生成、排版、导出和视觉审校 | `standards/paper-figures.md` | 写作规范引用，生产与审校 Skill 执行 |
+| 科研图片审美参考的选择、提取与使用方法 | `guides/scientific-figure-aesthetics.md` | 引用 `PW-FIG-001`，不另设阈值；样例资产由参考库承载 |
 | 写作前学习流程与完成状态 | `guides/pre-writing-learning.md` | 其它文件只引用 `PWL-GATE-001` |
 | 论文质量、竞争力评分和审查报告模式 | `standards/paper-quality-audit.md` | 审校 Skill 执行，脚本校验机器字段 |
 | 当届全国组委会规则快照 | `standards/cumcm-current-rules.md` | 提交前重新核对官网 |
@@ -37,10 +38,12 @@
 - [建模环境指南](guides/modeling-environment.md)
 - [论文生产流程](guides/paper-production.md)
 - [写作前强制学习流程](guides/pre-writing-learning.md)
+- [科研图片审美参考使用指南](guides/scientific-figure-aesthetics.md)
 
 ## 跨项目资源入口
 
 - [算法资源库索引](../resources/algorithm-library/index.md)
 - [优质论文参考库](../resources/paper-library/README.md)
+- [科研图片风格参考库](../resources/figure-style-library/README.md)
 
 新增稳定文档时必须归入上述类别，不得直接放在仓库根目录。具体项目的运行手册、分析记录和论文说明应留在相应项目内。

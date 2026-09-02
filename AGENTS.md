@@ -8,7 +8,7 @@
 2. `.codex/skills/cumcm-paper-production/SKILL.md`；
 3. 涉及模型建立或代码编写时，先读取 `resources/algorithm-library/index.md`，再只读取与当前问题匹配的算法说明；
 4. 涉及论文内容、排版或附录时，再读取 `docs/standards/paper-writing.md` 和 `docs/guides/pre-writing-learning.md`；
-5. 涉及论文图片、科研可视化、流程图、结构图或最终 PDF 图片检查时，再读取 `docs/standards/paper-figures.md`；
+5. 涉及论文图片、科研可视化、流程图、结构图或最终 PDF 图片检查时，再读取 `docs/standards/paper-figures.md`；涉及生成或改善图片视觉质量时，同时读取 `docs/guides/scientific-figure-aesthetics.md` 和 `resources/figure-style-library/README.md`，按清单选取少量参考图，只迁移审美属性；
 6. 涉及最终审校时，再读取 `.codex/skills/cumcm-paper-audit/SKILL.md` 和 `docs/standards/paper-quality-audit.md`；
 7. 涉及当届规则、提交格式、AI 披露或匿名性时，读取 `docs/standards/cumcm-current-rules.md` 并在正式提交前重新核对官网。
 

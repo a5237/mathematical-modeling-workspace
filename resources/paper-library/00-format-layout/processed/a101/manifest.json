@@ -1,0 +1,18 @@
+{
+  "generator": "one-time PyMuPDF preprocessing pipeline",
+  "generator_version": "1.1",
+  "generated_on": "2026-08-29",
+  "source": "../../A101.pdf",
+  "source_sha256": "4949F4D578A13162C2250E923B3797F4BB7C7885902971567047E7C48BEB7600",
+  "source_bytes": 4123344,
+  "pages": 62,
+  "page_render_dpi": 144,
+  "page_render_format": "JPEG",
+  "page_jpeg_quality": 88,
+  "visual_crop_dpi": 220,
+  "figure_count": 30,
+  "table_count": 8,
+  "outline_entries": 39,
+  "doubled_text_ratio": 0.0,
+  "aggressive_text_dedupe": false
+}

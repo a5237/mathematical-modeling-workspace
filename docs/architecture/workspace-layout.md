@@ -23,6 +23,7 @@
 │   └── standards/
 ├── resources/
 │   ├── algorithm-library/
+│   ├── figure-style-library/
 │   ├── paper-library/
 │   └── templates/
 ├── tools/
@@ -94,7 +95,7 @@
 - 影响所有项目的固定配置：`config/`。
 - 能跨项目执行的程序：`tools/`。
 - 可复用但不直接执行的材料：`resources/`。
-- 跨项目算法说明统一放 `resources/algorithm-library/`，优秀论文与阅读参考放 `resources/paper-library/`。
+- 跨项目算法说明统一放 `resources/algorithm-library/`，科研图片审美锚点放 `resources/figure-style-library/`，优秀论文与阅读参考放 `resources/paper-library/`。
 - 只服务某一道题的数据、代码或论文：对应项目目录。
 - 随时可重新生成且无需保留的文件：`var/tmp/`。
 

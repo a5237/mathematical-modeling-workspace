@@ -16,7 +16,8 @@ resources/paper-library/
 │   ├── README.md                  # 样例角色、使用边界与文件校验
 │   ├── A165.pdf
 │   ├── A092.pdf
-│   └── A127.pdf
+│   ├── A127.pdf
+│   └── A101.pdf
 │
 ├── 01_运筹与决策优化/        # 对应 B 题、D 题
 │   ├── README.md            # 本类算法索引（0-1规划、遗传算法、动态规划）
