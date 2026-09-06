@@ -59,6 +59,7 @@ REQUIRED_PATHS = (
     "resources/templates",
     "resources/templates/figure-selection-record.md",
     "tools/check-modeling-env.py",
+    "tools/extract-spreadsheet.py",
     "tools/render-figure-style-library.py",
     "var/tmp/README.md",
     "workspace/archive",
