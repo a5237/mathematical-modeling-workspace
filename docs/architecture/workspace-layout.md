@@ -4,7 +4,7 @@
 
 ## 设计原则（`LAYOUT-001`）
 
-1. **根目录只做入口。** 根目录只保留 `README.md`、`AGENTS.md`、版本控制文件、隐藏环境目录和一级职责层。
+1. **根目录只做入口。** 根目录只保留 `README.md`、`AGENTS.md`、环境引导入口 `ENV_SETUP.md`、`setup.bat`、版本控制文件、隐藏环境目录和一级职责层；环境规则仍以 `docs/guides/modeling-environment.md` 为准。
 2. **稳定资产与工作数据分离。** 规范、配置、工具和模板不与赛题项目混放。
 3. **项目彼此隔离。** 每个正式需求只有一个项目目录，项目代码不得读取其他项目的隐式产物。
 4. **原始数据受保护。** 具体不可变性和派生数据规则执行 `docs/standards/workspace-governance.md` 的 `WG-DATA-001`。
@@ -36,7 +36,9 @@
 ├── .codex/
 ├── .venv-modeling/
 ├── AGENTS.md
-└── README.md
+├── ENV_SETUP.md
+├── README.md
+└── setup.bat
 ```
 
 ## 一级目录职责

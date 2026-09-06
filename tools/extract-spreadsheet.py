@@ -13,6 +13,7 @@ import csv
 import hashlib
 import json
 import os
+import sqlite3
 import sys
 import tempfile
 import time
@@ -22,14 +23,26 @@ from pathlib import Path
 from typing import Any, Iterable, Iterator, Sequence
 
 
-TOOL_VERSION = "1.0.0"
+TOOL_VERSION = "1.1.0"
 WORKSPACE_ROOT = Path(__file__).resolve().parent.parent
 MODERN_EXCEL_SUFFIXES = {".xlsx", ".xlsm", ".xltx", ".xltm"}
 SUPPORTED_EXCEL_SUFFIXES = MODERN_EXCEL_SUFFIXES | {".xls"}
+DEFAULT_DUPLICATE_MEMORY_ROWS = 100_000
 
 
 class SpreadsheetToolError(RuntimeError):
     """A user-actionable spreadsheet processing error."""
+
+
+def configure_utf8_stdio() -> None:
+    """Keep JSON output UTF-8 on Windows terminals and redirected streams."""
+    for stream in (sys.stdout, sys.stderr):
+        reconfigure = getattr(stream, "reconfigure", None)
+        if reconfigure is not None:
+            try:
+                reconfigure(encoding="utf-8", errors="replace")
+            except (OSError, ValueError):
+                pass
 
 
 def positive_int(value: str) -> int:
@@ -231,6 +244,76 @@ def fingerprint_row(values: Sequence[Any]) -> bytes:
     return hashlib.blake2b(payload, digest_size=16).digest()
 
 
+class DuplicateTracker:
+    """Count exact duplicate fingerprints with bounded automatic memory use."""
+
+    def __init__(self, strategy: str, memory_rows: int) -> None:
+        self.requested_strategy = strategy
+        self.strategy_used = "off" if strategy == "off" else "memory"
+        self.memory_rows = memory_rows
+        self._seen: set[bytes] = set()
+        self._connection: sqlite3.Connection | None = None
+        self._database_path: Path | None = None
+        if strategy == "disk":
+            self._switch_to_disk()
+
+    def _switch_to_disk(self) -> None:
+        cache_root = WORKSPACE_ROOT / "var" / "tmp"
+        cache_root.mkdir(parents=True, exist_ok=True)
+        descriptor, raw_path = tempfile.mkstemp(
+            prefix="spreadsheet-duplicates-", suffix=".sqlite3", dir=cache_root
+        )
+        os.close(descriptor)
+        self._database_path = Path(raw_path)
+        try:
+            self._connection = sqlite3.connect(self._database_path)
+            self._connection.execute("PRAGMA journal_mode=OFF")
+            self._connection.execute("PRAGMA synchronous=OFF")
+            self._connection.execute("PRAGMA temp_store=FILE")
+            self._connection.execute(
+                "CREATE TABLE fingerprints (value BLOB PRIMARY KEY) WITHOUT ROWID"
+            )
+            if self._seen:
+                self._connection.executemany(
+                    "INSERT INTO fingerprints(value) VALUES (?)",
+                    ((value,) for value in self._seen),
+                )
+                self._seen.clear()
+            self.strategy_used = "disk"
+        except Exception:
+            self.close()
+            raise
+
+    def observe(self, value: bytes) -> bool:
+        """Return True when the fingerprint has already been observed."""
+        if self.requested_strategy == "off":
+            return False
+        if (
+            self.requested_strategy == "auto"
+            and self._connection is None
+            and len(self._seen) >= self.memory_rows
+        ):
+            self._switch_to_disk()
+        if self._connection is not None:
+            changes_before = self._connection.total_changes
+            self._connection.execute(
+                "INSERT OR IGNORE INTO fingerprints(value) VALUES (?)", (value,)
+            )
+            return self._connection.total_changes == changes_before
+        if value in self._seen:
+            return True
+        self._seen.add(value)
+        return False
+
+    def close(self) -> None:
+        if self._connection is not None:
+            self._connection.close()
+            self._connection = None
+        if self._database_path is not None:
+            self._database_path.unlink(missing_ok=True)
+            self._database_path = None
+
+
 def type_label(value: Any) -> str:
     if value is None:
         return "blank"
@@ -280,19 +363,22 @@ def write_rows(
     encoding: str,
     delimiter: str,
     keep_empty_rows: bool,
-    check_duplicates: bool,
+    duplicate_strategy: str,
+    duplicate_memory_rows: int,
     max_rows: int | None,
 ) -> dict[str, Any]:
     temporary = temporary_sibling(output_path)
     missing = [0 for _ in headers]
     types = [Counter() for _ in headers]
-    seen: set[bytes] = set()
+    duplicates: DuplicateTracker | None = None
+    duplicate_strategy_used = "off" if duplicate_strategy == "off" else "memory"
     duplicate_rows = 0
     scanned_rows = 0
     output_rows = 0
     skipped_empty_rows = 0
 
     try:
+        duplicates = DuplicateTracker(duplicate_strategy, duplicate_memory_rows)
         with temporary.open("w", encoding=encoding, newline="") as handle:
             writer = csv.writer(handle, delimiter=delimiter, lineterminator="\n")
             writer.writerow(headers)
@@ -314,24 +400,27 @@ def write_rows(
                     else:
                         types[index][type_label(value)] += 1
 
-                if check_duplicates:
-                    fingerprint = fingerprint_row(selected)
-                    if fingerprint in seen:
-                        duplicate_rows += 1
-                    else:
-                        seen.add(fingerprint)
+                if duplicate_strategy != "off" and duplicates.observe(
+                    fingerprint_row(selected)
+                ):
+                    duplicate_rows += 1
 
                 writer.writerow([csv_value(value) for value in selected])
                 output_rows += 1
+        duplicate_strategy_used = duplicates.strategy_used
         os.replace(temporary, output_path)
     finally:
         temporary.unlink(missing_ok=True)
+        if duplicates is not None:
+            duplicates.close()
 
     return {
         "scanned_source_rows": scanned_rows,
         "output_rows": output_rows,
         "skipped_empty_rows": skipped_empty_rows,
-        "duplicate_rows": duplicate_rows if check_duplicates else None,
+        "duplicate_rows": duplicate_rows if duplicate_strategy != "off" else None,
+        "duplicate_check_strategy_requested": duplicate_strategy,
+        "duplicate_check_strategy_used": duplicate_strategy_used,
         "missing_cells_by_column": dict(zip(headers, missing, strict=True)),
         "observed_types_by_column": {
             header: dict(sorted(counter.items()))
@@ -494,9 +583,9 @@ def inspect_legacy(
         workbook.release_resources()
 
 
-def inspect_command(args: argparse.Namespace) -> int:
+def inspect_workbook(input_value: Path, args: argparse.Namespace) -> dict[str, Any]:
     started = time.perf_counter()
-    input_path = validate_input(args.input)
+    input_path = validate_input(input_value)
     reader = inspect_legacy if input_path.suffix.lower() == ".xls" else inspect_modern
     details = reader(
         input_path,
@@ -507,7 +596,7 @@ def inspect_command(args: argparse.Namespace) -> int:
         sheet_index=args.sheet_index,
         formulas=args.formulas,
     )
-    report = {
+    return {
         "tool": "tools/extract-spreadsheet.py",
         "tool_version": TOOL_VERSION,
         "operation": "inspect",
@@ -521,6 +610,10 @@ def inspect_command(args: argparse.Namespace) -> int:
         "elapsed_seconds": round(time.perf_counter() - started, 3),
     }
 
+
+def inspect_command(args: argparse.Namespace) -> int:
+    report = inspect_workbook(args.input, args)
+
     if args.report is None:
         print(json.dumps(report, ensure_ascii=False, indent=2))
         return 0
@@ -533,6 +626,83 @@ def inspect_command(args: argparse.Namespace) -> int:
         )
     )
     return 0
+
+
+def collect_workbooks(inputs: Sequence[Path], recursive: bool) -> list[Path]:
+    collected: dict[Path, None] = {}
+    for candidate in inputs:
+        resolved = candidate.expanduser().resolve()
+        if resolved.is_file():
+            collected[validate_input(resolved)] = None
+            continue
+        if not resolved.is_dir():
+            raise SpreadsheetToolError(f"input path does not exist: {candidate}")
+        iterator = resolved.rglob("*") if recursive else resolved.iterdir()
+        for path in iterator:
+            if path.is_file() and path.suffix.lower() in SUPPORTED_EXCEL_SUFFIXES:
+                collected[path.resolve()] = None
+    if not collected:
+        raise SpreadsheetToolError("no supported Excel workbooks were found")
+    return sorted(collected, key=lambda path: display_path(path).casefold())
+
+
+def validate_batch_report(
+    input_paths: Sequence[Path], report_path: Path, overwrite: bool
+) -> Path:
+    resolved = report_path.expanduser().resolve()
+    if resolved in input_paths:
+        raise SpreadsheetToolError("batch report path must not overwrite an input workbook")
+    if resolved.exists() and not overwrite:
+        raise SpreadsheetToolError(
+            f"output already exists: {display_path(resolved)}; pass --overwrite explicitly"
+        )
+    return resolved
+
+
+def inspect_many_command(args: argparse.Namespace) -> int:
+    started = time.perf_counter()
+    input_paths = collect_workbooks(args.inputs, args.recursive)
+    reports: list[dict[str, Any]] = []
+    failures = 0
+    for input_path in input_paths:
+        try:
+            reports.append({"status": "ok", **inspect_workbook(input_path, args)})
+        except Exception as exc:
+            failures += 1
+            reports.append(
+                {
+                    "status": "error",
+                    "input": {"file": display_path(input_path)},
+                    "error": f"{exc.__class__.__name__}: {exc}",
+                }
+            )
+    report = {
+        "tool": "tools/extract-spreadsheet.py",
+        "tool_version": TOOL_VERSION,
+        "operation": "inspect-many",
+        "created_at_utc": datetime.now(timezone.utc).isoformat(),
+        "workbook_count": len(input_paths),
+        "error_count": failures,
+        "workbooks": reports,
+        "elapsed_seconds": round(time.perf_counter() - started, 3),
+    }
+    if args.report is None:
+        print(json.dumps(report, ensure_ascii=False, indent=2))
+    else:
+        report_path = validate_batch_report(input_paths, args.report, args.overwrite)
+        write_json_atomic(report_path, report)
+        print(
+            json.dumps(
+                {
+                    "status": "ok" if failures == 0 else "partial",
+                    "report": display_path(report_path),
+                    "workbooks": len(input_paths),
+                    "errors": failures,
+                },
+                ensure_ascii=False,
+            )
+        )
+    return 1 if failures else 0
 
 
 def extract_modern(input_path: Path, output_path: Path, args: argparse.Namespace) -> dict[str, Any]:
@@ -564,9 +734,10 @@ def extract_modern(input_path: Path, output_path: Path, args: argparse.Namespace
             selected_indices,
             output_path,
             encoding=args.encoding,
-            delimiter="\t" if output_path.suffix.lower() == ".tsv" else ",",
+            delimiter="\t" if args.output_suffix == ".tsv" else ",",
             keep_empty_rows=args.keep_empty_rows,
-            check_duplicates=not args.skip_duplicate_check,
+            duplicate_strategy=args.effective_duplicate_check,
+            duplicate_memory_rows=args.duplicate_memory_rows,
             max_rows=args.max_rows,
         )
         return {
@@ -615,9 +786,10 @@ def extract_legacy(input_path: Path, output_path: Path, args: argparse.Namespace
             selected_indices,
             output_path,
             encoding=args.encoding,
-            delimiter="\t" if output_path.suffix.lower() == ".tsv" else ",",
+            delimiter="\t" if args.output_suffix == ".tsv" else ",",
             keep_empty_rows=args.keep_empty_rows,
-            check_duplicates=not args.skip_duplicate_check,
+            duplicate_strategy=args.effective_duplicate_check,
+            duplicate_memory_rows=args.duplicate_memory_rows,
             max_rows=args.max_rows,
         )
         return {
@@ -635,12 +807,51 @@ def extract_legacy(input_path: Path, output_path: Path, args: argparse.Namespace
         workbook.release_resources()
 
 
+def commit_output_pair(
+    staged_output: Path,
+    output_path: Path,
+    staged_audit: Path,
+    audit_path: Path,
+    overwrite: bool,
+) -> None:
+    destinations = ((staged_output, output_path), (staged_audit, audit_path))
+    backups: dict[Path, Path] = {}
+    committed: list[Path] = []
+    try:
+        for _, destination in destinations:
+            if destination.exists():
+                if not overwrite:
+                    raise SpreadsheetToolError(
+                        f"output already exists: {display_path(destination)}; pass --overwrite explicitly"
+                    )
+                backup = temporary_sibling(destination)
+                backup.unlink()
+                os.replace(destination, backup)
+                backups[destination] = backup
+        for staged, destination in destinations:
+            os.replace(staged, destination)
+            committed.append(destination)
+    except Exception:
+        for destination in reversed(committed):
+            destination.unlink(missing_ok=True)
+        for destination, backup in backups.items():
+            if backup.exists():
+                os.replace(backup, destination)
+        raise
+    finally:
+        for backup in backups.values():
+            backup.unlink(missing_ok=True)
+        staged_output.unlink(missing_ok=True)
+        staged_audit.unlink(missing_ok=True)
+
+
 def extract_command(args: argparse.Namespace) -> int:
     started = time.perf_counter()
     input_path = validate_input(args.input)
     output_path = validate_output(input_path, args.output, args.overwrite)
     if output_path.suffix.lower() not in {".csv", ".tsv"}:
         raise SpreadsheetToolError("extraction output must use a .csv or .tsv suffix")
+    args.output_suffix = output_path.suffix.lower()
 
     audit_candidate = args.audit_report or output_path.with_name(
         f"{output_path.stem}-audit.json"
@@ -649,29 +860,53 @@ def extract_command(args: argparse.Namespace) -> int:
     if audit_path == output_path:
         raise SpreadsheetToolError("audit report path must differ from extraction output")
 
+    if args.skip_duplicate_check:
+        if args.duplicate_check != "auto":
+            raise SpreadsheetToolError(
+                "--skip-duplicate-check cannot be combined with a non-default --duplicate-check"
+            )
+        args.effective_duplicate_check = "off"
+    else:
+        args.effective_duplicate_check = args.duplicate_check
+
     reader = extract_legacy if input_path.suffix.lower() == ".xls" else extract_modern
-    details = reader(input_path, output_path, args)
-    audit = {
-        "tool": "tools/extract-spreadsheet.py",
-        "tool_version": TOOL_VERSION,
-        "operation": "extract",
-        "created_at_utc": datetime.now(timezone.utc).isoformat(),
-        "input": {
-            "file": display_path(input_path),
-            "size_bytes": input_path.stat().st_size,
-            "sha256": sha256_file(input_path),
-        },
-        "output": {
-            "file": display_path(output_path),
-            "size_bytes": output_path.stat().st_size,
-            "sha256": sha256_file(output_path),
-            "encoding": args.encoding,
-            "format": output_path.suffix.lower().lstrip("."),
-        },
-        **details,
-        "elapsed_seconds": round(time.perf_counter() - started, 3),
-    }
-    write_json_atomic(audit_path, audit)
+    staged_output = temporary_sibling(output_path)
+    staged_audit = temporary_sibling(audit_path)
+    try:
+        details = reader(input_path, staged_output, args)
+        audit = {
+            "tool": "tools/extract-spreadsheet.py",
+            "tool_version": TOOL_VERSION,
+            "operation": "extract",
+            "created_at_utc": datetime.now(timezone.utc).isoformat(),
+            "input": {
+                "file": display_path(input_path),
+                "size_bytes": input_path.stat().st_size,
+                "sha256": sha256_file(input_path),
+            },
+            "output": {
+                "file": display_path(output_path),
+                "size_bytes": staged_output.stat().st_size,
+                "sha256": sha256_file(staged_output),
+                "encoding": args.encoding,
+                "format": output_path.suffix.lower().lstrip("."),
+            },
+            **details,
+            "elapsed_seconds": round(time.perf_counter() - started, 3),
+        }
+        staged_audit.write_text(
+            json.dumps(audit, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+        )
+        commit_output_pair(
+            staged_output,
+            output_path,
+            staged_audit,
+            audit_path,
+            args.overwrite,
+        )
+    finally:
+        staged_output.unlink(missing_ok=True)
+        staged_audit.unlink(missing_ok=True)
     print(
         json.dumps(
             {
@@ -697,6 +932,34 @@ def add_sheet_selector(parser: argparse.ArgumentParser) -> None:
     )
 
 
+def add_inspection_options(parser: argparse.ArgumentParser) -> None:
+    add_sheet_selector(parser)
+    parser.add_argument(
+        "--header-row", type=positive_int, default=1, help="one-based header row"
+    )
+    parser.add_argument(
+        "--sample-rows",
+        type=nonnegative_int,
+        default=5,
+        help="non-empty data rows to sample per selected sheet",
+    )
+    parser.add_argument(
+        "--sample-columns",
+        type=positive_int,
+        default=20,
+        help="maximum columns included in headers and sample rows",
+    )
+    parser.add_argument(
+        "--formulas",
+        action="store_true",
+        help="show formula expressions instead of cached values where available",
+    )
+    parser.add_argument("--report", type=Path, help="optional JSON report path")
+    parser.add_argument(
+        "--overwrite", action="store_true", help="allow replacement of an existing report"
+    )
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description=(
@@ -711,32 +974,21 @@ def build_parser() -> argparse.ArgumentParser:
         "inspect", help="list worksheets, headers, dimensions, and bounded sample rows"
     )
     inspect_parser.add_argument("input", type=Path, help="source .xlsx/.xlsm/.xls file")
-    add_sheet_selector(inspect_parser)
-    inspect_parser.add_argument(
-        "--header-row", type=positive_int, default=1, help="one-based header row"
-    )
-    inspect_parser.add_argument(
-        "--sample-rows",
-        type=nonnegative_int,
-        default=5,
-        help="non-empty data rows to sample per selected sheet",
-    )
-    inspect_parser.add_argument(
-        "--sample-columns",
-        type=positive_int,
-        default=20,
-        help="maximum columns included in headers and sample rows",
-    )
-    inspect_parser.add_argument(
-        "--formulas",
-        action="store_true",
-        help="show formula expressions instead of cached values where available",
-    )
-    inspect_parser.add_argument("--report", type=Path, help="optional JSON report path")
-    inspect_parser.add_argument(
-        "--overwrite", action="store_true", help="allow replacement of an existing report"
-    )
+    add_inspection_options(inspect_parser)
     inspect_parser.set_defaults(func=inspect_command)
+
+    inspect_many_parser = commands.add_parser(
+        "inspect-many",
+        help="inspect multiple workbooks or directories and produce one combined report",
+    )
+    inspect_many_parser.add_argument(
+        "inputs", nargs="+", type=Path, help="workbook files or directories"
+    )
+    inspect_many_parser.add_argument(
+        "--recursive", action="store_true", help="search input directories recursively"
+    )
+    add_inspection_options(inspect_many_parser)
+    inspect_many_parser.set_defaults(func=inspect_many_command)
 
     extract_parser = commands.add_parser(
         "extract", help="stream one worksheet to CSV/TSV and create an audit report"
@@ -773,9 +1025,24 @@ def build_parser() -> argparse.ArgumentParser:
         help="preserve rows whose selected cells are all empty",
     )
     extract_parser.add_argument(
+        "--duplicate-check",
+        choices=("auto", "memory", "disk", "off"),
+        default="auto",
+        help=(
+            "duplicate-row strategy; auto switches from memory to an exact SQLite index "
+            "after the configured row threshold"
+        ),
+    )
+    extract_parser.add_argument(
+        "--duplicate-memory-rows",
+        type=positive_int,
+        default=DEFAULT_DUPLICATE_MEMORY_ROWS,
+        help="unique-row threshold before auto duplicate checking switches to disk",
+    )
+    extract_parser.add_argument(
         "--skip-duplicate-check",
         action="store_true",
-        help="save memory by omitting duplicate-row counting from the audit",
+        help="deprecated alias for --duplicate-check off",
     )
     extract_parser.add_argument(
         "--encoding",
@@ -798,6 +1065,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main(argv: Sequence[str] | None = None) -> int:
+    configure_utf8_stdio()
     parser = build_parser()
     args = parser.parse_args(argv)
     try:

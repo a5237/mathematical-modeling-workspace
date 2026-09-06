@@ -1,27 +1,17 @@
-# 虚拟环境搭建指南
+# 虚拟环境快速入口
 
-本工作区使用 `.venv-modeling` 作为 Python 虚拟环境目录。
+本文件仅作为根目录环境引导入口。工作区环境、依赖锁定和自检规则的唯一说明见 [`docs/guides/modeling-environment.md`](docs/guides/modeling-environment.md)。
 
-## 重要：环境不可移植
-
-`.venv-modeling` 目录 **不可跨电脑复制使用**。原因：
-- `pyvenv.cfg` 记录的是创建时 Python 解释器的 **绝对路径**。
-- `Scripts\python.exe` 等可执行文件内部包含 **硬编码路径**。
-- `Lib\site-packages\` 下的 `.pyd` 文件与 **操作系统、Python 版本、CPU 架构** 绑定。
-
-因此，**每台电脑必须在本地重新创建虚拟环境**，不得复用其他电脑的 `.venv-modeling` 目录。
-
-## Agent 行为指引
-
-如果你是一个 AI Agent，在开始任何建模或论文任务前，请执行以下操作：
-
-1. 检查根目录是否存在 `.venv-modeling\Scripts\python.exe`。
-2. 如果不存在，或用户报告环境问题，引导用户运行 `.\setup.bat`。
-3. 确认环境检查脚本 `tools\check-modeling-env.py` 输出 `RESULT: PASS` 后再继续。
-
-## 快速重建（人类操作）
-
-在项目根目录打开 PowerShell，执行：
+`.venv-modeling/` 不可跨电脑复制；每台电脑应在本地重新创建。Windows 用户可在工作区根目录执行：
 
 ```powershell
 .\setup.bat
+```
+
+环境建立后运行：
+
+```powershell
+.\.venv-modeling\Scripts\python.exe tools/check-modeling-env.py
+```
+
+只有输出 `RESULT: PASS` 才表示工作区级建模环境自检通过。具体项目的依赖、运行入口、资源需求和成功标志仍记录在项目自己的 `00-admin/runbook.md`。

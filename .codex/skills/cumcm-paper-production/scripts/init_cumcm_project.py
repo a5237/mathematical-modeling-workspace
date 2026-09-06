@@ -56,6 +56,8 @@ def learning_record(contracts) -> str:
         "- learning_status: `INCOMPLETE`\n"
         "- completed_at: `YYYY-MM-DD`\n\n"
         "> 按 `PWL-GATE-001` 完成；门禁变化后以权威流程为准。\n\n"
+        "## 赛题类型与各问写作重点\n\n"
+        "记录赛题数学类型，并逐项说明 q01、q02 等子问题的写作重点。\n\n"
         "## 同类优秀论文\n\n"
         "| item | path_or_source | problem_type | structural_lessons | prohibited_copying | reviewed |\n"
         "|---|---|---|---|---|---|\n"

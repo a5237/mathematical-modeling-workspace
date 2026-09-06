@@ -25,6 +25,35 @@ RELEASE_REQUIRED_FILES = [
 ]
 PLACEHOLDER = re.compile(r"TODO|TBD|FIXME|待填写|待补|占位|XX+", re.IGNORECASE)
 QUALITY_FIELD = re.compile(r"^\s*-\s*([a-z0-9_]+):\s*`([^`]*)`\s*$", re.MULTILINE)
+WORKFLOW_FIELD = re.compile(
+    r"^\s*(?:[-*]\s*)?([a-z0-9_]+)\s*:\s*(.*?)\s*$", re.MULTILINE
+)
+QUESTION_ID = re.compile(r"(?<![a-z0-9])(q\d+)(?![a-z0-9])", re.IGNORECASE)
+PAPER_LIBRARY_PATH = re.compile(
+    r"resources/paper-library/[^\s`|]+?\.md", re.IGNORECASE
+)
+ALGORITHM_RESOURCE = re.compile(
+    r"(?:resources/algorithm-library/)?(?:index|\d{2}-[^\s`|,，;；/\\]+?)\.md",
+    re.IGNORECASE,
+)
+
+
+def workflow_metadata(text: str) -> dict[str, str]:
+    fields: dict[str, str] = {}
+    for key, raw_value in WORKFLOW_FIELD.findall(text):
+        value = raw_value.strip()
+        if len(value) >= 2 and value.startswith("`") and value.endswith("`"):
+            value = value[1:-1].strip()
+        fields[key] = value
+    return fields
+
+
+def question_ids(text: str) -> set[str]:
+    return {match.lower() for match in QUESTION_ID.findall(text)}
+
+
+def algorithm_resources(text: str) -> set[str]:
+    return {match.replace("\\", "/") for match in ALGORITHM_RESOURCE.findall(text)}
 
 
 def audit_workflow_gate(
@@ -39,57 +68,53 @@ def audit_workflow_gate(
     if not path.is_file():
         return
     text = path.read_text(encoding="utf-8", errors="replace")
-    fields = dict(QUALITY_FIELD.findall(text))
+    fields = workflow_metadata(text)
     if fields.get(status_key) != expected_status:
         errors.append(f"MAJOR workflow gate {relative}: {status_key} must be {expected_status}")
-    completed_at = fields.get("completed_at", "")
-    if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", completed_at):
-        errors.append(f"MAJOR workflow gate {relative}: completed_at must use YYYY-MM-DD")
+    date_keys = ("completed_at",) if status_key == "learning_status" else ("completed_at", "reviewed_at")
+    completion_date = next((fields[key] for key in date_keys if fields.get(key)), "")
+    if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", completion_date):
+        accepted = " or ".join(date_keys)
+        errors.append(f"MAJOR workflow gate {relative}: {accepted} must use YYYY-MM-DD")
     if PLACEHOLDER.search(text):
         errors.append(f"MAJOR unresolved placeholder in {relative}")
 
-    table_lines = text.splitlines()
     checklist_path = root / "01-problem/problem-checklist.md"
     checklist_text = checklist_path.read_text(encoding="utf-8", errors="replace") if checklist_path.is_file() else ""
-    expected_questions = set(re.findall(r"^\|\s*(q\d+)\s*\|", checklist_text, re.MULTILINE))
+    expected_questions = {
+        value.lower()
+        for value in re.findall(
+            r"^\|\s*(q\d+)\s*\|", checklist_text, re.MULTILINE | re.IGNORECASE
+        )
+    }
+    recorded_questions = question_ids(text)
+    missing_questions = sorted(expected_questions - recorded_questions)
     if status_key == "learning_status":
-        sample_rows = [
-            [cell.strip() for cell in line.strip().strip("|").split("|")]
-            for line in table_lines
-            if re.match(r"^\|\s*sample-\d+\s*\|", line)
-        ]
-        reviewed_rows = [
-            cells
-            for cells in sample_rows
-            if len(cells) >= 6
-            and cells[1].replace("\\", "/").startswith("resources/paper-library/")
-            and cells[-1].lower() in {"yes", "true", "1"}
-        ]
-        if len(reviewed_rows) < minimum_learning_papers:
+        reviewed_papers = set(PAPER_LIBRARY_PATH.findall(text))
+        if len(reviewed_papers) < minimum_learning_papers:
             errors.append(
                 f"MAJOR workflow gate {relative}: fewer than {minimum_learning_papers} reviewed same-type papers from resources/paper-library"
             )
-        learned_questions = set(re.findall(r"^\|\s*(q\d+)\s*\|", text, re.MULTILINE))
-        missing_learning = sorted(expected_questions - learned_questions)
-        if missing_learning:
-            errors.append(f"MAJOR workflow gate {relative}: missing algorithm review for {missing_learning}")
+        if missing_questions:
+            errors.append(f"MAJOR workflow gate {relative}: missing writing focus for {missing_questions}")
+        resources = algorithm_resources(text)
+        if not any(not item.lower().endswith("index.md") for item in resources):
+            errors.append(f"MAJOR workflow gate {relative}: no reviewed algorithm resource")
     elif status_key == "selection_status":
-        selection_rows = [
-            [cell.strip() for cell in line.strip().strip("|").split("|")]
-            for line in table_lines
-            if re.match(r"^\|\s*q\d+\s*\|", line)
-        ]
-        if not selection_rows:
-            errors.append(f"MAJOR workflow gate {relative}: no subproblem selection record")
-        elif any(
-            len(cells) < 3 or not cells[2].replace("\\", "/").startswith("resources/algorithm-library/")
-            for cells in selection_rows
-        ):
-            errors.append(f"MAJOR workflow gate {relative}: subproblem row missing algorithm-library resource path")
-        selected_questions = {cells[0] for cells in selection_rows if cells}
-        missing_selection = sorted(expected_questions - selected_questions)
-        if missing_selection:
-            errors.append(f"MAJOR workflow gate {relative}: missing model selection for {missing_selection}")
+        if missing_questions:
+            errors.append(f"MAJOR workflow gate {relative}: missing model selection for {missing_questions}")
+        resources = algorithm_resources(text)
+        if not any(not item.lower().endswith("index.md") for item in resources):
+            errors.append(f"MAJOR workflow gate {relative}: no matching algorithm-library resource")
+        concept_markers = {
+            "candidate comparison": ("candidates", "候选"),
+            "suitability check": ("suitability", "适用"),
+            "selected model": ("selected_model", "选用", "模型选择"),
+            "validation plan": ("validation", "验证"),
+        }
+        for label, markers in concept_markers.items():
+            if not any(marker in text for marker in markers):
+                errors.append(f"MAJOR workflow gate {relative}: missing {label}")
 
 
 def sha256(path: Path) -> str:

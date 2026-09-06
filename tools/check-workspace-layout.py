@@ -13,7 +13,9 @@ WORKSPACE_ROOT = Path(__file__).resolve().parent.parent
 ALLOWED_ROOT_FILES = {
     ".gitignore",
     "AGENTS.md",
+    "ENV_SETUP.md",
     "README.md",
+    "setup.bat",
 }
 ALLOWED_ROOT_DIRS = {
     ".agents",
@@ -32,6 +34,8 @@ REQUIRED_PATHS = (
     ".codex/skills/cumcm-paper-audit/SKILL.md",
     ".codex/skills/cumcm-paper-production/SKILL.md",
     "config/python/requirements-modeling.txt",
+    "ENV_SETUP.md",
+    "setup.bat",
     "docs/architecture/workspace-layout.md",
     "docs/guides/modeling-environment.md",
     "docs/guides/scientific-figure-aesthetics.md",
