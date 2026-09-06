@@ -222,19 +222,32 @@ def render_scientific_3d() -> None:
     xx, yy = np.meshgrid(x, y)
     zz = np.exp(-0.25 * (xx**2 + yy**2)) * np.cos(1.4 * np.sqrt(xx**2 + yy**2))
 
-    fig = plt.figure(figsize=(6.2, 4.6), constrained_layout=True)
-    ax = fig.add_subplot(111, projection="3d")
+    fig = plt.figure(figsize=(6.25, 4.6))
+    layout = fig.add_gridspec(
+        1,
+        2,
+        width_ratios=(1, 0.03),
+        left=0.02,
+        right=0.96,
+        bottom=0.04,
+        top=0.98,
+        wspace=0.08,
+    )
+    ax = fig.add_subplot(layout[0, 0], projection="3d")
     surface = ax.plot_surface(xx, yy, zz, cmap="viridis", linewidth=0, antialiased=True, alpha=0.94)
     z_floor = float(zz.min() - 0.18)
     ax.contour(xx, yy, zz, zdir="z", offset=z_floor, levels=8, cmap="viridis", linewidths=0.7)
     ax.set(xlabel="x (m)", ylabel="y (m)", zlabel="Response, z", zlim=(z_floor, float(zz.max())))
+    ax.zaxis.labelpad = 4
     ax.view_init(elev=27, azim=-52)
     ax.grid(True, color=GRID, linewidth=0.5)
     for axis in (ax.xaxis, ax.yaxis, ax.zaxis):
         axis.pane.set_facecolor((1, 1, 1, 0))
         axis.pane.set_edgecolor(GRID)
-    colorbar = fig.colorbar(surface, ax=ax, shrink=0.62, pad=0.08)
-    colorbar.set_label("Response, z")
+    colorbar_layout = layout[0, 1].subgridspec(3, 1, height_ratios=(0.19, 0.62, 0.19))
+    colorbar_ax = fig.add_subplot(colorbar_layout[1, 0])
+    colorbar = fig.colorbar(surface, cax=colorbar_ax)
+    colorbar.set_label("Response, z", labelpad=5)
     colorbar.outline.set_linewidth(0.6)
     save(fig, "06-scientific-3d.png")
 
