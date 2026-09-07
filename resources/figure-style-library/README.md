@@ -17,10 +17,7 @@ Nature 参考图的定位尤其严格：它们用于观察旗舰刊实际采用�
 
 ## 使用
 
-1. 先读 `docs/standards/paper-figures.md` 并完成目标图的语义与图型决策。
-2. 通过 `manifest.csv` 按视觉问题选取少量参考项，不要求与目标图同型。
-3. 只提取需要的样式属性，并在项目 `00-admin/figure-selection-record.md` 中记录参考标识与使用边界。
-4. 从项目权威数据重新生成图片，在最终尺寸下按 `PW-FIG-001` 审查。
+完整使用方法执行 `docs/guides/scientific-figure-aesthetics.md`；参考项通过 `manifest.csv` 按视觉问题定位。
 
 若选用 `style-nature-*` 项，还须查看 `references/nature/ATTRIBUTION.md`，不得将其复制到项目结果、论文正文、演示文稿或交付件中。对外再分发时保留原作者、来源和 CC BY 4.0 许可信息。
 

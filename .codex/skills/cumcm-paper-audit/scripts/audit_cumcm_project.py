@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
-"""Static release gate for normalized CUMCM projects."""
+"""Objective static preflight for CUMCM projects.
+
+Directory layout, ordinary naming, and reviewer judgment are intentionally out
+of scope. The independent audit skill remains responsible for substantive
+review and for recording a final verdict.
+"""
 
 from __future__ import annotations
 
@@ -16,22 +21,52 @@ sys.path.insert(0, str(WORKSPACE_ROOT / "tools"))
 from control_contracts import ContractError, load_workspace_contracts
 
 
-REQUIRED_DIRS = ["00-admin", "01-problem", "02-data/raw", "03-models", "04-results", "05-evidence", "06-paper", "07-review", "08-delivery"]
-REQUIRED_FILES = ["00-admin/project.yaml", "01-problem/problem-checklist.md", "05-evidence/evidence-index.csv", "05-evidence/literature-ledger.csv", "05-evidence/ai-tool-log.md", "06-paper/main.tex", "07-review/review-log.md", "08-delivery/file-list.md"]
-RELEASE_REQUIRED_FILES = [
+# These are semantic handoff interfaces, not a directory-tree schema. Any other
+# directories may be added, split, renamed or removed without this preflight
+# caring about them.
+RELEASE_CORE_FILES = [
+    "00-admin/runbook.md",
     "00-admin/pre-writing-learning.md",
+    "01-problem/problem-checklist.md",
     "03-models/model-selection.md",
-    "07-review/paper-quality-audit.md",
+    "05-evidence/evidence-index.csv",
+    "05-evidence/literature-ledger.csv",
+    "05-evidence/ai-tool-log.md",
+    "06-paper/main.tex",
+    "08-delivery/file-list.md",
 ]
 PLACEHOLDER = re.compile(r"TODO|TBD|FIXME|待填写|待补|占位|XX+", re.IGNORECASE)
-QUALITY_FIELD = re.compile(r"^\s*-\s*([a-z0-9_]+):\s*`([^`]*)`\s*$", re.MULTILINE)
+AUDIT_FIELD = re.compile(r"^\s*-\s*([a-z0-9_]+):\s*`([^`]*)`\s*$", re.MULTILINE)
 WORKFLOW_FIELD = re.compile(
     r"^\s*(?:[-*]\s*)?([a-z0-9_]+)\s*:\s*(.*?)\s*$", re.MULTILINE
 )
-QUESTION_ID = re.compile(r"(?<![a-z0-9])(q\d+)(?![a-z0-9])", re.IGNORECASE)
 PAPER_LIBRARY_PATH = re.compile(
     r"resources/paper-library/[^\s`|]+?\.md", re.IGNORECASE
 )
+
+FINAL_AUDIT_PATH = "07-review/final-audit.md"
+LEGACY_AUDIT_PATH = "07-review/paper-quality-audit.md"
+FINAL_AUDIT_FIELDS = {
+    "audit_date",
+    "audit_phase",
+    "review_scope",
+    "final_pdf",
+    "final_pdf_sha256",
+    "body_word_count",
+    "body_page_range",
+    "body_page_count",
+    "body_figure_count",
+    "body_table_count",
+    "body_length_and_visual_count_gate",
+    "official_rules_gate",
+    "evidence_gate",
+    "clean_reproduction_gate",
+    "anonymity_gate",
+    "delivery_gate",
+    "open_critical",
+    "open_major",
+    "release_decision",
+}
 ALGORITHM_RESOURCE = re.compile(
     r"(?:resources/algorithm-library/)?(?:index|\d{2}-[^\s`|,，;；/\\]+?)\.md",
     re.IGNORECASE,
@@ -46,10 +81,6 @@ def workflow_metadata(text: str) -> dict[str, str]:
             value = value[1:-1].strip()
         fields[key] = value
     return fields
-
-
-def question_ids(text: str) -> set[str]:
-    return {match.lower() for match in QUESTION_ID.findall(text)}
 
 
 def algorithm_resources(text: str) -> set[str]:
@@ -79,30 +110,16 @@ def audit_workflow_gate(
     if PLACEHOLDER.search(text):
         errors.append(f"MAJOR unresolved placeholder in {relative}")
 
-    checklist_path = root / "01-problem/problem-checklist.md"
-    checklist_text = checklist_path.read_text(encoding="utf-8", errors="replace") if checklist_path.is_file() else ""
-    expected_questions = {
-        value.lower()
-        for value in re.findall(
-            r"^\|\s*(q\d+)\s*\|", checklist_text, re.MULTILINE | re.IGNORECASE
-        )
-    }
-    recorded_questions = question_ids(text)
-    missing_questions = sorted(expected_questions - recorded_questions)
     if status_key == "learning_status":
         reviewed_papers = set(PAPER_LIBRARY_PATH.findall(text))
         if len(reviewed_papers) < minimum_learning_papers:
             errors.append(
                 f"MAJOR workflow gate {relative}: fewer than {minimum_learning_papers} reviewed same-type papers from resources/paper-library"
             )
-        if missing_questions:
-            errors.append(f"MAJOR workflow gate {relative}: missing writing focus for {missing_questions}")
         resources = algorithm_resources(text)
         if not any(not item.lower().endswith("index.md") for item in resources):
             errors.append(f"MAJOR workflow gate {relative}: no reviewed algorithm resource")
     elif status_key == "selection_status":
-        if missing_questions:
-            errors.append(f"MAJOR workflow gate {relative}: missing model selection for {missing_questions}")
         resources = algorithm_resources(text)
         if not any(not item.lower().endswith("index.md") for item in resources):
             errors.append(f"MAJOR workflow gate {relative}: no matching algorithm-library resource")
@@ -125,38 +142,17 @@ def sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
-def audit_quality_report(
-    root: Path,
-    delivery_pdf: Path | None,
-    contracts,
-    errors: list[str],
-) -> None:
-    path = root / "07-review/paper-quality-audit.md"
-    if not path.is_file():
-        return
-    text = path.read_text(encoding="utf-8", errors="replace")
-    fields = dict(QUALITY_FIELD.findall(text))
-    missing = sorted(set(contracts.quality_field_options) - fields.keys())
-    if missing:
-        errors.append(f"MAJOR {path}: missing quality-gate fields {missing}")
-        return
-    if PLACEHOLDER.search(text):
-        errors.append("MAJOR unresolved placeholder in 07-review/paper-quality-audit.md")
+def final_audit_path(root: Path) -> tuple[Path | None, bool]:
+    current = root / FINAL_AUDIT_PATH
+    if current.is_file():
+        return current, False
+    legacy = root / LEGACY_AUDIT_PATH
+    if legacy.is_file():
+        return legacy, True
+    return None, False
 
-    expected: dict[str, set[str]] = {}
-    for key, options in contracts.quality_field_options.items():
-        if key.startswith("open_"):
-            expected[key] = {"0"}
-        elif key == "national_award_competitiveness":
-            expected[key] = set(options)
-        elif key == "release_decision":
-            expected[key] = {"READY"}
-        elif "PASS" in options:
-            expected[key] = {value for value in options if value in {"PASS", "NOT_APPLICABLE"}}
-    for key, allowed in expected.items():
-        if fields[key] not in allowed:
-            errors.append(f"MAJOR quality gate {key}: expected {sorted(allowed)}, found {fields[key]!r}")
 
+def audit_count_fields(fields: dict[str, str], contracts, errors: list[str]) -> None:
     integer_limits = {
         "body_word_count": (contracts.body_word_minimum, None),
         "body_page_count": (contracts.body_page_minimum, contracts.body_page_maximum),
@@ -167,47 +163,122 @@ def audit_quality_report(
     for key, (minimum, maximum) in integer_limits.items():
         try:
             value = int(fields[key])
-        except ValueError:
-            errors.append(f"MAJOR quality gate {key} must be an integer")
+        except (KeyError, ValueError):
+            errors.append(f"MAJOR final audit field {key} must be an integer")
             continue
         parsed_counts[key] = value
         if value < minimum or (maximum is not None and value > maximum):
             expected_range = f">= {minimum}" if maximum is None else f"{minimum}..{maximum}"
-            errors.append(f"MAJOR quality gate {key}: expected {expected_range}, found {value}")
+            errors.append(f"MAJOR final audit field {key}: expected {expected_range}, found {value}")
 
-    page_range = re.fullmatch(r"\s*(\d+)\s*[-–—]\s*(\d+)\s*", fields["body_page_range"])
+    page_range = re.fullmatch(r"\s*(\d+)\s*[-–—]\s*(\d+)\s*", fields.get("body_page_range", ""))
     if page_range is None:
-        errors.append("MAJOR quality gate body_page_range must use <start>-<end>")
+        errors.append("MAJOR final audit field body_page_range must use <start>-<end>")
     else:
         start_page, end_page = map(int, page_range.groups())
         if end_page < start_page:
-            errors.append("MAJOR quality gate body_page_range ends before it starts")
+            errors.append("MAJOR final audit body_page_range ends before it starts")
         elif "body_page_count" in parsed_counts and end_page - start_page + 1 != parsed_counts["body_page_count"]:
-            errors.append("MAJOR quality gate body_page_range does not match body_page_count")
+            errors.append("MAJOR final audit body_page_range does not match body_page_count")
 
-    if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", fields["audit_date"]):
-        errors.append("MAJOR quality gate audit_date must use YYYY-MM-DD")
-    if not re.fullmatch(r"[0-9a-fA-F]{64}", fields["final_pdf_sha256"]):
-        errors.append("MAJOR quality gate final_pdf_sha256 must contain 64 hexadecimal characters")
 
-    relative_pdf = Path(fields["final_pdf"])
-    if relative_pdf.is_absolute() or ".." in relative_pdf.parts:
-        errors.append("CRITICAL quality gate final_pdf is unsafe")
+def audit_pdf_identity(
+    root: Path,
+    delivery_pdf: Path | None,
+    fields: dict[str, str],
+    errors: list[str],
+) -> None:
+    if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", fields.get("audit_date", "")):
+        errors.append("MAJOR final audit audit_date must use YYYY-MM-DD")
+    if not re.fullmatch(r"[0-9a-fA-F]{64}", fields.get("final_pdf_sha256", "")):
+        errors.append("MAJOR final audit final_pdf_sha256 must contain 64 hexadecimal characters")
+
+    relative_pdf = Path(fields.get("final_pdf", ""))
+    if not str(relative_pdf) or relative_pdf.is_absolute() or ".." in relative_pdf.parts:
+        errors.append("CRITICAL final audit final_pdf is unsafe or missing")
         return
     reported_pdf = (root / relative_pdf).resolve()
     try:
         reported_pdf.relative_to(root)
     except ValueError:
-        errors.append("CRITICAL quality gate final_pdf escapes the project root")
+        errors.append("CRITICAL final audit final_pdf escapes the project root")
         return
     if not reported_pdf.is_file():
-        errors.append(f"CRITICAL quality gate final_pdf does not exist: {relative_pdf}")
+        errors.append(f"CRITICAL final audit final_pdf does not exist: {relative_pdf}")
         return
     if delivery_pdf is not None and reported_pdf != delivery_pdf.resolve():
-        errors.append("MAJOR quality gate final_pdf is not the sole delivery PDF")
-    actual_hash = sha256(reported_pdf)
-    if fields["final_pdf_sha256"].lower() != actual_hash:
-        errors.append("CRITICAL quality gate PDF hash does not match the reviewed delivery PDF")
+        errors.append("MAJOR final audit final_pdf is not the sole delivery PDF")
+    if fields.get("final_pdf_sha256", "").lower() != sha256(reported_pdf):
+        errors.append("CRITICAL final audit PDF hash does not match the reviewed delivery PDF")
+
+
+def audit_final_report(
+    root: Path,
+    delivery_pdf: Path | None,
+    contracts,
+    phase: str,
+    errors: list[str],
+    warnings: list[str],
+) -> None:
+    path, legacy = final_audit_path(root)
+    if path is None:
+        errors.append(f"MAJOR missing final audit report: {FINAL_AUDIT_PATH}")
+        return
+    text = path.read_text(encoding="utf-8", errors="replace")
+    fields = dict(AUDIT_FIELD.findall(text))
+
+    common_fields = {
+        "audit_date", "final_pdf", "final_pdf_sha256", "body_word_count",
+        "body_page_range", "body_page_count", "body_figure_count", "body_table_count",
+        "body_length_and_visual_count_gate", "open_critical", "open_major", "release_decision",
+    }
+    required = common_fields if legacy else FINAL_AUDIT_FIELDS
+    missing = sorted(required - fields.keys())
+    if missing:
+        errors.append(f"MAJOR {path}: missing final-audit fields {missing}")
+        return
+    if PLACEHOLDER.search(text):
+        errors.append(f"MAJOR unresolved placeholder in {path.relative_to(root)}")
+
+    audit_count_fields(fields, contracts, errors)
+    audit_pdf_identity(root, delivery_pdf, fields, errors)
+
+    if fields["body_length_and_visual_count_gate"] != "PASS":
+        errors.append("MAJOR retained body length/page/figure/table gate is not PASS")
+    for key in ("open_critical", "open_major"):
+        if fields[key] != "0":
+            errors.append(f"MAJOR final audit {key}: expected '0', found {fields[key]!r}")
+    if fields["release_decision"] != "READY":
+        errors.append(f"MAJOR final audit release_decision is {fields['release_decision']!r}")
+
+    if legacy:
+        for key in (
+            "paper_writing_compliance",
+            "paper_figure_compliance",
+            "full_pdf_render_review",
+            "overlap_and_clipping",
+        ):
+            if fields.get(key) != "PASS":
+                errors.append(f"MAJOR legacy final audit {key} is not PASS")
+        warnings.append(
+            f"legacy audit report accepted from {LEGACY_AUDIT_PATH}; use {FINAL_AUDIT_PATH} after the next substantive change"
+        )
+        return
+
+    expected_phase = "RELEASE_CANDIDATE" if phase == "release-candidate" else "FINAL"
+    if fields["audit_phase"] != expected_phase:
+        errors.append(f"MAJOR final audit audit_phase must be {expected_phase}")
+    allowed_scope = {"FULL"} if phase == "release-candidate" else {"FULL", "IMPACTED"}
+    if fields["review_scope"] not in allowed_scope:
+        errors.append(f"MAJOR final audit review_scope must be one of {sorted(allowed_scope)}")
+    for key in ("official_rules_gate", "evidence_gate", "anonymity_gate", "delivery_gate"):
+        if fields[key] != "PASS":
+            errors.append(f"MAJOR final audit {key} is not PASS")
+    allowed_reproduction = {"PASS"} if phase == "release-candidate" else {"PASS", "REUSED_UNCHANGED"}
+    if fields["clean_reproduction_gate"] not in allowed_reproduction:
+        errors.append(
+            f"MAJOR final audit clean_reproduction_gate must be one of {sorted(allowed_reproduction)}"
+        )
 
 
 def read_csv(path: Path, required: set[str], errors: list[str]) -> list[dict[str, str]]:
@@ -226,10 +297,18 @@ def read_csv(path: Path, required: set[str], errors: list[str]) -> list[dict[str
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("project", type=Path)
-    parser.add_argument("--phase", choices=("draft", "release"), default="draft")
+    parser.add_argument(
+        "--phase",
+        choices=("draft", "release-candidate", "final", "release"),
+        default="draft",
+        help="'release' is a compatibility alias for 'release-candidate'",
+    )
     args = parser.parse_args()
+    phase = "release-candidate" if args.phase == "release" else args.phase
+    release_phase = phase != "draft"
     root = args.project.resolve()
     errors: list[str] = []
+    warnings: list[str] = []
 
     try:
         contracts = load_workspace_contracts(WORKSPACE_ROOT)
@@ -239,16 +318,11 @@ def main() -> int:
 
     if not root.is_dir():
         parser.error(f"project does not exist: {root}")
-    for relative in REQUIRED_DIRS:
-        if not (root / relative).is_dir():
-            errors.append(f"MAJOR missing directory: {relative}")
-    for relative in REQUIRED_FILES:
-        if not (root / relative).is_file():
-            errors.append(f"MAJOR missing file: {relative}")
-    if args.phase == "release":
-        for relative in RELEASE_REQUIRED_FILES:
+
+    if release_phase:
+        for relative in RELEASE_CORE_FILES:
             if not (root / relative).is_file():
-                errors.append(f"MAJOR missing release file: {relative}")
+                errors.append(f"MAJOR missing core release artifact: {relative}")
         audit_workflow_gate(
             root,
             "03-models/model-selection.md",
@@ -269,7 +343,7 @@ def main() -> int:
     evidence_path = root / "05-evidence/evidence-index.csv"
     if evidence_path.is_file():
         rows = read_csv(evidence_path, set(contracts.claim_columns), errors)
-        if args.phase == "release" and not rows:
+        if release_phase and not rows:
             errors.append("CRITICAL evidence index has no claims")
         for line, row in enumerate(rows, 2):
             source = row.get("source_path", "").strip()
@@ -285,7 +359,7 @@ def main() -> int:
     if literature_path.is_file():
         rows = read_csv(literature_path, set(contracts.literature_columns), errors)
         for line, row in enumerate(rows, 2):
-            if args.phase == "release" and row.get("verified", "").strip().lower() not in {"yes", "true", "1"}:
+            if release_phase and row.get("verified", "").strip().lower() not in {"yes", "true", "1"}:
                 errors.append(f"MAJOR literature row {line}: source not verified")
             locator = row.get("doi_or_url", "").strip()
             if locator and not (locator.startswith("http://") or locator.startswith("https://") or locator.startswith("10.")):
@@ -293,24 +367,41 @@ def main() -> int:
 
     for relative in ("01-problem/problem-checklist.md", "06-paper/main.tex", "08-delivery/file-list.md"):
         path = root / relative
-        if path.is_file() and args.phase == "release" and PLACEHOLDER.search(path.read_text(encoding="utf-8", errors="replace")):
+        if path.is_file() and release_phase and PLACEHOLDER.search(path.read_text(encoding="utf-8", errors="replace")):
             errors.append(f"MAJOR unresolved placeholder in {relative}")
 
     pdfs = list((root / "08-delivery").glob("*.pdf")) if (root / "08-delivery").is_dir() else []
-    if args.phase == "release":
+    if release_phase:
         if len(pdfs) != 1:
             errors.append(f"MAJOR delivery must contain exactly one PDF, found {len(pdfs)}")
         elif pdfs[0].stat().st_size > contracts.paper_maximum_bytes:
             errors.append("CRITICAL delivery PDF exceeds OFFICIAL-CUMCM-001 size limit")
-        audit_quality_report(root, pdfs[0] if len(pdfs) == 1 else None, contracts, errors)
+        audit_final_report(
+            root,
+            pdfs[0] if len(pdfs) == 1 else None,
+            contracts,
+            phase,
+            errors,
+            warnings,
+        )
+    else:
+        missing_draft = [relative for relative in RELEASE_CORE_FILES if not (root / relative).is_file()]
+        if missing_draft:
+            warnings.append(
+                "draft is incomplete, which is allowed; missing future release artifacts: "
+                + ", ".join(missing_draft)
+            )
 
     print(f"Audit root: {root}")
+    print(f"Audit phase: {phase}")
+    for item in warnings:
+        print(f"WARN - {item}")
     if errors:
         print("BLOCKED")
         for item in errors:
             print(f"- {item}")
         return 1
-    print("PASS (static evidence contract; quality-report assertions still require independent human review)")
+    print("PASS (objective static preflight; independent final review remains required)")
     return 0
 
 

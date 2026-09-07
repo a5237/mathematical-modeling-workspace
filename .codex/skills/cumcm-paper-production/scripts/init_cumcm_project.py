@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
-"""Create a normalized, evidence-driven CUMCM project without overwriting files."""
+"""Create a recommended evidence-driven CUMCM project without overwriting files."""
 
 from __future__ import annotations
 
 import argparse
-import re
 import shutil
 import sys
 from pathlib import Path
@@ -40,10 +39,27 @@ BASE_FILES = {
     "00-admin/runbook.md": "# 运行手册\n\n记录环境、入口命令、参数、随机种子和预期输出。\n",
     "01-problem/problem-checklist.md": "# 问题清单\n\n| question_id | task | inputs | outputs | constraints | metric | status |\n|---|---|---|---|---|---|---|\n| q01 | 待填写 | 待填写 | 待填写 | 待填写 | 待填写 | draft |\n",
     "03-models/model-selection.md": "# 模型与算法选择记录\n\n- selection_status: `INCOMPLETE`\n- completed_at: `YYYY-MM-DD`\n\n> 按 `docs/standards/workspace-governance.md` 的 `WG-MODEL-001` 完成；本记录不另行定义模型数量或偏离规则。\n\n| question_id | problem_features | library_resource | candidates | suitability_checks | selected_model | deviation_reason | baseline | validation_plan |\n|---|---|---|---|---|---|---|---|---|\n| q01 | 待填写 | resources/algorithm-library/待填写 | 待填写 | 目标、假设、数据、规模、约束、依赖、指标 | 待填写 | 不适用时写无 | 待填写 | 待填写 |\n",
-    "05-evidence/ai-tool-log.md": "# AI 工具使用台账\n\n按日期记录工具/版本、目的、关键交互、采纳内容和人工修改；发布文件执行 `OFFICIAL-CUMCM-001`。\n",
+    "05-evidence/ai-tool-log.md": (
+        "# AI 工具实质使用台账\n\n"
+        "> 只登记对模型、代码、论文或正式交付有实质影响的使用；普通问答、微小措辞调整和无实质影响的交互无需逐条记录。\n\n"
+        "| date | tool_and_model | stage | material_prompt_or_method | adopted_content | human_changes | verification |\n"
+        "|---|---|---|---|---|---|---|\n"
+    ),
     "06-paper/references.bib": "",
     "08-delivery/file-list.md": "# 支撑材料文件清单\n\n发布前列出每个文件、用途及其对应论文位置。\n",
 }
+
+REVIEW_FIELDS = (
+    "id",
+    "severity",
+    "location",
+    "criterion",
+    "finding",
+    "evidence",
+    "required_fix",
+    "verification",
+    "status",
+)
 
 
 def learning_record(contracts) -> str:
@@ -71,33 +87,38 @@ def learning_record(contracts) -> str:
     )
 
 
-def quality_report(contracts) -> str:
-    def initialize(match: re.Match) -> str:
-        key = match.group(2)
-        options = contracts.quality_field_options[key]
-        value = (
-            "0" if key.startswith("open_")
-            else options[0] if key == "final_pdf" and options
-            else "待审查" if key == "national_award_competitiveness"
-            else "BLOCKED" if {"PASS", "READY"} & set(options)
-            else "待填写"
-        )
-        return f"{match.group(1)} `{value}`"
-
-    return re.sub(r"^(- ([a-z0-9_]+):)\s*.*$", initialize, contracts.quality_report_template, flags=re.MULTILINE).rstrip() + "\n"
-
-
 def project_files(contracts) -> dict[str, str]:
-    review_header = "| " + " | ".join(contracts.quality_finding_fields) + " |\n"
-    review_separator = "|" + "|".join("---" for _ in contracts.quality_finding_fields) + "|\n"
+    review_header = "| " + " | ".join(REVIEW_FIELDS) + " |\n"
+    review_separator = "|" + "|".join("---" for _ in REVIEW_FIELDS) + "|\n"
     return {
         **BASE_FILES,
         "00-admin/pre-writing-learning.md": learning_record(contracts),
         "05-evidence/evidence-index.csv": ",".join(contracts.claim_columns) + "\n",
         "05-evidence/literature-ledger.csv": ",".join(contracts.literature_columns) + "\n",
         "07-review/review-log.md": "# 审稿记录\n\n" + review_header + review_separator,
-        "07-review/paper-quality-audit.md": quality_report(contracts),
     }
+
+
+def safe_path_component(value: str, label: str, parser: argparse.ArgumentParser) -> str:
+    """Reject only values that cannot safely form one filesystem path segment."""
+
+    value = value.strip()
+    forbidden = '<>:"/\\|?*'
+    reserved = {
+        "CON", "PRN", "AUX", "NUL",
+        *(f"COM{index}" for index in range(1, 10)),
+        *(f"LPT{index}" for index in range(1, 10)),
+    }
+    if (
+        not value
+        or value in {".", ".."}
+        or any(character in value for character in forbidden)
+        or any(ord(character) < 32 for character in value)
+        or value.endswith((" ", "."))
+        or value.split(".", 1)[0].upper() in reserved
+    ):
+        parser.error(f"{label} cannot be represented as a safe path component")
+    return value.lower()
 
 
 def main() -> int:
@@ -113,10 +134,8 @@ def main() -> int:
     except ContractError as exc:
         parser.error(f"invalid authority contract: {exc}")
 
-    contest = args.contest.lower()
-    problem = args.problem.lower()
-    if not re.fullmatch(r"[a-z0-9-]+", contest) or not re.fullmatch(r"[a-z0-9-]+", problem):
-        parser.error("contest and problem must use lowercase ASCII letters, digits, or hyphens")
+    contest = safe_path_component(args.contest, "contest", parser)
+    problem = safe_path_component(args.problem, "problem", parser)
     for template in (PAPER_FRAMEWORK, FIGURE_SELECTION_TEMPLATE):
         if not template.is_file():
             parser.error(f"missing project template: {template}")

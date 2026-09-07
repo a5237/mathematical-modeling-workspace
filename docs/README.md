@@ -1,6 +1,6 @@
 # 文档中心
 
-工作区文档按职责分为三类。每项规则只在一个权威文件中定义；入口、指南、Skill 和检查表只引用规则，模板与脚本只承载或读取权威定义，不得硬编码第二套阈值、数量或字段。
+工作区文档按职责分为三类。每项规则只在一个权威文件中定义；入口、指南、Skill 和检查表只引用规则。确需机器读取的少量客观参数使用权威文件中的显式 `toml machine-contract` 块，程序不得解析普通中文措辞、Reviewer judgment 或整份 Markdown 结构。
 
 ## 权威职责矩阵
 
@@ -14,9 +14,9 @@
 | 论文图片与科研可视化的选择、生成、排版、导出和视觉审校 | `standards/paper-figures.md` | 写作规范引用，生产与审校 Skill 执行 |
 | 科研图片审美参考的选择、提取与使用方法 | `guides/scientific-figure-aesthetics.md` | 引用 `PW-FIG-001`，不另设阈值；样例资产由参考库承载 |
 | 写作前学习流程与完成状态 | `guides/pre-writing-learning.md` | 其它文件只引用 `PWL-GATE-001` |
-| 论文质量、竞争力评分和审查报告模式 | `standards/paper-quality-audit.md` | 审校 Skill 执行，脚本校验机器字段 |
+| 最终审查生命周期、硬错误边界、竞争力评分和唯一报告模式 | `standards/paper-quality-audit.md` | 审校 Skill 执行；脚本只校验显式客观字段，不解析评分 |
 | 当届全国组委会规则快照 | `standards/cumcm-current-rules.md` | 提交前重新核对官网 |
-| Agent 生产与审校步骤 | 对应 `.codex/skills/` | 不重新定义规范参数 |
+| Agent 生产与审校步骤 | 对应 `.codex/skills/` | Production 负责生成，Final Audit 负责一次独立验证，不重新定义规范参数 |
 | 用户快速操作与命令 | `guides/paper-production.md` | 不重新定义门禁参数 |
 
 ## 架构
@@ -29,7 +29,7 @@
 - [证据契约](standards/evidence-contract.md)
 - [论文写作规范](standards/paper-writing.md)
 - [论文图片与科研可视化规范](standards/paper-figures.md)
-- [论文质量审查标准](standards/paper-quality-audit.md)
+- [最终审查与竞争力评分标准](standards/paper-quality-audit.md)
 - [CUMCM 现行官方规则基线](standards/cumcm-current-rules.md)
 - [命名与文件格式规范](standards/naming.md)
 

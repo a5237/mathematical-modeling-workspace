@@ -2,6 +2,14 @@
 
 > control_id: `PWL-GATE-001`
 
+```toml machine-contract
+learning_paper_minimum = 2
+learning_complete_status = "COMPLETE"
+selection_complete_status = "COMPLETE"
+```
+
+上方字段只承载稳定、客观的机器参数；学习质量仍由 Agent 和最终审校依据正文判断。
+
 本流程是论文正文写作启动门禁的唯一权威。每个正式项目必须先在 `00-admin/pre-writing-learning.md` 完成并标记学习记录，才可开始撰写正文或摘要；其它规范、Skill 和检查表只引用本控制编号，不重新定义阅读数量、状态或失效条件。
 
 ## 1. 确认学习范围

@@ -1,14 +1,14 @@
 # 工作区架构与目录职责
 
-本文档定义仓库级结构；项目内部结构由同一套约定继续约束。设计目标是让稳定文档、配置、工具和资源与频繁变化的项目数据、运行缓存分离。
+本文档是 Agent 组织仓库与项目文件的权威指南。设计目标是让稳定文档、配置、工具和资源与频繁变化的项目数据、运行缓存分离；下列目录树是推荐基线，不是由 Python 精确复刻的固定 schema。
 
 ## 设计原则（`LAYOUT-001`）
 
-1. **根目录只做入口。** 根目录只保留 `README.md`、`AGENTS.md`、环境引导入口 `ENV_SETUP.md`、`setup.bat`、版本控制文件、隐藏环境目录和一级职责层；环境规则仍以 `docs/guides/modeling-environment.md` 为准。
+1. **根目录主要做入口。** 常用入口仍为 `README.md`、`AGENTS.md`、`ENV_SETUP.md`、`setup.bat`、版本控制文件、隐藏环境目录和一级职责层；合理新增顶层入口或职责目录不会仅因不在旧清单中而失败。环境规则仍以 `docs/guides/modeling-environment.md` 为准。
 2. **稳定资产与工作数据分离。** 规范、配置、工具和模板不与赛题项目混放。
 3. **项目彼此隔离。** 每个正式需求只有一个项目目录，项目代码不得读取其他项目的隐式产物。
 4. **原始数据受保护。** 具体不可变性和派生数据规则执行 `docs/standards/workspace-governance.md` 的 `WG-DATA-001`。
-5. **运行时产物可删除。** 缓存、渲染页和调试输出统一进入 `var/tmp/`，不得成为唯一证据。
+5. **运行时产物可删除。** 缓存、渲染页和调试输出统一进入 `var/tmp/`，不得成为唯一证据。布局机器检查只拦截明显缓存/生成污染、批量项目产物散落和会造成冲突的废弃结构，不检查普通命名与完整目录存在性。
 
 ## 仓库目录树
 
@@ -58,16 +58,18 @@
 
 ## 正式项目结构
 
-正式项目路径固定为 `workspace/projects/<project-id>/`，其中 `<project-id>` 执行 `docs/standards/naming.md`：
+正式项目通常位于 `workspace/projects/<project-id>/`，其中 `<project-id>` 按 `docs/standards/naming.md` 生成。初始化器创建以下推荐骨架：
 
 ```text
 <project-id>/
 ├── 00-admin/               # 清单、环境、运行手册、写作学习与选图决策记录和状态
 ├── 01-problem/             # 原题、附件清单和问题核对
+│   └── attachments/        # 不属于原始数据表的题面附件
 ├── 02-data/
 │   ├── raw/                # 只读原始数据
 │   └── processed/          # 可由程序再生的数据
 ├── 03-models/              # 模型选择记录、代码、算法、配置和参数
+│   └── q01/                # 初始化示例，可按实际子问题或模型重构
 ├── 04-results/
 │   ├── figures/
 │   ├── tables/
@@ -77,15 +79,18 @@
 ├── 06-paper/
 │   ├── figures/
 │   └── tables/
-├── 07-review/              # 自动审计、独立审校、论文质量与国奖竞争力审查记录
+├── 07-review/              # 审稿记录与 RC/Final 唯一最终审查报告
 └── 08-delivery/            # 仅保留可提交成品
+    └── support-materials/  # 当届要求的可运行代码与支撑材料
 ```
 
-项目目录的工程门禁见 `docs/standards/workspace-governance.md`，证据字段见 `docs/standards/evidence-contract.md`，论文质量审查见 `docs/standards/paper-quality-audit.md`。本文件只定义位置和生命周期，不重复各规范的内容门禁。
+项目可根据题目增加、拆分或重构内部目录，例如 `experiments/`、`benchmarks/`、`simulations/` 或按模型组织的子树。只要原始数据保护、权威模型/参数、机器结果、证据、论文与交付关系仍明确且可复现，这些变化不构成审查错误。初始化骨架负责提供可靠起点，不限制项目后续演化。
+
+项目目录的工程门禁见 `docs/standards/workspace-governance.md`，证据字段见 `docs/standards/evidence-contract.md`，论文质量审查见 `docs/standards/paper-quality-audit.md`。本文件不要求审计脚本复制完整目录树。
 
 ## 需求生命周期
 
-1. 在 `workspace/inbox/<yyyy-mm-dd>-<short-name>/` 保存新需求和附件。
+1. 在 `workspace/inbox/<yyyy-mm-dd>-<short-name>/` 保存题目要求、用户说明和原始附件；该命名是推荐约定，不是独立机器门禁。
 2. 明确赛题后，用初始化脚本在 `workspace/projects/` 创建唯一项目。
 3. 将原题和附件分别归入项目 `01-problem/`、`02-data/raw/`。
 4. 清空对应 inbox 子目录，避免维护两份原始材料。
@@ -101,9 +106,9 @@
 - 只服务某一道题的数据、代码或论文：对应项目目录。
 - 随时可重新生成且无需保留的文件：`var/tmp/`。
 
-任何无法归入上述类别的文件都不应直接留在根目录；先明确其生命周期和权威来源，再决定位置。
+任何无法归入上述类别的文件都应先明确生命周期和权威来源，再决定位置。单个合理的新入口不会被机器直接判错，但项目数据、模型代码、缓存和生成产物仍应路由到对应项目或 `var/tmp/`。
 
-可在仓库根目录运行以下命令验证结构：
+可在仓库根目录运行以下命令捕获高风险污染；该命令不验证完整目录树或普通命名：
 
 ```powershell
 .\.venv-modeling\Scripts\python.exe tools/check-workspace-layout.py

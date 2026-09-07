@@ -4,6 +4,14 @@
 >
 > 作用：统一规定论文主张、机器产物和文献台账的可追溯结构。生产、写作和审校流程只引用本契约，不另行维护字段或状态规则。
 
+```toml machine-contract
+claim_columns = ["claim_id", "question_id", "claim", "evidence_type", "source_path", "generator", "generated_at", "status"]
+literature_columns = ["citation_key", "title", "authors", "year", "doi_or_url", "retrieved_at", "used_in", "verified"]
+evidence_statuses = ["draft", "verified", "rejected"]
+```
+
+上方显式字段是供机器读取的稳定契约；正文负责解释语义。普通措辞或章节调整不参与程序解析。
+
 ## 1. 主张与证据
 
 每条会影响结论的主张必须具有稳定 `claim_id`，并至少指向一种可核查证据：程序输出、表格、图片、运行日志、原始数据字段、推导或已检索文献。

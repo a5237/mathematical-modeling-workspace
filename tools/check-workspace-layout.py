@@ -1,83 +1,17 @@
 #!/usr/bin/env python3
-"""Validate the repository-level workspace layout without modifying files."""
+"""Detect high-risk pollution without freezing the repository layout."""
 
 from __future__ import annotations
 
-import csv
-import re
+import argparse
 from pathlib import Path
 
 
 WORKSPACE_ROOT = Path(__file__).resolve().parent.parent
 
-ALLOWED_ROOT_FILES = {
-    ".gitignore",
-    "AGENTS.md",
-    "ENV_SETUP.md",
-    "README.md",
-    "setup.bat",
-}
-ALLOWED_ROOT_DIRS = {
-    ".agents",
-    ".codex",
-    ".git",
-    ".venv-modeling",
-    "config",
-    "docs",
-    "resources",
-    "tools",
-    "var",
-    "workspace",
-}
-
-REQUIRED_PATHS = (
-    ".codex/skills/cumcm-paper-audit/SKILL.md",
-    ".codex/skills/cumcm-paper-production/SKILL.md",
-    "config/python/requirements-modeling.txt",
-    "ENV_SETUP.md",
-    "setup.bat",
-    "docs/architecture/workspace-layout.md",
-    "docs/guides/modeling-environment.md",
-    "docs/guides/scientific-figure-aesthetics.md",
-    "docs/guides/pre-writing-learning.md",
-    "docs/standards/cumcm-current-rules.md",
-    "docs/standards/evidence-contract.md",
-    "docs/standards/naming.md",
-    "docs/standards/paper-figures.md",
-    "docs/standards/paper-quality-audit.md",
-    "docs/standards/paper-writing.md",
-    "docs/standards/workspace-governance.md",
-    "resources/paper-library",
-    "resources/figure-style-library/README.md",
-    "resources/figure-style-library/manifest.csv",
-    "resources/figure-style-library/references/overview.png",
-    "resources/algorithm-library/README.md",
-    "resources/algorithm-library/index.md",
-    "resources/algorithm-library/01-优化算法说明.md",
-    "resources/algorithm-library/02-预测类算法说明.md",
-    "resources/algorithm-library/03-评价类算法说明.md",
-    "resources/algorithm-library/04-图论与网络分析算法说明.md",
-    "resources/algorithm-library/05-统计分析与数据处理算法说明.md",
-    "resources/algorithm-library/06-综合类算法说明.md",
-    "resources/algorithm-library/07-机器学习算法说明.md",
-    "resources/templates",
-    "resources/templates/figure-selection-record.md",
-    "tools/check-modeling-env.py",
-    "tools/extract-spreadsheet.py",
-    "tools/render-figure-style-library.py",
-    "var/tmp/README.md",
-    "workspace/archive",
-    "workspace/inbox",
-    "workspace/projects",
-)
-
-AGENT_PATH_POLICY_MARKERS = {
-    "AGENTS.md": "Agent 工具路径约定",
-    ".codex/skills/cumcm-paper-production/SKILL.md": "follow the resolution convention in `AGENTS.md`",
-    ".codex/skills/cumcm-paper-audit/SKILL.md": "follow the resolution convention in `AGENTS.md`",
-}
-
-DEPRECATED_ROOT_PATHS = (
+# Unknown new roots are intentionally allowed. Only paths that recreate an
+# obsolete, competing authority root are blocked.
+CONFLICTING_DEPRECATED_PATHS = (
     "00-inbox",
     "archive",
     "paper-library",
@@ -87,83 +21,136 @@ DEPRECATED_ROOT_PATHS = (
     "shared-tools",
     "templates",
     "tmp",
+)
+
+DEPRECATED_ROOT_DOCUMENTS = (
     "数学建模工作区_Agent强制规范.md",
     "数学建模论文写作_Agent强制规范.md",
     "数模环境说明.md",
 )
 
-PROJECT_NAME = re.compile(r"^[a-z0-9-]+-\d{4}-[a-z0-9-]+$")
-INBOX_NAME = re.compile(r"^\d{4}-\d{2}-\d{2}-[a-z0-9-]+$")
+RUNTIME_DIRECTORY_NAMES = {
+    "__pycache__",
+    ".ipynb_checkpoints",
+    ".mypy_cache",
+    ".pytest_cache",
+    ".ruff_cache",
+    ".mplconfig",
+    "build",
+    "dist",
+}
+
+GENERATED_SUFFIXES = (
+    ".aux",
+    ".fdb_latexmk",
+    ".fls",
+    ".out",
+    ".pyc",
+    ".synctex.gz",
+    ".tmp",
+    ".toc",
+    ".xdv",
+)
+
+PROJECT_ARTIFACT_SUFFIXES = {
+    ".csv",
+    ".docx",
+    ".feather",
+    ".h5",
+    ".hdf5",
+    ".mat",
+    ".npy",
+    ".npz",
+    ".parquet",
+    ".pdf",
+    ".pickle",
+    ".pkl",
+    ".sav",
+    ".svg",
+    ".tex",
+    ".tif",
+    ".tiff",
+    ".tsv",
+    ".xls",
+    ".xlsm",
+    ".xlsx",
+    ".jpg",
+    ".jpeg",
+    ".png",
+}
+
+PROJECT_SOURCE_SUFFIXES = {".ipynb", ".jl", ".m", ".py", ".r"}
+PROJECT_ARTIFACT_BURST = 5
+PROJECT_SOURCE_BURST = 3
 
 
-def visible_directories(parent: Path) -> list[Path]:
-    return sorted(path for path in parent.iterdir() if path.is_dir())
+def is_generated_file(path: Path) -> bool:
+    name = path.name.lower()
+    return name.startswith("~$") or any(name.endswith(suffix) for suffix in GENERATED_SUFFIXES)
 
 
 def main() -> int:
-    errors: list[str] = []
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--root", type=Path, default=WORKSPACE_ROOT)
+    args = parser.parse_args()
+    root = args.root.resolve()
+    if not root.is_dir():
+        parser.error(f"workspace root does not exist: {root}")
 
-    for entry in WORKSPACE_ROOT.iterdir():
-        allowed = entry.name in (ALLOWED_ROOT_DIRS if entry.is_dir() else ALLOWED_ROOT_FILES)
-        if not allowed:
-            errors.append(f"unexpected root entry: {entry.name}")
+    failures: list[str] = []
+    warnings: list[str] = []
 
-    for relative in REQUIRED_PATHS:
-        if not (WORKSPACE_ROOT / relative).exists():
-            errors.append(f"missing required path: {relative}")
+    for relative in CONFLICTING_DEPRECATED_PATHS:
+        if (root / relative).exists():
+            failures.append(f"conflicting deprecated root path: {relative}")
 
-    for relative, marker in AGENT_PATH_POLICY_MARKERS.items():
-        path = WORKSPACE_ROOT / relative
-        if path.is_file() and marker not in path.read_text(encoding="utf-8"):
-            errors.append(f"missing Agent path-policy reference: {relative}")
+    for relative in DEPRECATED_ROOT_DOCUMENTS:
+        if (root / relative).exists():
+            warnings.append(f"deprecated root document should be routed under docs/: {relative}")
 
-    figure_library = WORKSPACE_ROOT / "resources" / "figure-style-library"
-    figure_manifest = figure_library / "manifest.csv"
-    if figure_manifest.is_file():
-        seen_ids: set[str] = set()
-        with figure_manifest.open(encoding="utf-8", newline="") as handle:
-            for row_number, row in enumerate(csv.DictReader(handle), start=2):
-                reference_id = (row.get("reference_id") or "").strip()
-                relative_file = (row.get("file") or "").strip()
-                if not reference_id or reference_id in seen_ids:
-                    errors.append(f"invalid or duplicate figure-style reference id at manifest row {row_number}")
-                seen_ids.add(reference_id)
-                if not relative_file or not (figure_library / relative_file).is_file():
-                    errors.append(f"missing figure-style reference file at manifest row {row_number}: {relative_file}")
-                for field in ("learn_from", "explicitly_do_not_copy", "provenance"):
-                    if not (row.get(field) or "").strip():
-                        errors.append(f"missing {field} at figure-style manifest row {row_number}")
+    entries = list(root.iterdir())
+    for entry in entries:
+        lowered = entry.name.lower()
+        if entry.is_dir() and (lowered in RUNTIME_DIRECTORY_NAMES or lowered.startswith("_minted-")):
+            failures.append(f"runtime/cache directory at workspace root: {entry.name}")
+        elif entry.is_file() and is_generated_file(entry):
+            failures.append(f"generated or temporary file at workspace root: {entry.name}")
 
-    for relative in DEPRECATED_ROOT_PATHS:
-        if (WORKSPACE_ROOT / relative).exists():
-            errors.append(f"deprecated root path returned: {relative}")
+    root_files = [entry for entry in entries if entry.is_file()]
+    artifact_files = [entry for entry in root_files if entry.suffix.lower() in PROJECT_ARTIFACT_SUFFIXES]
+    source_files = [entry for entry in root_files if entry.suffix.lower() in PROJECT_SOURCE_SUFFIXES]
 
-    projects = WORKSPACE_ROOT / "workspace" / "projects"
-    if projects.is_dir():
-        for project in visible_directories(projects):
-            if not PROJECT_NAME.fullmatch(project.name):
-                errors.append(f"invalid project directory name: workspace/projects/{project.name}")
+    if len(artifact_files) >= PROJECT_ARTIFACT_BURST:
+        failures.append(
+            f"project-artifact burst at workspace root ({len(artifact_files)} files; route into a project)"
+        )
+    elif artifact_files:
+        warnings.append(
+            "possible project data/result at workspace root: "
+            + ", ".join(path.name for path in sorted(artifact_files))
+        )
 
-    inbox = WORKSPACE_ROOT / "workspace" / "inbox"
-    if inbox.is_dir():
-        for request in visible_directories(inbox):
-            if not INBOX_NAME.fullmatch(request.name):
-                errors.append(f"invalid inbox directory name: workspace/inbox/{request.name}")
+    if len(source_files) >= PROJECT_SOURCE_BURST:
+        failures.append(
+            f"project-source burst at workspace root ({len(source_files)} files; route into tools/ or a project)"
+        )
+    elif source_files:
+        warnings.append(
+            "source file at workspace root; confirm it is a repository entry point: "
+            + ", ".join(path.name for path in sorted(source_files))
+        )
 
-    if errors:
-        print("[Workspace layout]")
-        for error in errors:
-            print(f"  FAIL {error}")
+    print(f"Workspace root: {root}")
+    print("[High-risk workspace hygiene]")
+    for item in warnings:
+        print(f"  WARN {item}")
+    for item in failures:
+        print(f"  FAIL {item}")
+
+    if failures:
         print("\nRESULT: FAIL")
         return 1
-
-    print("[Workspace layout]")
-    print("  OK   root allowlist")
-    print("  OK   required layers and entry files")
-    print("  OK   Agent path-policy references")
-    print("  OK   figure-style manifest and reference files")
-    print("  OK   deprecated root paths absent")
-    print("  OK   project and inbox directory names")
+    print("  OK   no high-risk root pollution detected" if not warnings else "  OK   no blocking issue detected")
     print("\nRESULT: PASS")
     return 0
 

@@ -129,6 +129,7 @@ terminado==0.18.1
 threadpoolctl==3.6.0
 tinycss2==1.5.1
 tornado==6.5.7
+tomli==2.0.1; python_version < "3.11"
 traitlets==5.15.1
 typing_extensions==4.16.0
 tzdata==2026.3

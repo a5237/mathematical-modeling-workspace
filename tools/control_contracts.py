@@ -1,8 +1,20 @@
-"""Read machine-enforced values from authority Markdown."""
+"""Load the small, explicit machine contracts embedded in authority documents.
+
+Natural-language prose is intentionally not parsed. Only fenced blocks whose
+info string is ``toml machine-contract`` participate in automation, so ordinary
+documentation edits cannot break the initializer or static audit.
+"""
+
+from __future__ import annotations
 
 import re
 from pathlib import Path
 from types import SimpleNamespace
+
+try:
+    import tomllib
+except ModuleNotFoundError:  # Python 3.10 compatibility
+    import tomli as tomllib
 
 
 class ContractError(RuntimeError):
@@ -17,49 +29,79 @@ DOCUMENTS = (
     "docs/standards/cumcm-current-rules.md",
 )
 
+CONTRACT_BLOCK = re.compile(
+    r"^```toml[ \t]+machine-contract[ \t]*\r?\n(.*?)^```[ \t]*$",
+    re.MULTILINE | re.DOTALL,
+)
+
+REQUIRED_KEYS = {
+    "claim_columns",
+    "literature_columns",
+    "evidence_statuses",
+    "body_word_minimum",
+    "body_page_minimum",
+    "body_page_maximum",
+    "body_figure_minimum",
+    "body_table_minimum",
+    "learning_paper_minimum",
+    "learning_complete_status",
+    "selection_complete_status",
+    "paper_maximum_bytes",
+}
+
 
 def load_workspace_contracts(root: Path):
-    def read(relative: str) -> str:
+    """Return validated objective values from explicit TOML contract blocks."""
+
+    values: dict[str, object] = {}
+    for relative in DOCUMENTS:
+        path = root / relative
         try:
-            return (root / relative).read_text(encoding="utf-8")
+            text = path.read_text(encoding="utf-8")
         except OSError as exc:
             raise ContractError(f"cannot read authority file {relative}: {exc}") from exc
 
-    def match(pattern: str, text: str, label: str, flags: int = 0):
-        found = re.search(pattern, text, flags)
-        if found is None:
-            raise ContractError(f"cannot parse {label} from authority Markdown")
-        return found
+        blocks = CONTRACT_BLOCK.findall(text)
+        if not blocks:
+            raise ContractError(f"missing explicit machine-contract block in {relative}")
+        for block in blocks:
+            try:
+                parsed = tomllib.loads(block)
+            except tomllib.TOMLDecodeError as exc:
+                raise ContractError(f"invalid machine contract in {relative}: {exc}") from exc
+            duplicates = sorted(values.keys() & parsed.keys())
+            if duplicates:
+                raise ContractError(f"duplicate machine-contract keys {duplicates} in {relative}")
+            values.update(parsed)
 
-    def ticks(pattern: str, text: str, label: str) -> tuple[str, ...]:
-        return tuple(re.findall(r"`([^`]+)`", match(pattern, text, label).group(1)))
+    missing = sorted(REQUIRED_KEYS - values.keys())
+    extras = sorted(values.keys() - REQUIRED_KEYS)
+    if missing or extras:
+        details = []
+        if missing:
+            details.append(f"missing keys {missing}")
+        if extras:
+            details.append(f"unknown keys {extras}")
+        raise ContractError("invalid machine contract: " + "; ".join(details))
 
-    evidence, paper, quality, learning, official = map(read, DOCUMENTS)
-    claims = match(r"`05-evidence/evidence-index\.csv`[^\n]*\n\n([\s\S]*?)\n\n发布前", evidence, "evidence columns").group(1)
-    report = match(r"## 6\.[\s\S]*?PQA-REPORT-001[\s\S]*?```markdown\s*\n([\s\S]*?)\n```", quality, "quality report template").group(1).strip() + "\n"
-    options = {
-        key: tuple(re.findall(r"`([^`]+)`", description))
-        for key, description in re.findall(r"^- ([a-z0-9_]+):\s*(.*)$", report, re.MULTILINE)
-    }
-    if not options:
-        raise ContractError("quality report template contains no fields")
-    figures = match(r"正文必须至少包含\s*\*\*(\d+) 个图\*\*和\s*\*\*(\d+) 个表\*\*", quality, "minimum visual counts")
-    pages = match(r"正文必须为\s*\*\*(\d+)\s*[—-]\s*(\d+) 页\*\*", quality, "body page range")
+    for key in ("claim_columns", "literature_columns", "evidence_statuses"):
+        raw = values[key]
+        if not isinstance(raw, list) or not raw or not all(isinstance(item, str) and item for item in raw):
+            raise ContractError(f"machine-contract key {key} must be a non-empty string array")
+        values[key] = tuple(raw)
 
-    return SimpleNamespace(
-        claim_columns=tuple(re.findall(r"^- `([a-z0-9_]+)`：", claims, re.MULTILINE)),
-        literature_columns=tuple(match(r"`05-evidence/literature-ledger\.csv`[^\n]*\n\n`([^`]+)`", evidence, "literature columns").group(1).split(",")),
-        evidence_statuses=ticks(r"`status`：([^\n]+)", claims, "evidence statuses"),
-        body_word_minimum=int(match(r"PW-LEN-001[\s\S]{0,300}?\*\*([\d,]+) 字\*\*", paper, "minimum body words").group(1).replace(",", "")),
-        body_page_minimum=int(pages.group(1)),
-        body_page_maximum=int(pages.group(2)),
-        body_figure_minimum=int(figures.group(1)),
-        body_table_minimum=int(figures.group(2)),
-        quality_report_template=report,
-        quality_field_options=options,
-        quality_finding_fields=ticks(r"每[项条]发现必须包含：\s*\n\n([^\n]+)", quality, "quality finding fields"),
-        learning_paper_minimum=int(match(r"至少\s*(\d+)\s*篇", learning, "learning paper minimum").group(1)),
-        learning_complete_status=match(r"`learning_status`[^\n]*?`([^`]+)`", learning, "learning completion status").group(1),
-        selection_complete_status=match(r"`selection_status`[^\n]*?`([^`]+)`", learning, "selection completion status").group(1),
-        paper_maximum_bytes=int(float(match(r"电子论文[^\n]*?不超过\s*([\d.]+)\s*MB", official, "maximum paper size", re.IGNORECASE).group(1)) * 1_000_000),
-    )
+    for key in (
+        "body_word_minimum",
+        "body_page_minimum",
+        "body_page_maximum",
+        "body_figure_minimum",
+        "body_table_minimum",
+        "learning_paper_minimum",
+        "paper_maximum_bytes",
+    ):
+        if not isinstance(values[key], int) or values[key] <= 0:
+            raise ContractError(f"machine-contract key {key} must be a positive integer")
+
+    if values["body_page_minimum"] > values["body_page_maximum"]:
+        raise ContractError("body_page_minimum cannot exceed body_page_maximum")
+    return SimpleNamespace(**values)
