@@ -150,8 +150,10 @@ workspace/       → 你的工作区
 3. 按 `00-admin` → `01-problem` → ... → `08-delivery` 的顺序推进
    - Day 1-2：关注建模和代码(人类定方向，Agent 执行)
    - Day 3-4：关注审校和交付(Agent 生成草稿，人类检查逻辑、图表、排版、字体)
+   - 
+> 如果你希望在 Day 1 进行更深入的预建模研究，可以参考[进阶篇的人机协作案例](#人机协作人类预建模与-agent-执行)。
 
-### 论文审校与交付
+#### 论文审校与交付
 
 Agent 生成论文初稿后，你需要逐项检查以下内容(按优先级排序):
 
@@ -184,11 +186,7 @@ Agent 生成论文初稿后，你需要逐项检查以下内容(按优先级排�
 
 ### 如果你是 Agent
 
-1. 首先读取 `AGENTS.md`，了解行为规则和强制门禁
-2. 读取 `docs/standards/workspace-governance.md`，了解文件路由和数据保护要求
-3. 如果涉及论文，读取 `docs/standards/paper-writing.md`
-4. 涉及图片生成时，读取 `docs/standards/paper-figures.md`
-5. 在开始写作前，执行 `docs/guides/pre-writing-learning.md` 中描述的学习流程
+请直接阅读 [`AGENTS.md`](AGENTS.md)，该文件是 Agent 的唯一行为入口，包含完整的阅读顺序、全局门禁和文件路由规则。
 
 ## 进阶篇
 
