@@ -7,7 +7,7 @@ import os
 from pathlib import Path
 
 WORKSPACE_ROOT = Path(__file__).resolve().parent.parent
-MPL_CONFIG_DIR = WORKSPACE_ROOT / "var" / "tmp" / "matplotlib"
+MPL_CONFIG_DIR = WORKSPACE_ROOT / "var" / "temp" / "matplotlib"
 MPL_CONFIG_DIR.mkdir(parents=True, exist_ok=True)
 os.environ.setdefault("MPLCONFIGDIR", str(MPL_CONFIG_DIR))
 

@@ -37,7 +37,18 @@ FIGURE_SELECTION_TEMPLATE = WORKSPACE_ROOT / "resources" / "templates" / "figure
 BASE_FILES = {
     "00-admin/project.yaml": "project_id: {project_id}\ncontest: {contest}\nyear: {year}\nproblem: {problem}\nstatus: intake\nrandom_seed: 20260721\n",
     "00-admin/runbook.md": "# 运行手册\n\n记录环境、入口命令、参数、随机种子和预期输出。\n",
-    "01-problem/problem-checklist.md": "# 问题清单\n\n| question_id | task | inputs | outputs | constraints | metric | status |\n|---|---|---|---|---|---|---|\n| q01 | 待填写 | 待填写 | 待填写 | 待填写 | 待填写 | draft |\n",
+    "01-problem/problem-checklist.md": (
+        "# 问题清单\n\n"
+        "## 题面与附件\n\n"
+        "| relative_file | exists | source | received_at |\n"
+        "|---|---|---|---|\n"
+        "| 待填写 | no | 待填写 | YYYY-MM-DD |\n\n"
+        "> 中间门禁只登记关键文件名与存在状态，不记录文件哈希。\n\n"
+        "## 子问题\n\n"
+        "| question_id | task | inputs | outputs | constraints | metric | status |\n"
+        "|---|---|---|---|---|---|---|\n"
+        "| q01 | 待填写 | 待填写 | 待填写 | 待填写 | 待填写 | draft |\n"
+    ),
     "03-models/model-selection.md": "# 模型与算法选择记录\n\n- selection_status: `INCOMPLETE`\n- completed_at: `YYYY-MM-DD`\n\n> 按 `docs/standards/workspace-governance.md` 的 `WG-MODEL-001` 完成；本记录不另行定义模型数量或偏离规则。\n\n| question_id | problem_features | library_resource | candidates | suitability_checks | selected_model | deviation_reason | baseline | validation_plan |\n|---|---|---|---|---|---|---|---|---|\n| q01 | 待填写 | resources/algorithm-library/待填写 | 待填写 | 目标、假设、数据、规模、约束、依赖、指标 | 待填写 | 不适用时写无 | 待填写 | 待填写 |\n",
     "05-evidence/ai-tool-log.md": (
         "# AI 工具实质使用台账\n\n"

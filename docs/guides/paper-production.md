@@ -18,7 +18,7 @@
 .\.venv-modeling\Scripts\python.exe .\.codex\skills\cumcm-paper-audit\scripts\audit_cumcm_project.py workspace\projects\cumcm-2026-a --phase draft
 ```
 
-内容冻结为 Release Candidate 后，由 Final Audit 完成唯一一次 clean reproduction、最终 PDF 逐页/逐图检查并写入 `07-review/final-audit.md`，随后运行客观 preflight：
+形成 Release Candidate 待审快照后，由 Final Audit 完成唯一一次 clean reproduction、最终 PDF 逐页/逐图检查并写入 `07-review/final-audit.md`，随后运行客观 preflight。审查发现问题时可返回受影响的代码、模型或数据处理阶段修正，再更新阶段状态并形成新快照：
 
 ```powershell
 .\.venv-modeling\Scripts\python.exe .\.codex\skills\cumcm-paper-audit\scripts\audit_cumcm_project.py workspace\projects\cumcm-2026-a --phase release-candidate

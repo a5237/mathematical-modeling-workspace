@@ -40,10 +40,6 @@ AUDIT_FIELD = re.compile(r"^\s*-\s*([a-z0-9_]+):\s*`([^`]*)`\s*$", re.MULTILINE)
 WORKFLOW_FIELD = re.compile(
     r"^\s*(?:[-*]\s*)?([a-z0-9_]+)\s*:\s*(.*?)\s*$", re.MULTILINE
 )
-PAPER_LIBRARY_PATH = re.compile(
-    r"resources/paper-library/[^\s`|]+?\.md", re.IGNORECASE
-)
-
 FINAL_AUDIT_PATH = "07-review/final-audit.md"
 LEGACY_AUDIT_PATH = "07-review/paper-quality-audit.md"
 FINAL_AUDIT_FIELDS = {
@@ -67,12 +63,6 @@ FINAL_AUDIT_FIELDS = {
     "open_major",
     "release_decision",
 }
-ALGORITHM_RESOURCE = re.compile(
-    r"(?:resources/algorithm-library/)?(?:index|\d{2}-[^\s`|,，;；/\\]+?)\.md",
-    re.IGNORECASE,
-)
-
-
 def workflow_metadata(text: str) -> dict[str, str]:
     fields: dict[str, str] = {}
     for key, raw_value in WORKFLOW_FIELD.findall(text):
@@ -83,18 +73,19 @@ def workflow_metadata(text: str) -> dict[str, str]:
     return fields
 
 
-def algorithm_resources(text: str) -> set[str]:
-    return {match.replace("\\", "/") for match in ALGORITHM_RESOURCE.findall(text)}
-
-
 def audit_workflow_gate(
     root: Path,
     relative: str,
     status_key: str,
     expected_status: str,
-    minimum_learning_papers: int,
     errors: list[str],
 ) -> None:
+    """Check only artifact existence and explicit stage completion.
+
+    Substantive model-selection and learning quality remain reviewer duties. The
+    static preflight intentionally does not bind intermediate content by hash or
+    infer completeness from prose structure.
+    """
     path = root / relative
     if not path.is_file():
         return
@@ -102,36 +93,8 @@ def audit_workflow_gate(
     fields = workflow_metadata(text)
     if fields.get(status_key) != expected_status:
         errors.append(f"MAJOR workflow gate {relative}: {status_key} must be {expected_status}")
-    date_keys = ("completed_at",) if status_key == "learning_status" else ("completed_at", "reviewed_at")
-    completion_date = next((fields[key] for key in date_keys if fields.get(key)), "")
-    if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", completion_date):
-        accepted = " or ".join(date_keys)
-        errors.append(f"MAJOR workflow gate {relative}: {accepted} must use YYYY-MM-DD")
     if PLACEHOLDER.search(text):
         errors.append(f"MAJOR unresolved placeholder in {relative}")
-
-    if status_key == "learning_status":
-        reviewed_papers = set(PAPER_LIBRARY_PATH.findall(text))
-        if len(reviewed_papers) < minimum_learning_papers:
-            errors.append(
-                f"MAJOR workflow gate {relative}: fewer than {minimum_learning_papers} reviewed same-type papers from resources/paper-library"
-            )
-        resources = algorithm_resources(text)
-        if not any(not item.lower().endswith("index.md") for item in resources):
-            errors.append(f"MAJOR workflow gate {relative}: no reviewed algorithm resource")
-    elif status_key == "selection_status":
-        resources = algorithm_resources(text)
-        if not any(not item.lower().endswith("index.md") for item in resources):
-            errors.append(f"MAJOR workflow gate {relative}: no matching algorithm-library resource")
-        concept_markers = {
-            "candidate comparison": ("candidates", "候选"),
-            "suitability check": ("suitability", "适用"),
-            "selected model": ("selected_model", "选用", "模型选择"),
-            "validation plan": ("validation", "验证"),
-        }
-        for label, markers in concept_markers.items():
-            if not any(marker in text for marker in markers):
-                errors.append(f"MAJOR workflow gate {relative}: missing {label}")
 
 
 def sha256(path: Path) -> str:
@@ -328,7 +291,6 @@ def main() -> int:
             "03-models/model-selection.md",
             "selection_status",
             contracts.selection_complete_status,
-            contracts.learning_paper_minimum,
             errors,
         )
         audit_workflow_gate(
@@ -336,7 +298,6 @@ def main() -> int:
             "00-admin/pre-writing-learning.md",
             "learning_status",
             contracts.learning_complete_status,
-            contracts.learning_paper_minimum,
             errors,
         )
 

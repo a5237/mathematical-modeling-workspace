@@ -1,30 +1,34 @@
 #!/usr/bin/env python3
-"""Inspect Excel workbooks and stream worksheet data to auditable CSV/TSV files.
+"""Inspect Excel workbooks and clean worksheet data into model-ready CSV files.
 
 The source workbook is always opened read-only. Modern Excel files are streamed
 with openpyxl so that large worksheets do not need to be materialized as a
-DataFrame. Legacy .xls files are supported through xlrd.
+DataFrame. Legacy .xls files are supported through xlrd. Intermediate reports
+identify files by relative name and existence state, never by content hash.
 """
 
 from __future__ import annotations
 
 import argparse
 import csv
-import hashlib
 import json
 import os
+import re
 import sqlite3
 import sys
 import tempfile
 import time
+import unicodedata
 from collections import Counter
 from datetime import date, datetime, time as datetime_time, timezone
 from pathlib import Path
 from typing import Any, Iterable, Iterator, Sequence
 
 
-TOOL_VERSION = "1.1.0"
+TOOL_VERSION = "2.0.0"
 WORKSPACE_ROOT = Path(__file__).resolve().parent.parent
+TEMP_ROOT = WORKSPACE_ROOT / "var" / "temp"
+DEFAULT_AD_HOC_OUTPUT = Path("02-processed")
 MODERN_EXCEL_SUFFIXES = {".xlsx", ".xlsm", ".xltx", ".xltm"}
 SUPPORTED_EXCEL_SUFFIXES = MODERN_EXCEL_SUFFIXES | {".xls"}
 DEFAULT_DUPLICATE_MEMORY_ROWS = 100_000
@@ -91,14 +95,6 @@ def validate_output(input_path: Path, output_path: Path, overwrite: bool) -> Pat
     return resolved
 
 
-def sha256_file(path: Path) -> str:
-    digest = hashlib.sha256()
-    with path.open("rb") as handle:
-        for block in iter(lambda: handle.read(1024 * 1024), b""):
-            digest.update(block)
-    return digest.hexdigest()
-
-
 def json_value(value: Any) -> Any:
     if value is None or isinstance(value, (str, int, float, bool)):
         return value
@@ -117,6 +113,88 @@ def csv_value(value: Any) -> Any:
 
 def normalized_header(value: Any) -> str:
     return "" if value is None else str(value).strip()
+
+
+def is_blank(value: Any) -> bool:
+    return value is None or (isinstance(value, str) and not value.strip())
+
+
+def normalized_field_name(value: Any, column_number: int) -> str:
+    """Create a stable snake-like field name while preserving useful Unicode."""
+
+    text = "" if value is None else unicodedata.normalize("NFKC", str(value))
+    text = text.lstrip("\ufeff").strip().lower()
+    text = re.sub(r"[\s\-/\\:：;；,，.。()（）\[\]【】{}%％]+", "_", text)
+    text = "".join(
+        character
+        for character in text
+        if character == "_" or character.isalnum()
+    )
+    text = re.sub(r"_+", "_", text).strip("_")
+    if not text:
+        text = f"column_{column_number}"
+    if text[0].isdigit():
+        text = f"field_{text}"
+    return text
+
+
+INTEGER_TEXT = re.compile(r"^[+-]?(?:0|[1-9]\d*)$")
+DECIMAL_TEXT = re.compile(
+    r"^[+-]?(?:(?:0|[1-9]\d*)(?:\.\d+)?|\.\d+)(?:[eE][+-]?\d+)?$"
+)
+
+
+def normalized_cell(value: Any, infer_types: bool) -> Any:
+    """Normalize safe interchange values without damaging identifier strings."""
+
+    if isinstance(value, datetime):
+        if value.time() == datetime_time.min:
+            return value.date().isoformat()
+        return value.isoformat()
+    if isinstance(value, (date, datetime_time)):
+        return value.isoformat()
+    if not isinstance(value, str):
+        return value
+
+    text = unicodedata.normalize("NFKC", value).strip()
+    if not text:
+        return None
+    if not infer_types or text.startswith("="):
+        return text
+    if INTEGER_TEXT.fullmatch(text):
+        unsigned = text.lstrip("+-")
+        if len(unsigned) == 1 or not unsigned.startswith("0"):
+            try:
+                return int(text)
+            except ValueError:
+                return text
+    if DECIMAL_TEXT.fullmatch(text):
+        integer_part = text.lstrip("+-").split(".", 1)[0]
+        if len(integer_part) == 1 or not integer_part.startswith("0"):
+            try:
+                return float(text)
+            except ValueError:
+                return text
+    return text
+
+
+def safe_filename_part(value: str, fallback: str) -> str:
+    normalized = unicodedata.normalize("NFKD", value)
+    text = normalized.encode("ascii", "ignore").decode("ascii")
+    text = re.sub(r"[^a-zA-Z0-9]+", "-", text).strip("-").lower()
+    if text:
+        return text
+    codepoints = "-".join(f"u{ord(character):x}" for character in normalized if character.isalnum())
+    return codepoints[:80].rstrip("-") or fallback
+
+
+def default_processed_dir(input_path: Path) -> Path:
+    """Route formal-project inputs to 02-data/processed, else to 02-processed."""
+
+    for parent in input_path.parents:
+        if parent.name.casefold() == "raw" and parent.parent.name.casefold() == "02-data":
+            return parent.parent / "processed"
+    return Path.cwd() / DEFAULT_AD_HOC_OUTPUT
 
 
 def trim_trailing_empty(values: Sequence[Any]) -> list[Any]:
@@ -235,17 +313,16 @@ def choose_sheet(
     return sheet_names[0], 0
 
 
-def fingerprint_row(values: Sequence[Any]) -> bytes:
-    payload = json.dumps(
+def serialized_row(values: Sequence[Any]) -> bytes:
+    return json.dumps(
         [json_value(value) for value in values],
         ensure_ascii=False,
         separators=(",", ":"),
     ).encode("utf-8")
-    return hashlib.blake2b(payload, digest_size=16).digest()
 
 
 class DuplicateTracker:
-    """Count exact duplicate fingerprints with bounded automatic memory use."""
+    """Count exact duplicate serialized rows with bounded automatic memory use."""
 
     def __init__(self, strategy: str, memory_rows: int) -> None:
         self.requested_strategy = strategy
@@ -258,7 +335,7 @@ class DuplicateTracker:
             self._switch_to_disk()
 
     def _switch_to_disk(self) -> None:
-        cache_root = WORKSPACE_ROOT / "var" / "tmp"
+        cache_root = TEMP_ROOT
         cache_root.mkdir(parents=True, exist_ok=True)
         descriptor, raw_path = tempfile.mkstemp(
             prefix="spreadsheet-duplicates-", suffix=".sqlite3", dir=cache_root
@@ -271,11 +348,11 @@ class DuplicateTracker:
             self._connection.execute("PRAGMA synchronous=OFF")
             self._connection.execute("PRAGMA temp_store=FILE")
             self._connection.execute(
-                "CREATE TABLE fingerprints (value BLOB PRIMARY KEY) WITHOUT ROWID"
+                "CREATE TABLE rows (value BLOB PRIMARY KEY) WITHOUT ROWID"
             )
             if self._seen:
                 self._connection.executemany(
-                    "INSERT INTO fingerprints(value) VALUES (?)",
+                    "INSERT INTO rows(value) VALUES (?)",
                     ((value,) for value in self._seen),
                 )
                 self._seen.clear()
@@ -285,7 +362,7 @@ class DuplicateTracker:
             raise
 
     def observe(self, value: bytes) -> bool:
-        """Return True when the fingerprint has already been observed."""
+        """Return True when the serialized row has already been observed."""
         if self.requested_strategy == "off":
             return False
         if (
@@ -297,7 +374,7 @@ class DuplicateTracker:
         if self._connection is not None:
             changes_before = self._connection.total_changes
             self._connection.execute(
-                "INSERT OR IGNORE INTO fingerprints(value) VALUES (?)", (value,)
+                "INSERT OR IGNORE INTO rows(value) VALUES (?)", (value,)
             )
             return self._connection.total_changes == changes_before
         if value in self._seen:
@@ -401,7 +478,7 @@ def write_rows(
                         types[index][type_label(value)] += 1
 
                 if duplicate_strategy != "off" and duplicates.observe(
-                    fingerprint_row(selected)
+                    serialized_row(selected)
                 ):
                     duplicate_rows += 1
 
@@ -602,8 +679,7 @@ def inspect_workbook(input_value: Path, args: argparse.Namespace) -> dict[str, A
         "operation": "inspect",
         "input": {
             "file": display_path(input_path),
-            "size_bytes": input_path.stat().st_size,
-            "sha256": sha256_file(input_path),
+            "exists": input_path.is_file(),
         },
         "cell_mode": "formulas" if args.formulas else "cached-values",
         **details,
@@ -612,7 +688,8 @@ def inspect_workbook(input_value: Path, args: argparse.Namespace) -> dict[str, A
 
 
 def inspect_command(args: argparse.Namespace) -> int:
-    report = inspect_workbook(args.input, args)
+    input_path = validate_input(args.input)
+    report = inspect_workbook(input_path, args)
 
     if args.report is None:
         print(json.dumps(report, ensure_ascii=False, indent=2))
@@ -881,13 +958,11 @@ def extract_command(args: argparse.Namespace) -> int:
             "created_at_utc": datetime.now(timezone.utc).isoformat(),
             "input": {
                 "file": display_path(input_path),
-                "size_bytes": input_path.stat().st_size,
-                "sha256": sha256_file(input_path),
+                "exists": input_path.is_file(),
             },
             "output": {
                 "file": display_path(output_path),
-                "size_bytes": staged_output.stat().st_size,
-                "sha256": sha256_file(staged_output),
+                "exists": True,
                 "encoding": args.encoding,
                 "format": output_path.suffix.lower().lstrip("."),
             },
@@ -922,18 +997,359 @@ def extract_command(args: argparse.Namespace) -> int:
     return 0
 
 
-def add_sheet_selector(parser: argparse.ArgumentParser) -> None:
+def selected_sheet_names(
+    sheet_names: Sequence[str], sheet_name: str | None, sheet_index: int | None
+) -> list[tuple[str, int]]:
+    """Select all sheets by default, or one explicitly requested sheet."""
+
+    if sheet_name is not None or sheet_index is not None:
+        name, zero_based = choose_sheet(sheet_names, sheet_name, sheet_index)
+        return [(name, zero_based + 1)]
+    return [(name, index) for index, name in enumerate(sheet_names, start=1)]
+
+
+def scan_clean_sheet(
+    rows_factory: Any, requested_header_row: int | None
+) -> tuple[int | None, list[Any], list[int]]:
+    """Find a header row and every non-empty column without loading the sheet."""
+
+    header_row = requested_header_row
+    raw_headers: list[Any] = []
+    active_columns: set[int] = set()
+    saw_requested_header = False
+
+    for row_number, source_row in enumerate(rows_factory(), start=1):
+        row = list(source_row)
+        if header_row is None:
+            if not any(not is_blank(value) for value in row):
+                continue
+            header_row = row_number
+        if row_number < header_row:
+            continue
+        if row_number == header_row:
+            raw_headers = row
+            saw_requested_header = True
+        for index, value in enumerate(row):
+            if not is_blank(value):
+                active_columns.add(index)
+
+    if header_row is None:
+        return None, [], []
+    if not saw_requested_header:
+        raise SpreadsheetToolError(
+            f"header row {header_row} is beyond the worksheet's used range"
+        )
+    return header_row, raw_headers, sorted(active_columns)
+
+
+def standardized_headers(
+    raw_headers: Sequence[Any], active_columns: Sequence[int]
+) -> tuple[list[str], list[dict[str, Any]]]:
+    headers: list[str] = []
+    mapping: list[dict[str, Any]] = []
+    used: Counter[str] = Counter()
+    for index in active_columns:
+        raw_value = raw_headers[index] if index < len(raw_headers) else None
+        base = normalized_field_name(raw_value, index + 1)
+        used[base] += 1
+        normalized = base if used[base] == 1 else f"{base}_{used[base]}"
+        headers.append(normalized)
+        mapping.append(
+            {
+                "source_column": index + 1,
+                "original": json_value(raw_value),
+                "normalized": normalized,
+            }
+        )
+    return headers, mapping
+
+
+def write_clean_csv(
+    rows_factory: Any,
+    output_path: Path,
+    *,
+    header_row: int,
+    active_columns: Sequence[int],
+    headers: Sequence[str],
+    encoding: str,
+    infer_types: bool,
+    keep_empty_rows: bool,
+) -> dict[str, Any]:
+    temporary = temporary_sibling(output_path)
+    scanned_rows = 0
+    output_rows = 0
+    skipped_empty_rows = 0
+    missing = [0 for _ in headers]
+    observed_types = [Counter() for _ in headers]
+
+    try:
+        with temporary.open("w", encoding=encoding, newline="") as handle:
+            writer = csv.writer(handle, lineterminator="\n")
+            writer.writerow(headers)
+            for row_number, source_row in enumerate(rows_factory(), start=1):
+                if row_number <= header_row:
+                    continue
+                scanned_rows += 1
+                row = list(source_row)
+                values = [
+                    normalized_cell(row[index] if index < len(row) else None, infer_types)
+                    for index in active_columns
+                ]
+                if not keep_empty_rows and all(is_blank(value) for value in values):
+                    skipped_empty_rows += 1
+                    continue
+                for index, value in enumerate(values):
+                    if is_blank(value):
+                        missing[index] += 1
+                    else:
+                        observed_types[index][type_label(value)] += 1
+                writer.writerow([csv_value(value) for value in values])
+                output_rows += 1
+        os.replace(temporary, output_path)
+    finally:
+        temporary.unlink(missing_ok=True)
+
+    return {
+        "scanned_source_rows": scanned_rows,
+        "output_rows": output_rows,
+        "skipped_empty_rows": skipped_empty_rows,
+        "missing_cells_by_column": dict(zip(headers, missing, strict=True)),
+        "observed_types_by_column": {
+            header: dict(sorted(counter.items()))
+            for header, counter in zip(headers, observed_types, strict=True)
+        },
+    }
+
+
+def clean_output_path(
+    output_dir: Path, workbook_stem: str, sheet_name: str, sheet_index: int
+) -> Path:
+    workbook_part = safe_filename_part(workbook_stem, "workbook")
+    sheet_part = safe_filename_part(sheet_name, f"sheet-{sheet_index:02d}")
+    if sheet_part == f"sheet-{sheet_index:02d}":
+        filename = f"{workbook_part}-sheet-{sheet_index:02d}.csv"
+    else:
+        filename = f"{workbook_part}-sheet-{sheet_index:02d}-{sheet_part}.csv"
+    return output_dir / filename
+
+
+def clean_modern_workbook(
+    input_path: Path,
+    selections: Sequence[tuple[str, int]],
+    output_paths: dict[str, Path],
+    args: argparse.Namespace,
+) -> list[dict[str, Any]]:
+    from openpyxl import load_workbook
+
+    workbook = load_workbook(
+        input_path,
+        read_only=True,
+        data_only=not args.formulas,
+        keep_links=False,
+    )
+    reports: list[dict[str, Any]] = []
+    try:
+        for sheet_name, sheet_index in selections:
+            worksheet = workbook[sheet_name]
+            rows_factory = lambda worksheet=worksheet: worksheet.iter_rows(values_only=True)
+            header_row, raw_headers, active_columns = scan_clean_sheet(
+                rows_factory, args.header_row
+            )
+            if header_row is None:
+                reports.append(
+                    {
+                        "sheet_name": sheet_name,
+                        "sheet_index": sheet_index,
+                        "status": "skipped-empty",
+                    }
+                )
+                continue
+            headers, mapping = standardized_headers(raw_headers, active_columns)
+            output_path = output_paths[sheet_name]
+            statistics = write_clean_csv(
+                rows_factory,
+                output_path,
+                header_row=header_row,
+                active_columns=active_columns,
+                headers=headers,
+                encoding=args.encoding,
+                infer_types=args.infer_types,
+                keep_empty_rows=args.keep_empty_rows,
+            )
+            reports.append(
+                {
+                    "sheet_name": sheet_name,
+                    "sheet_index": sheet_index,
+                    "status": "ok",
+                    "header_row": header_row,
+                    "removed_fully_empty_columns": worksheet.max_column
+                    - len(active_columns),
+                    "header_mapping": mapping,
+                    "output": {
+                        "file": display_path(output_path),
+                        "exists": output_path.is_file(),
+                    },
+                    **statistics,
+                }
+            )
+    finally:
+        workbook.close()
+    return reports
+
+
+def clean_legacy_workbook(
+    input_path: Path,
+    selections: Sequence[tuple[str, int]],
+    output_paths: dict[str, Path],
+    args: argparse.Namespace,
+) -> list[dict[str, Any]]:
+    if args.formulas:
+        raise SpreadsheetToolError("formula expressions cannot be extracted from legacy .xls files")
+
+    import xlrd
+
+    workbook = xlrd.open_workbook(input_path, on_demand=True)
+    reports: list[dict[str, Any]] = []
+    try:
+        for sheet_name, sheet_index in selections:
+            sheet = workbook.sheet_by_name(sheet_name)
+            rows_factory = lambda sheet=sheet: (
+                read_legacy_row(workbook, sheet, row_index)
+                for row_index in range(sheet.nrows)
+            )
+            header_row, raw_headers, active_columns = scan_clean_sheet(
+                rows_factory, args.header_row
+            )
+            if header_row is None:
+                reports.append(
+                    {
+                        "sheet_name": sheet_name,
+                        "sheet_index": sheet_index,
+                        "status": "skipped-empty",
+                    }
+                )
+                continue
+            headers, mapping = standardized_headers(raw_headers, active_columns)
+            output_path = output_paths[sheet_name]
+            statistics = write_clean_csv(
+                rows_factory,
+                output_path,
+                header_row=header_row,
+                active_columns=active_columns,
+                headers=headers,
+                encoding=args.encoding,
+                infer_types=args.infer_types,
+                keep_empty_rows=args.keep_empty_rows,
+            )
+            reports.append(
+                {
+                    "sheet_name": sheet_name,
+                    "sheet_index": sheet_index,
+                    "status": "ok",
+                    "header_row": header_row,
+                    "removed_fully_empty_columns": sheet.ncols - len(active_columns),
+                    "header_mapping": mapping,
+                    "output": {
+                        "file": display_path(output_path),
+                        "exists": output_path.is_file(),
+                    },
+                    **statistics,
+                }
+            )
+    finally:
+        workbook.release_resources()
+    return reports
+
+
+def clean_command(args: argparse.Namespace) -> int:
+    started = time.perf_counter()
+    input_path = validate_input(args.input)
+    output_dir = (
+        args.output_dir.expanduser().resolve()
+        if args.output_dir is not None
+        else default_processed_dir(input_path).resolve()
+    )
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    if input_path.suffix.lower() == ".xls":
+        import xlrd
+
+        workbook = xlrd.open_workbook(input_path, on_demand=True)
+        try:
+            all_sheet_names = workbook.sheet_names()
+        finally:
+            workbook.release_resources()
+    else:
+        from openpyxl import load_workbook
+
+        workbook = load_workbook(input_path, read_only=True, data_only=True, keep_links=False)
+        try:
+            all_sheet_names = list(workbook.sheetnames)
+        finally:
+            workbook.close()
+
+    selections = selected_sheet_names(all_sheet_names, args.sheet, args.sheet_index)
+    output_paths = {
+        sheet_name: clean_output_path(output_dir, input_path.stem, sheet_name, sheet_index)
+        for sheet_name, sheet_index in selections
+    }
+    workbook_part = safe_filename_part(input_path.stem, "workbook")
+    report_candidate = args.report or output_dir / f"{workbook_part}-cleaning-report.json"
+    report_path = report_candidate.expanduser().resolve()
+
+    destinations = [*output_paths.values(), report_path]
+    if len(set(destinations)) != len(destinations):
+        raise SpreadsheetToolError("cleaning output paths are not unique")
+    for destination in destinations:
+        validate_output(input_path, destination, args.overwrite)
+
+    reader = clean_legacy_workbook if input_path.suffix.lower() == ".xls" else clean_modern_workbook
+    sheets = reader(input_path, selections, output_paths, args)
+    report = {
+        "tool": "tools/extract-spreadsheet.py",
+        "tool_version": TOOL_VERSION,
+        "operation": "clean",
+        "created_at_utc": datetime.now(timezone.utc).isoformat(),
+        "input": {"file": display_path(input_path), "exists": input_path.is_file()},
+        "output_directory": display_path(output_dir),
+        "cell_mode": "formulas" if args.formulas else "cached-values",
+        "type_inference": "conservative" if args.infer_types else "off",
+        "sheets": sheets,
+        "elapsed_seconds": round(time.perf_counter() - started, 3),
+    }
+    write_json_atomic(report_path, report)
+    outputs = [item for item in sheets if item["status"] == "ok"]
+    print(
+        json.dumps(
+            {
+                "status": "ok",
+                "output_directory": display_path(output_dir),
+                "report": display_path(report_path),
+                "csv_files": len(outputs),
+                "skipped_empty_sheets": len(sheets) - len(outputs),
+            },
+            ensure_ascii=False,
+        )
+    )
+    return 0
+
+
+def add_sheet_selector(
+    parser: argparse.ArgumentParser, default_behavior: str = "the first worksheet"
+) -> None:
     group = parser.add_mutually_exclusive_group()
-    group.add_argument("--sheet", help="worksheet name; defaults to the first sheet")
+    group.add_argument(
+        "--sheet", help=f"worksheet name; when omitted, uses {default_behavior}"
+    )
     group.add_argument(
         "--sheet-index",
         type=positive_int,
-        help="one-based worksheet index; defaults to 1",
+        help=f"one-based worksheet index; when omitted, uses {default_behavior}",
     )
 
 
 def add_inspection_options(parser: argparse.ArgumentParser) -> None:
-    add_sheet_selector(parser)
+    add_sheet_selector(parser, "all worksheets")
     parser.add_argument(
         "--header-row", type=positive_int, default=1, help="one-based header row"
     )
@@ -963,8 +1379,8 @@ def add_inspection_options(parser: argparse.ArgumentParser) -> None:
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description=(
-            "Inspect Excel workbooks and stream large worksheets to auditable CSV/TSV "
-            "without modifying the source file."
+            "Inspect Excel workbooks, stream selected worksheets, or clean every sheet "
+            "into model-ready CSV without modifying the source file."
         )
     )
     parser.add_argument("--version", action="version", version=TOOL_VERSION)
@@ -1061,6 +1477,62 @@ def build_parser() -> argparse.ArgumentParser:
         help="allow replacement of existing output and audit files",
     )
     extract_parser.set_defaults(func=extract_command)
+
+    clean_parser = commands.add_parser(
+        "clean",
+        help=(
+            "remove empty rows/columns, normalize field names and export one CSV "
+            "per non-empty worksheet"
+        ),
+    )
+    clean_parser.add_argument("input", type=Path, help="source .xlsx or .xls file")
+    clean_parser.add_argument(
+        "--output-dir",
+        type=Path,
+        help=(
+            "destination directory; defaults to a formal project's 02-data/processed "
+            "or ./02-processed for an ad-hoc workbook"
+        ),
+    )
+    add_sheet_selector(clean_parser, "all worksheets")
+    clean_parser.add_argument(
+        "--header-row",
+        type=positive_int,
+        help="one-based header row; defaults to the first non-empty row on each sheet",
+    )
+    clean_parser.add_argument(
+        "--formulas",
+        action="store_true",
+        help="export formula expressions instead of cached values where available",
+    )
+    clean_parser.add_argument(
+        "--keep-empty-rows",
+        action="store_true",
+        help="preserve fully empty data rows instead of removing them",
+    )
+    clean_parser.add_argument(
+        "--no-infer-types",
+        dest="infer_types",
+        action="store_false",
+        help="keep numeric-looking text as text; leading-zero identifiers are always preserved",
+    )
+    clean_parser.add_argument(
+        "--encoding",
+        choices=("utf-8", "utf-8-sig"),
+        default="utf-8-sig",
+        help="CSV encoding (default: utf-8-sig)",
+    )
+    clean_parser.add_argument(
+        "--report",
+        type=Path,
+        help="cleaning report path; defaults to <output-dir>/<workbook>-cleaning-report.json",
+    )
+    clean_parser.add_argument(
+        "--overwrite",
+        action="store_true",
+        help="allow replacement of existing CSV and report files",
+    )
+    clean_parser.set_defaults(func=clean_command, infer_types=True)
     return parser
 
 

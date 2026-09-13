@@ -83,7 +83,8 @@ workspace/       → 你的工作区
 | `tools/update.bat` | 增量补全缺失的依赖(不重建环境) | `requirements-modeling.txt` 更新后，或发现缺包时 |
 | `tools/check-modeling-env.py` | 检查 Python 环境、依赖和外部工具 | 怀疑环境有问题时 |
 | `tools/check-workspace-layout.py` | 捕获根目录高风险缓存、生成残留、批量项目产物和冲突旧结构 | 日常维护或重构后检查 |
-| `tools/extract-spreadsheet.py` | 批量检查 Excel 附件并流式提取带审计的 CSV/TSV | 附件较多或工作表较大时 |
+| `tools/extract-spreadsheet.py` | 清洗 Excel 附件并逐工作表输出标准 CSV，也支持大表流式检查/提取 | 收到 `.xlsx/.xls` 题目附件时 |
+| `tools/extract-pdf-pages.py` | 截取 PDF 指定页或页面局部并输出临时 PDF/PNG | 题面视觉分析、OCR 或临时引用时 |
 | `AGENTS.md` | Agent 的行为规则和强制门禁 | 如果你用 Codex/Claude Code 等 AI 工具 |
 | `ENV_SETUP.md` | 虚拟环境的手动搭建步骤 | `setup.bat` 失效时需要 |
 

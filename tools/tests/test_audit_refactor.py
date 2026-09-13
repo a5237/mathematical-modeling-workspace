@@ -14,7 +14,7 @@ PYTHON = sys.executable
 LAYOUT_SCRIPT = WORKSPACE_ROOT / "tools" / "check-workspace-layout.py"
 INIT_SCRIPT = WORKSPACE_ROOT / ".codex" / "skills" / "cumcm-paper-production" / "scripts" / "init_cumcm_project.py"
 AUDIT_SCRIPT = WORKSPACE_ROOT / ".codex" / "skills" / "cumcm-paper-audit" / "scripts" / "audit_cumcm_project.py"
-TEMP_ROOT = WORKSPACE_ROOT / "var" / "tmp"
+TEMP_ROOT = WORKSPACE_ROOT / "var" / "temp"
 sys.path.insert(0, str(WORKSPACE_ROOT / "tools"))
 
 from control_contracts import load_workspace_contracts
@@ -153,12 +153,7 @@ class ReleasePreflightTests(unittest.TestCase):
                 "\n".join(
                     (
                         "selection_status: `COMPLETE`",
-                        "completed_at: `2026-09-07`",
-                        "candidates: 基准与候选已比较",
-                        "suitability: 适用性已核对",
-                        "selected_model: 已选用",
-                        "validation: 已制定验证方案",
-                        "resources/algorithm-library/01-优化算法说明.md",
+                        "stage_record: 模型选择已由独立审查核对",
                     )
                 ),
                 encoding="utf-8",
@@ -167,10 +162,7 @@ class ReleasePreflightTests(unittest.TestCase):
                 "\n".join(
                     (
                         "learning_status: `COMPLETE`",
-                        "completed_at: `2026-09-07`",
-                        "resources/paper-library/sample-a.md",
-                        "resources/paper-library/sample-b.md",
-                        "resources/algorithm-library/01-优化算法说明.md",
+                        "stage_record: 写作前学习已由独立审查核对",
                     )
                 ),
                 encoding="utf-8",
@@ -227,6 +219,11 @@ class ReleasePreflightTests(unittest.TestCase):
             result = run(str(AUDIT_SCRIPT), str(project), "--phase", "release-candidate")
             self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
             self.assertIn("PASS (objective static preflight", result.stdout)
+
+            code = project / "experiments" / "run.py"
+            code.write_text("print('revised implementation')\n", encoding="utf-8")
+            revised = run(str(AUDIT_SCRIPT), str(project), "--phase", "release-candidate")
+            self.assertEqual(revised.returncode, 0, revised.stdout + revised.stderr)
 
             compatibility = run(str(AUDIT_SCRIPT), str(project), "--phase", "release")
             self.assertEqual(compatibility.returncode, 0, compatibility.stdout + compatibility.stderr)

@@ -12,7 +12,7 @@ from pathlib import Path
 
 
 WORKSPACE_ROOT = Path(__file__).resolve().parent.parent
-CACHE_ROOT = WORKSPACE_ROOT / "var" / "tmp"
+CACHE_ROOT = WORKSPACE_ROOT / "var" / "temp"
 (CACHE_ROOT / "matplotlib").mkdir(parents=True, exist_ok=True)
 os.environ.setdefault("MPLCONFIGDIR", str(CACHE_ROOT / "matplotlib"))
 
@@ -38,6 +38,7 @@ PACKAGES: list[tuple[str, str, bool]] = [
     ("deap", "deap", True),
     ("plotly", "plotly", True),
     ("xlrd", "xlrd", True),
+    ("pymupdf", "pymupdf", True),
     ("jieba", "jieba", True),
     ("wordcloud", "wordcloud", True),
     ("pydot", "pydot", True),

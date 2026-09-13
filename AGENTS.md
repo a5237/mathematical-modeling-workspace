@@ -27,4 +27,4 @@
 
 ## 工作区文件路由（强制）
 
-全部目录职责和需求生命周期以 `docs/architecture/workspace-layout.md` 为唯一权威，文件名与稳定标识以 `docs/standards/naming.md` 为唯一权威。新需求先进入 inbox；Agent 读取题目要求与附件后使用初始化器建立正式项目，将题面和数据分类到项目中，再触发模型选择、数据审计、证据、写作学习、论文和最终审校流程。推荐项目树是可靠默认值而非固定审计 schema，职责明确的扩展目录可以正常使用。临时产物进入 `var/tmp/`，项目数据与模型代码不得散落仓库根目录。环境准备见 `docs/guides/modeling-environment.md`。
+全部目录职责和需求生命周期以 `docs/architecture/workspace-layout.md` 为唯一权威，文件名与稳定标识以 `docs/standards/naming.md` 为唯一权威。新需求先进入 inbox；Agent 读取题目要求与附件后使用初始化器建立正式项目，将题面和数据分类到项目中，再触发模型选择、数据审计、证据、写作学习、论文和最终审校流程。推荐项目树是可靠默认值而非固定审计 schema，职责明确的扩展目录可以正常使用。临时产物进入 `var/temp/`，项目数据与模型代码不得散落仓库根目录。环境准备见 `docs/guides/modeling-environment.md`。

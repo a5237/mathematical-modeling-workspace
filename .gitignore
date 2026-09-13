@@ -6,8 +6,8 @@
 # Local modeling environment and plotting cache
 .venv-modeling/
 .mplconfig/
-var/tmp/*
-!var/tmp/README.md
+var/temp/*
+!var/temp/README.md
 
 # LaTeX intermediates (keep .tex and final PDFs)
 *.aux

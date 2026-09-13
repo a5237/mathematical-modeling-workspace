@@ -11,9 +11,9 @@ Repository paths in this skill are logical paths relative to the current workspa
 
 ## Audit order
 
-1. Confirm that the project is a frozen Release Candidate. Read the problem statement, triggered authority documents, problem checklist, model-selection record, learning record, paper, evidence and delivery inventory.
+1. Confirm that the project is a Release Candidate review snapshot. Read the problem statement, triggered authority documents, problem checklist, model-selection record, learning record, paper, evidence and delivery inventory.
 2. Run `scripts/audit_cumcm_project.py <project> --phase draft` for an early objective inventory. Missing release artifacts are advisory at this point; the script does not judge creativity, writing quality or visual merit.
-3. From a clean directory or equivalent clean environment, execute the frozen documented entry point once. This single strong reproduction replaces any identical production-stage full rerun. Record the command, code/data/parameter fingerprint, exit status and key output comparison.
+3. From a clean directory or equivalent clean environment, execute the documented RC entry point once. This single strong reproduction replaces any identical production-stage full rerun. Record the command, the required code/data/parameter filenames and existence states, stage completion, exit status and key output comparison; do not bind intermediate files by hash.
 4. Verify `WG-MODEL-001` and `PWL-GATE-001` from substantive record contents; labels without evidence fail.
 5. Trace paper claims and citations under `WG-EVID-001`, opening cited sources and confirming support for adjacent claims.
 6. Check each subproblem against `PW-VAL-001`, verify core results, and check the reference list and in-text use against `PW-CITE-001` without inventing or padding sources.
@@ -24,6 +24,6 @@ Repository paths in this skill are logical paths relative to the current workspa
 
 ## Final-stage impact review
 
-If the audited PDF changes, update its hash. Re-run only the checks affected by the change, following `docs/standards/paper-quality-audit.md`: a typo or local non-paginating edit does not trigger model reproduction or a full figure audit; data, code, parameter or result changes do. Use `scripts/audit_cumcm_project.py <project> --phase final` after refreshing the report. An `IMPACTED` review must identify the previous full RC audit and the evidence that unchanged computation can be reused.
+If the audited PDF changes, update its final-delivery hash. Re-run only the checks affected by the change, following `docs/standards/paper-quality-audit.md`: a typo or local non-paginating edit does not trigger model reproduction or a full figure audit; data, code, parameter or result changes do. Use `scripts/audit_cumcm_project.py <project> --phase final` after refreshing the report. An `IMPACTED` review must identify the previous full RC audit, list changed and required files with their existence states, explain why unchanged computation can be reused, and avoid intermediate file hashes.
 
 Never create missing experimental results, citations, checks, or sensitivity analyses as part of an audit. Report the absence and the exact evidence needed to clear it.

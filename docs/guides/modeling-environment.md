@@ -7,7 +7,7 @@
 - 本机环境目录：`.venv-modeling/`
 - 锁定依赖：`config/python/requirements-modeling.txt`
 - 通用环境检查：`tools/check-modeling-env.py`
-- 工具运行缓存：`var/tmp/`
+- 工具运行缓存：`var/temp/`
 
 不激活环境时统一使用工作区解释器：
 
@@ -29,7 +29,7 @@
 .\.venv-modeling\Scripts\python.exe tools/check-modeling-env.py
 ```
 
-自检会检查主要科学计算、统计、优化、可视化和 Notebook 依赖，并执行小规模冒烟测试。生成的图片和 Matplotlib 缓存写入 `var/tmp/`，可以安全清理。
+自检会检查主要科学计算、统计、优化、可视化和 Notebook 依赖，并执行小规模冒烟测试。生成的图片和 Matplotlib 缓存写入 `var/temp/`，可以安全清理。
 
 Graphviz 的 Python 接口与系统可执行程序是两个独立依赖；即使 `pydot` 可导入，仍需单独确认 `dot` 是否在 `PATH` 中。PyTorch 不作为默认依赖，只有具体模型需要时才在项目运行手册中登记。
 

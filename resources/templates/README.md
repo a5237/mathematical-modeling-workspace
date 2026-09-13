@@ -7,4 +7,4 @@
 
 不得回写覆盖通用模板，也不得从模板另建相互竞争的平行论文或记录。
 
-初始化阶段不创建 `07-review/final-audit.md`；该报告只在内容冻结为 Release Candidate 并完成真实审查后生成，避免 Draft 持续维护无效哈希和结论。
+初始化阶段不创建 `07-review/final-audit.md`；该报告只在形成 Release Candidate 待审快照并完成真实审查后生成。Draft 与中间阶段只记录关键文件名、存在状态和完成状态，不维护文件哈希或持续有效的发布结论。
