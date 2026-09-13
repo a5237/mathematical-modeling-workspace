@@ -122,7 +122,12 @@ class IntakeWorkflowTests(unittest.TestCase):
             shutil.copy2(inbox / "request.md", project / "01-problem" / "request.md")
 
             self.assertTrue((project / "01-problem" / "problem-checklist.md").is_file())
-            self.assertTrue((project / "03-models" / "model-selection.md").is_file())
+            model_selection = project / "03-models" / "model-selection.md"
+            self.assertTrue(model_selection.is_file())
+            self.assertIn(
+                "docs/standards/modeling-execution.md",
+                model_selection.read_text(encoding="utf-8"),
+            )
             self.assertTrue((project / "00-admin" / "pre-writing-learning.md").is_file())
             self.assertTrue((project / "05-evidence" / "evidence-index.csv").is_file())
             self.assertTrue((project / "06-paper" / "main.tex").is_file())

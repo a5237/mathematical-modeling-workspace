@@ -52,7 +52,7 @@ workspace/       → 你的工作区
 
 1. 将原始赛题 PDF 和附件放入 `workspace/inbox/` 
 2. 在 Codex / Claude Code / DeepSeek Harness 中启动 Agent，提示词指向该inbox目录
-3. Agent 会自动读取 `AGENTS.md` 和规范文件，按工作区流程执行建模、代码、论文生成
+3. Agent 会先读取轻量的 `AGENTS.md`，再按当前阶段只加载数据、建模、证据、写作、排版、图片或审校所需规范
 4. 人类在 Day 3-4 介入审校和交付检查
 
 ## 仓库分层
@@ -68,7 +68,7 @@ workspace/       → 你的工作区
 ├── .codex/                 # Codex 本地 Skills
 ├── .venv-modeling/         # 本机 Python 建模环境，不纳入 Git
 ├── ENV_SETUP.md 		   # 虚拟环境重建说明，由独立贡献者维护
-├── AGENTS.md               # Agent 入口与强制路由
+├── AGENTS.md               # Agent 轻量任务路由入口
 ├── README.md               # 仓库入口
 └── setup.bat               # Windows 环境引导脚本，由独立贡献者维护
 ```
@@ -85,7 +85,7 @@ workspace/       → 你的工作区
 | `tools/check-workspace-layout.py` | 捕获根目录高风险缓存、生成残留、批量项目产物和冲突旧结构 | 日常维护或重构后检查 |
 | `tools/extract-spreadsheet.py` | 清洗 Excel 附件并逐工作表输出标准 CSV，也支持大表流式检查/提取 | 收到 `.xlsx/.xls` 题目附件时 |
 | `tools/extract-pdf-pages.py` | 截取 PDF 指定页或页面局部并输出临时 PDF/PNG | 题面视觉分析、OCR 或临时引用时 |
-| `AGENTS.md` | Agent 的行为规则和强制门禁 | 如果你用 Codex/Claude Code 等 AI 工具 |
+| `AGENTS.md` | Agent 的按需加载路由与全局底线 | 如果你用 Codex/Claude Code 等 AI 工具 |
 | `ENV_SETUP.md` | 虚拟环境的手动搭建步骤 | `setup.bat` 失效时需要 |
 
 
@@ -129,9 +129,12 @@ workspace/       → 你的工作区
 | 你想了解什么 | 去哪看 |
 | :--- | :--- |
 | 工作区整体架构 | [工作区架构](docs/architecture/workspace-layout.md) |
-| 文件怎么放、目录怎么用 | [工作区治理规范](docs/standards/workspace-governance.md) |
+| 文件怎么放、目录怎么用 | [工作区架构](docs/architecture/workspace-layout.md) 与 [全局治理](docs/standards/workspace-governance.md) |
+| 数据、运行和复现怎么做 | [数据与复现规范](docs/standards/data-reproducibility.md) |
+| 模型、计算和验证怎么做 | [建模与计算执行规范](docs/standards/modeling-execution.md) |
 | 证据怎么追溯 | [证据契约](docs/standards/evidence-contract.md) |
-| 论文怎么写、怎么排版 | [论文写作规范](docs/standards/paper-writing.md) |
+| 论文内容怎么写 | [论文写作规范](docs/standards/paper-writing.md) |
+| LaTeX、公式、表格和版式怎么做 | [论文排版规范](docs/standards/paper-formatting.md) |
 | 论文配图怎么做 | [论文图片与科研可视化规范](docs/standards/paper-figures.md) |
 | 论文怎么审、何时复查 | [最终审查与竞争力评分标准](docs/standards/paper-quality-audit.md) |
 | 怎么命名文件和项目 | [命名规范](docs/standards/naming.md) |
@@ -156,38 +159,11 @@ workspace/       → 你的工作区
 
 #### 论文审校与交付
 
-Agent 生成论文初稿后，你需要逐项检查以下内容(按优先级排序):
-
-**1. 逻辑与表达**
-- 摘要是否清晰概括了问题、方法、结果和结论？
-- 模型假设是否在正文中有明确的说明和合理性论证？
-- 关键结论是否有数据支撑(而不是 Agent 凭空断言)？
-- 术语在全文中是否前后一致？
-- 是否有多余的废话或重复段落？
-
-**2. 图表与正文的配合**
-- 每张图/表在正文中是否都有明确的引用(如“如图 3 所示”“见表 2”)？
-- 图的标题、坐标轴标签、单位是否齐全且正确？
-- 表格中的数据是否与正文中引用的数值一致？
-- 图表编号是否连续、顺序是否正确？
-
-**3. 排版与格式**
-- 摘要页是否独占一页(标题 + 摘要 + 关键词)？
-- 正文是否从新的一页开始？
-- 每个附录是否单独起一页？
-- 全部中文是否为宋体？全部英文/数字是否为 Times New Roman？
-- 公式编号是否右对齐、连续？
-
-**4. 最终 PDF 渲染检查**
-- 用 PDF 阅读器逐页翻看全文，不能只检查源文件
-- 检查是否有公式断裂、图表溢出、乱码或缺图
-- 检查 PDF 中的字体属性(工具 → 属性 → 字体，确认全部中文为宋体、英文为 Times New Roman)
-
-**原则:** Agent 负责生成“90 分”的草稿，人类负责把最后 10 分补上。这 10 分包括:逻辑连贯性、语言表达的流畅度、排版的精确度——这些是评审老师最容易感知的“舒适度”信号。
+Agent 生成 Release Candidate 后，人类重点复核题意理解、模型合理性、结论强度和实际可用性；完整发布检查与复查范围只以[最终审查标准](docs/standards/paper-quality-audit.md)为准。内容、排版和图片细则分别查[论文写作规范](docs/standards/paper-writing.md)、[论文排版规范](docs/standards/paper-formatting.md)和[论文图片规范](docs/standards/paper-figures.md)，本入口不复制检查阈值或格式规则。
 
 ### 如果你是 Agent
 
-请直接阅读 [`AGENTS.md`](AGENTS.md)，该文件是 Agent 的唯一行为入口，包含完整的阅读顺序、全局门禁和文件路由规则。
+请先阅读 [`AGENTS.md`](AGENTS.md)。它只提供轻量任务路由和全局底线；随后按当前任务读取对应的唯一权威文件，不要预加载无关长规范。
 
 ## 进阶篇
 
@@ -283,25 +259,7 @@ Agent 不需要理解化学机理，它只需要:
 
 ### 审校分两层：自动审校 + 人工审校
 
-写作和审校由同一方完成时，盲点是无法避免的。因此，工作区把审校拆成两层：
-
-**第一层：自动审校（Agent 执行）**
-
-Agent 在发布前运行 `cumcm-paper-audit` Skill，检查客观可量化的事项：
-- 参考文献数量、图表编号、摘要页独占、身份信息检测、公式编号、文献格式
-
-这些检查项不需要人类逐条核对，Agent 会自动完成并生成报告 `07-review/final-audit.md`。未通过的项目必须修复后才能进入下一步。
-
-**第二层：人工审校（人类执行）**
-
-自动审校只能检测“格式对不对”，无法判断“写得好不好”。逻辑连贯性、数据支撑的可信度、术语一致性、图表与正文的配合、全文流畅度——这些必须由人类逐项确认。
-
-具体检查清单见[如果你是人类](#如果你是人类)部分的“论文审校与交付”。
-
-**两层审校的边界：**
-- Agent 负责 **“格式正确”** —— 这是 60 分
-- 人类负责 **“内容可信”** —— 这是从 60 分到 90 分的差距
-- Agent 的审校结果作为“门禁”，人类的审校结果作为“定稿”
+写作和审校由同一方完成时容易留下盲点。发布前使用 `cumcm-paper-audit` Skill：脚本核验稳定、客观的机器契约，独立 Reviewer 核对模型、证据、论证和视觉表达，二者共同写入唯一的 `07-review/final-audit.md`。人类再对题意、现实假设、决策价值和最终提交负责；自动检查、Reviewer judgment 与发布门禁的边界只以[最终审查标准](docs/standards/paper-quality-audit.md)为准。
 
 ## 最后提醒
 

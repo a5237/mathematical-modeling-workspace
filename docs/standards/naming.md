@@ -19,7 +19,7 @@
 - 模型与算法选择记录：`03-models/model-selection.md`。
 - 写作前学习记录：`00-admin/pre-writing-learning.md`。
 - 图片 registry 与高风险视觉说明：`00-admin/figure-selection-record.md`。
-- 参数：`q01-parameters.yaml`；随机种子必须显式记录。
+- 参数：`q01-parameters.yaml`；随机种子的记录要求执行 `docs/standards/data-reproducibility.md`。
 - 表格：`q01-table-001-<topic>.csv`。
 - 图片文件名主干：`q01-figure-001-<topic>`；扩展名与正式导出组合执行 `docs/standards/paper-figures.md` 的 `PW-FIG-001`。
 - 指标：`q01-metrics.json`。

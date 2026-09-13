@@ -26,9 +26,10 @@ body_table_minimum = 3
 最终审查同时依据：
 
 1. 已重新核验的当届官方规则与赛题要求；
-2. `paper-writing.md` 和 `paper-figures.md`；
-3. 题面、权威数据、代码、参数、结果和证据索引；
-4. 本标准的硬错误边界和竞争力评分口径。
+2. `docs/standards/data-reproducibility.md`、`docs/standards/modeling-execution.md` 和 `docs/standards/evidence-contract.md`；
+3. `docs/standards/paper-writing.md`、`docs/standards/paper-formatting.md` 和 `docs/standards/paper-figures.md`；
+4. 题面、权威数据、代码、参数、结果和证据索引；
+5. 本标准的硬错误边界和竞争力评分口径。
 
 作者自述、聊天记录、未保存输出或旧审查结论均不能替代证据。
 
@@ -118,7 +119,7 @@ Final Audit 将页面排版和图片检查合并在同一次逐页渲染中完�
 - 按 `PW-FIG-001` 检查所有实际出现的图片及其上下文；
 - 核对图片来源、数据口径、图题、单位、正文结论和机器结果；
 - 检查清晰度、比例、重叠、裁切、压线、乱码、图例、色标和多面板顺序；
-- 按 `paper-writing.md` 第 15.3 节检查全部拟交付件，并确认工作区治理规范第 10.2 节已将缓存、日志和临时文件排除在交付包外。
+- 按 `docs/standards/paper-writing.md` 的“匿名性”要求检查全部拟交付件，并确认全局治理的“交付包”要求与数据复现规范的路径卫生要求已将缓存、日志和临时文件排除在交付包外。
 
 无需在质量评分、图片过程记录和发布合规报告中再分别重复一套逐图清单。复杂图型本身不是风险；响应面、等高线、空间场、流线、相图、Pareto 前沿、网络、Sankey、科学三维、多面板和轨迹图只按科学正确性、可读性与误导风险审查。
 
@@ -199,7 +200,7 @@ Final 阶段使用 `IMPACTED` 时，报告必须指向上一轮完整 RC 审查�
 - 核心结果正确，证据真实存在且论文与机器结果一致；
 - clean reproduction 已成功，或 Final 阶段有充分证据复用未变化的 RC 结果；
 - `PW-LEN-001`、正文页数、图数和表数门禁通过；
-- `PW-VAL-001` 与 `PW-FIG-001` 的实质检查通过；
+- `docs/standards/modeling-execution.md` 的 `PW-VAL-001` 与 `PW-FIG-001` 的实质检查通过；
 - 最终 PDF 哈希对应实际审查对象；
 - 无未关闭的 `critical` 或 `major`。
 

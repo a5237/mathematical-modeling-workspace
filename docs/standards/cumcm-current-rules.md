@@ -22,7 +22,7 @@ paper_maximum_bytes = 20000000
 - 论文附录列出支撑材料文件清单和全部完整、可运行的源程序；未使用程序或没有支撑材料时按官方措辞明确说明。
 - 摘要、正文、附录、文件名、代码、元数据和支撑材料不得暴露参赛者、学校或赛区身份。
 
-工作区交付件匿名性检查执行 `paper-writing.md` 第 15.3 节，其覆盖范围可以严于上述官方快照。
+工作区交付件匿名性检查执行 `docs/standards/paper-writing.md` 的“匿名性”要求，其覆盖范围可以严于上述官方快照。
 
 官方来源：
 
@@ -48,7 +48,7 @@ paper_maximum_bytes = 20000000
 
 ## 3. 使用规则
 
-1. 论文内容、通用排版与图片要求分别由 `docs/standards/paper-writing.md`、`docs/standards/paper-figures.md` 在本官方基线上增补，不得冒充官方统一要求。
-2. 工程记录、AI 台账、匿名性和交付路由由 `docs/standards/workspace-governance.md` 管理。
+1. 论文内容、通用排版与图片要求分别由 `docs/standards/paper-writing.md`、`docs/standards/paper-formatting.md`、`docs/standards/paper-figures.md` 在本官方基线上增补，不得冒充官方统一要求。
+2. 工程生命周期、AI 台账和交付路由由 `docs/standards/workspace-governance.md` 管理；交付件匿名性由论文写作规范管理。
 3. 生产和审校 Skill 只引用本文件，不维护第二套年度规则摘要。
 4. 每次正式提交前更新 `last_verified`，并记录新旧规则的生效日期；不得只改年份而不重新打开来源。

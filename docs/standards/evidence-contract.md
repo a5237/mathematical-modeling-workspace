@@ -41,6 +41,6 @@ evidence_statuses = ["draft", "verified", "rejected"]
 
 ## 3. 执行边界
 
-- `docs/standards/workspace-governance.md` 规定证据文件的位置、生命周期和工程门禁。
+- 本契约规定证据文件、字段和状态；`docs/standards/workspace-governance.md` 只规定其跨阶段生命周期与生产—审校交接。
 - `.codex/skills/cumcm-paper-production/SKILL.md` 负责在生产过程中登记。
 - `.codex/skills/cumcm-paper-audit/SKILL.md` 负责核对现有记录，不得在审校时补造证据。

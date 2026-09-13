@@ -1,30 +1,31 @@
-# 数学建模工作区 Agent 入口
+# 数学建模工作区任务路由
 
-本仓库采用分层工程结构。涉及数学建模竞赛的分析、代码、论文、审校或交付任务时，必须先读取：
+先判断当前任务类型，只读取能直接约束该任务的文件。**禁止为普通局部任务预加载完整治理规范、完整 Production Skill 或其它无关长规范。** 跨阶段生产或最终审校任务才进入对应 Skill；单文件编辑、脚本诊断、一般问答只读取目标文件及其直接依赖。
 
-> **Agent 工具路径约定：** 本文件及各 Skill 中反引号标注的仓库文件路径均为相对于当前工作区根目录的逻辑路径。调用要求绝对路径的文件读取、查看或编辑工具前，必须先用该工具可识别的当前工作区根目录解析为绝对路径；不得把 `docs/...`、`.codex/...` 等相对路径原样传入，也不得猜测为 `/docs/...` 或 `/.codex/...`。Shell 命令只有在工作目录已明确设置为仓库根目录时才可直接使用这些相对路径。该约定仅约束 Agent 的工具调用，不改变项目代码优先使用相对路径或项目根解析的可复现要求。
+> **路径约定：** 文档和 Skill 中的仓库路径均相对工作区根目录。要求绝对路径的工具调用必须先据当前根目录解析；Shell 仅在工作目录已明确设为仓库根目录时使用相对路径。
 
-1. `docs/standards/workspace-governance.md`；
-2. `.codex/skills/cumcm-paper-production/SKILL.md`；
-3. 涉及模型建立或代码编写时，先读取 `resources/algorithm-library/index.md`，再只读取与当前问题匹配的算法说明；
-4. 涉及论文内容、排版或附录时，再读取 `docs/standards/paper-writing.md` 和 `docs/guides/pre-writing-learning.md`；
-5. 涉及论文图片、科研可视化、流程图、结构图或最终 PDF 图片检查时，再读取 `docs/standards/paper-figures.md`；涉及生成或改善图片视觉质量时，同时读取 `docs/guides/scientific-figure-aesthetics.md` 和 `resources/figure-style-library/README.md`，按清单选取少量参考图，只迁移审美属性；
-6. 涉及最终审校时，再读取 `.codex/skills/cumcm-paper-audit/SKILL.md` 和 `docs/standards/paper-quality-audit.md`；
-7. 涉及当届规则、提交格式、AI 披露或匿名性时，读取 `docs/standards/cumcm-current-rules.md` 并在正式提交前重新核对官网。
+## 按任务加载
 
-各文档的唯一权威职责见 `docs/README.md`。工作区规范负责环境、数据、代码、日志、证据、复现和交付；目录职责、命名、论文写作、论文图片、学习流程、官方规则和质量审查分别由矩阵指定文件管理。工程记录不得因工作区要求而自动写入论文正文。
+| 当前任务 | 必读权威文件 | 仅在触发时追加 |
+|---|---|---|
+| 目录、inbox 与文件路由 | `docs/architecture/workspace-layout.md` | 涉及稳定命名时追加 `docs/standards/naming.md`；跨阶段治理再追加全局治理规范 |
+| 文件名、项目 ID 与稳定标签 | `docs/standards/naming.md` | 涉及目录职责时才追加工作区架构 |
+| 数据读取、清洗、环境、运行、日志、随机种子、复现 | `docs/standards/data-reproducibility.md` | 环境安装再读 `docs/guides/modeling-environment.md` |
+| 模型选择、算法、代码实现、正式计算、验证 | `docs/standards/modeling-execution.md` | 先读 `resources/algorithm-library/index.md`，再只读匹配算法说明；涉及数据时追加数据复现规范 |
+| 主张、数值或文献证据 | `docs/standards/evidence-contract.md` | 涉及跨阶段生命周期或交付时追加工作区治理规范 |
+| AI 使用记录 | `docs/standards/workspace-governance.md` 的 `WG-AI-001` | 追加 `docs/standards/cumcm-current-rules.md` 核对当届披露要求 |
+| 论文内容、结构、建模叙事、结果分析、学术表达 | `docs/standards/paper-writing.md` | 启动正式写作时追加 `docs/guides/pre-writing-learning.md`；不要因纯排版任务加载它 |
+| LaTeX、公式、表格、字体、页面与版式 | `docs/standards/paper-formatting.md` | 内容同时变化时才追加论文写作规范 |
+| 论文图片、科研可视化、流程图或最终 PDF 图片检查 | `docs/standards/paper-figures.md` | 生成或改善视觉质量时追加 `docs/guides/scientific-figure-aesthetics.md` 和 `resources/figure-style-library/README.md`，只选少量相关参考 |
+| 完整数学建模生产流程 | `.codex/skills/cumcm-paper-production/SKILL.md` | 按 Skill 所列阶段加载对应权威文件 |
+| 最终审校、评分或发布门禁 | `.codex/skills/cumcm-paper-audit/SKILL.md`、`docs/standards/paper-quality-audit.md` | 按实际审校范围加载数据、模型、证据、写作、排版、图片和现行规则 |
+| 当届规则、提交格式、AI 披露或匿名性 | `docs/standards/cumcm-current-rules.md` | 正式提交前重新核对官网 |
 
-## 全局质量门禁
+职责不清时只查 `docs/README.md` 的唯一权威矩阵，不因此加载矩阵中的全部文件。适用门禁必须执行，但控制编号的完整定义只从其唯一权威文件读取；局部任务不得被无关阶段门禁扩张为全流程任务。
 
-- 必须执行 `WG-DATA-001`、`WG-MODEL-001`、`WG-EVID-001`、`PWL-GATE-001`、`PW-VAL-001`、`PW-FIG-001` 与 `PQA-RELEASE-001`；控制编号对应的完整规则只以权威文件为准。
-- 任何数值、验证、文献、AI 使用和审校结论都必须有权威记录或可核验证据，不得用聊天记忆、作者自述或未保存输出替代。
-- 重构、拆分或精简规范时，不得删除、放宽或绕过论文结构、论证、验证、图表、文献、公式、排版、匿名性和交付门禁；只允许迁移到职责明确的唯一权威文件。
-- 当届官方规则和用户当前明确要求优先；正式提交前必须重新核对全国组委会官网。
-- 控制编号不自动等于机器 hard gate。普通目录、命名、图型复杂度和国奖竞争力评分由 Agent 或独立 Reviewer 依据规范判断；机器只阻断高风险、客观、稳定且可自动判断的问题。
-- 图片必须服从数据结构、模型原生结构、科学含义和论文论证，不得为减少记录或审查工作而降级为更简单、信息量更低的图型。
+## 全局约束
 
-项目目录和文件命名遵循 `docs/standards/naming.md`。新项目优先使用生产 Skill 的初始化脚本创建。
-
-## 工作区文件路由（强制）
-
-全部目录职责和需求生命周期以 `docs/architecture/workspace-layout.md` 为唯一权威，文件名与稳定标识以 `docs/standards/naming.md` 为唯一权威。新需求先进入 inbox；Agent 读取题目要求与附件后使用初始化器建立正式项目，将题面和数据分类到项目中，再触发模型选择、数据审计、证据、写作学习、论文和最终审校流程。推荐项目树是可靠默认值而非固定审计 schema，职责明确的扩展目录可以正常使用。临时产物进入 `var/temp/`，项目数据与模型代码不得散落仓库根目录。环境准备见 `docs/guides/modeling-environment.md`。
+- 当届官方规则和用户当前明确要求优先。
+- 数值、验证、文献、AI 使用和审校结论必须有可核验证据，不得以聊天记忆、作者自述或未保存输出替代。
+- 不得因重构、精简或自动检查而删除、放宽或复制权威规则；机器只阻断高风险、客观、稳定且可自动判断的问题。
+- 临时产物进入 `var/temp/`；项目数据、模型代码和运行产物不得散落仓库根目录。

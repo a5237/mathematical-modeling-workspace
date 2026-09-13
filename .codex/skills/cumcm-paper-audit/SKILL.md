@@ -11,14 +11,14 @@ Repository paths in this skill are logical paths relative to the current workspa
 
 ## Audit order
 
-1. Confirm that the project is a Release Candidate review snapshot. Read the problem statement, triggered authority documents, problem checklist, model-selection record, learning record, paper, evidence and delivery inventory.
+1. Confirm that the project is a Release Candidate review snapshot. Read the problem statement, problem checklist, model-selection record, learning record, paper, evidence and delivery inventory. A full RC audit loads the data/reproducibility, modeling/execution, evidence, paper-writing, paper-formatting, paper-figures, current-rules and quality-audit authorities; an impact review loads only the authorities touched by the change.
 2. Run `scripts/audit_cumcm_project.py <project> --phase draft` for an early objective inventory. Missing release artifacts are advisory at this point; the script does not judge creativity, writing quality or visual merit.
-3. From a clean directory or equivalent clean environment, execute the documented RC entry point once. This single strong reproduction replaces any identical production-stage full rerun. Record the command, the required code/data/parameter filenames and existence states, stage completion, exit status and key output comparison; do not bind intermediate files by hash.
-4. Verify `WG-MODEL-001` and `PWL-GATE-001` from substantive record contents; labels without evidence fail.
+3. Under `docs/standards/data-reproducibility.md`, execute the documented RC entry point once from a clean directory or equivalent clean environment. This single strong reproduction replaces any identical production-stage full rerun. Record the command, the required code/data/parameter filenames and existence states, stage completion, exit status and key output comparison; do not bind intermediate files by hash.
+4. Verify `WG-MODEL-001` under `docs/standards/modeling-execution.md` and `PWL-GATE-001` from substantive record contents; labels without evidence fail.
 5. Trace paper claims and citations under `WG-EVID-001`, opening cited sources and confirming support for adjacent claims.
-6. Check each subproblem against `PW-VAL-001`, verify core results, and check the reference list and in-text use against `PW-CITE-001` without inventing or padding sources.
-7. Render the delivery PDF once, page by page. In the same pass inspect layout, margins, overflow, equations, tables, page counts and every figure under `PW-FIG-001`; do not create separate duplicate PDF and figure audits.
-8. Check every delivery artifact for identity information under `docs/standards/paper-writing.md` section 15.3, enforce `OFFICIAL-CUMCM-001`, and compare the appendix file list with the delivery archive.
+6. Check each subproblem against `PW-VAL-001` in the modeling/execution authority, verify core results, and check the reference list and in-text use against `PW-CITE-001` without inventing or padding sources.
+7. Render the delivery PDF once, page by page. In the same pass inspect `PW-FMT-001` layout, margins, overflow, equations, tables and page counts plus every figure under `PW-FIG-001`; do not create separate duplicate PDF and figure audits.
+8. Check every delivery artifact against the “匿名性” requirements in `docs/standards/paper-writing.md`, enforce `OFFICIAL-CUMCM-001`, and compare the appendix file list with the delivery archive.
 9. Classify findings under `docs/standards/paper-quality-audit.md` section 7. Block release on any critical or major finding caused by a hard error; a low competitiveness score alone is not a finding.
 10. Write or update the single `07-review/final-audit.md` under `PQA-REPORT-001`, include the non-blocking competitiveness score, then run `scripts/audit_cumcm_project.py <project> --phase release-candidate` to verify the objective report contract and determine release under `PQA-RELEASE-001`.
 

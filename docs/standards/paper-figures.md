@@ -6,7 +6,7 @@
 >
 > 核心原则：**先明确图片的论证职责与来源；图型依次服从合理的用户明确指定、模型原生结构和通用统计选择；按论文最终显示尺寸生成，并以最终 PDF 中的真实阅读效果作为通过依据。**
 
-本文件是论文图片与科研可视化要求的唯一权威。表格、正文结构、公式、通用字体和参考文献由 `docs/standards/paper-writing.md` 管理；图片产物路由、证据、复现、匿名性和发布工程由 `docs/standards/workspace-governance.md` 管理；审查报告与竞争力评分由 `docs/standards/paper-quality-audit.md` 管理。其它文件只引用 `PW-FIG-001`，不得维护第二套图型阈值、图片比例、分辨率、字号或视觉检查规则。
+本文件是论文图片与科研可视化要求的唯一权威。正文结构和参考文献由 `docs/standards/paper-writing.md` 管理；表格、公式和通用字体由 `docs/standards/paper-formatting.md` 管理；图片的稳定产物与复现由 `docs/standards/data-reproducibility.md` 管理；证据与发布治理分别由 `docs/standards/evidence-contract.md` 和 `docs/standards/workspace-governance.md` 管理；审查报告与竞争力评分由 `docs/standards/paper-quality-audit.md` 管理。其它文件只引用 `PW-FIG-001`，不得维护第二套图型阈值、图片比例、分辨率、字号或视觉检查规则。
 
 ---
 
@@ -155,7 +155,7 @@ Agent 自主选图时，不得仅为图形“干净”、风格统一或符合�
 1. 图题置于图下，统一为“图 x  标题”，图号连续且正文引用一致。
 2. 图题应能独立说明对象、指标、条件、情景、样本或数据口径；多面板图还需说明各面板差异。
 3. 正式论文中的普通单图默认不在图内用 `ax.set_title()` 或等效方式重复完整图题；图内主要保留坐标轴、单位、图例、色标、阈值、基准线和必要注释，完整标题交由图下图题管理。多面板图可保留“(a)”“(b)”及简短面板说明。
-4. 图题与图片不得跨页拆散；字体、字号及图内中西文字体执行 `PW-FMT-001`，不保留绘图软件默认字体。
+4. 图题与图片不得跨页拆散；字体、字号及图内中西文字体执行 `docs/standards/paper-formatting.md` 的 `PW-FMT-001`，不保留绘图软件默认字体。
 5. 图片文件名和稳定标签执行 `docs/standards/naming.md`。
 
 ## 7. 尺寸与排版
@@ -177,7 +177,7 @@ Agent 自主选图时，不得仅为图形“干净”、风格统一或符合�
 3. 位图在最终插入尺寸下原则上不低于 **300 dpi**，必要时使用 600 dpi；改写 DPI 标签或转格式不能增加真实清晰度。
 4. PNG 同时承担彩色与灰度自检预览；SVG 须检查字体、裁切边界和编辑器兼容性。两种版本的内容、坐标、标签和数据必须一致。
 5. 图片必须由最终数据、程序或已核对的模型定义生成，不得使用软件界面截图或手工修改数据、坐标和标签。
-6. 正式产物、论文副本和预览按 `docs/standards/workspace-governance.md` 路由；`06-paper/figures/` 只保存实际引用副本，临时预览不得作为唯一证据或交付物；交付件匿名性执行 `paper-writing.md` 第 15.3 节。
+6. 正式产物、论文副本和预览按 `docs/architecture/workspace-layout.md` 与 `docs/standards/data-reproducibility.md` 路由；`06-paper/figures/` 只保存实际引用副本，临时预览不得作为唯一证据或交付物；交付件匿名性执行 `docs/standards/paper-writing.md` 的“匿名性”要求。
 
 ## 9. 视觉检查
 
@@ -216,7 +216,7 @@ Agent 自主选图时，不得仅为图形“干净”、风格统一或符合�
 ## 10. `BLOCKED` 条件与发布检查
 
 - 图片中的数据和事实主张必须满足 `WG-EVID-001`，并追溯到 `04-results/` 的权威结果、明确推导或已核验资料。
-- `06-paper/figures/` 中的论文副本须追溯到正式图；跨载体一致性执行 `paper-writing.md` 第 16 节。
+- `06-paper/figures/` 中的论文副本须追溯到正式图；跨载体一致性执行 `docs/standards/paper-writing.md` 的“全文一致性检查”。
 
 `BLOCKED` 只针对事实、数学、证据、严重误导或交付硬错误，不得因图型名称或不是默认首选而触发。
 

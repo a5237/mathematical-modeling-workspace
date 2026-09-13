@@ -1,6 +1,6 @@
 # 建模环境指南
 
-本文档只说明工作区级 Python 环境、依赖锁定和环境自检。具体项目的计算、编译、资源需求和成功标志必须写入项目 `00-admin/runbook.md`。
+本文档只提供工作区级 Python 环境、依赖同步和自检命令。环境、版本、项目运行手册、参数与复现记录的要求只以 `docs/standards/data-reproducibility.md` 为准。
 
 ## Python 环境
 
@@ -21,7 +21,7 @@
 .\.venv-modeling\Scripts\python.exe -m pip install -r config/python/requirements-modeling.txt
 ```
 
-依赖清单是工作区环境的可复现锁定文件，不用于保存某一道题的专属参数。新增依赖时应确认用途、在当前环境实际安装和验证，再更新锁定文件；不得把整台机器的无关软件写入清单。
+`config/python/requirements-modeling.txt` 是工作区依赖入口。新增依赖时先在当前环境安装和验证，再更新该文件；哪些版本和外部依赖需要进入项目复现记录，执行数据与复现规范。
 
 ## 环境自检
 
@@ -35,10 +35,10 @@ Graphviz 的 Python 接口与系统可执行程序是两个独立依赖；即使
 
 ## 项目运行约定
 
-项目入口一律使用仓库相对路径，例如：
+项目入口推荐使用仓库相对路径，例如：
 
 ```powershell
 .\.venv-modeling\Scripts\python.exe workspace/projects/<project-id>/03-models/q00-run-all.py
 ```
 
-严禁在脚本中硬编码用户名或个人绝对路径。项目的输入输出映射、随机种子、预计运行时间、外部求解器和论文编译命令均由项目自己的 `00-admin/runbook.md` 负责。
+项目路径、输入输出、随机种子、预计运行时间、外部求解器和论文编译命令的权威要求执行 `docs/standards/data-reproducibility.md`；本指南不另行定义。

@@ -7,7 +7,7 @@
 1. **根目录主要做入口。** 常用入口仍为 `README.md`、`AGENTS.md`、`ENV_SETUP.md`、`setup.bat`、版本控制文件、隐藏环境目录和一级职责层；合理新增顶层入口或职责目录不会仅因不在旧清单中而失败。环境规则仍以 `docs/guides/modeling-environment.md` 为准。
 2. **稳定资产与工作数据分离。** 规范、配置、工具和模板不与赛题项目混放。
 3. **项目彼此隔离。** 每个正式需求只有一个项目目录，项目代码不得读取其他项目的隐式产物。
-4. **原始数据受保护。** 具体不可变性和派生数据规则执行 `docs/standards/workspace-governance.md` 的 `WG-DATA-001`。
+4. **原始数据受保护。** 具体不可变性和派生数据规则执行 `docs/standards/data-reproducibility.md` 的 `WG-DATA-001`。
 5. **运行时产物可删除。** 缓存、PDF 页面截取、渲染页和调试输出统一进入 `var/temp/`，不得成为唯一证据。布局机器检查只拦截明显缓存/生成污染、批量项目产物散落和会造成冲突的废弃结构，不检查普通命名与完整目录存在性。
 
 ## 仓库目录树
@@ -86,7 +86,7 @@
 
 项目可根据题目增加、拆分或重构内部目录，例如 `experiments/`、`benchmarks/`、`simulations/` 或按模型组织的子树。只要原始数据保护、权威模型/参数、机器结果、证据、论文与交付关系仍明确且可复现，这些变化不构成审查错误。初始化骨架负责提供可靠起点，不限制项目后续演化。
 
-项目目录的工程门禁见 `docs/standards/workspace-governance.md`，证据字段见 `docs/standards/evidence-contract.md`，论文质量审查见 `docs/standards/paper-quality-audit.md`。本文件不要求审计脚本复制完整目录树。
+项目生命周期与交付治理见 `docs/standards/workspace-governance.md`，数据复现与建模执行分别见 `docs/standards/data-reproducibility.md` 和 `docs/standards/modeling-execution.md`，证据字段见 `docs/standards/evidence-contract.md`，论文质量审查见 `docs/standards/paper-quality-audit.md`。本文件不要求审计脚本复制完整目录树。
 
 ## 需求生命周期
 

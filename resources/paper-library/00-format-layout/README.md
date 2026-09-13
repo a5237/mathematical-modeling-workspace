@@ -20,7 +20,7 @@
 ## 使用边界
 
 1. 本样例的唯一预设角色是“格式排版参考”，不得计入同类型优秀论文的内容学习数量，除非项目学习记录另行说明并完成真实阅读。
-2. 实际写作与排版必须服从当届官方规则、`docs/standards/paper-writing.md` 和 `docs/standards/paper-figures.md`；样例与正式规范不一致时，不得以样例覆盖正式规范。
+2. 实际写作、排版与图片必须分别服从当届官方规则、`docs/standards/paper-writing.md`、`docs/standards/paper-formatting.md` 和 `docs/standards/paper-figures.md`；样例与正式规范不一致时，不得以样例覆盖正式规范。
 3. 样例使用的具体字体不自动继承。本工作区仍要求中文使用宋体或加粗宋体，英文字符和阿拉伯数字使用 Times New Roman 或统一 Times 数学字体。
 4. 可提取版式规律和图表叙事策略，但不得复制样例文字、公式、数据、图表、代码、结论或未经核验的文献。
 5. 在项目 `00-admin/pre-writing-learning.md` 中使用本样例时，来源角色应登记为“格式排版参考”，不得登记为模型依据、结果证据或已核验文献。
