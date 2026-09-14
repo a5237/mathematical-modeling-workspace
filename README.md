@@ -52,7 +52,7 @@ workspace/       → 你的工作区
 
 1. 将原始赛题 PDF 和附件放入 `workspace/inbox/` 
 2. 在 Codex / Claude Code / DeepSeek Harness 中启动 Agent，提示词指向该inbox目录
-3. Agent 会自动读取 `AGENTS.md` 和规范文件，按工作区流程执行建模、代码、论文生成
+3. Agent 会先读取轻量的 `AGENTS.md`，再按当前阶段只加载数据、建模、证据、写作、排版、图片或审校所需规范
 4. 人类在 Day 3-4 介入审校和交付检查
 
 ## 仓库分层
@@ -68,7 +68,7 @@ workspace/       → 你的工作区
 ├── .codex/                 # Codex 本地 Skills
 ├── .venv-modeling/         # 本机 Python 建模环境，不纳入 Git
 ├── ENV_SETUP.md 		   # 虚拟环境重建说明，由独立贡献者维护
-├── AGENTS.md               # Agent 入口与强制路由
+├── AGENTS.md               # Agent 轻量任务路由入口
 ├── README.md               # 仓库入口
 └── setup.bat               # Windows 环境引导脚本，由独立贡献者维护
 ```
@@ -82,9 +82,11 @@ workspace/       → 你的工作区
 | `setup.bat` | 一键搭建 Python 虚拟环境 + 安装依赖 | 首次使用，或环境损坏时 |
 | `tools/update.bat` | 增量补全缺失的依赖(不重建环境) | `requirements-modeling.txt` 更新后，或发现缺包时 |
 | `tools/check-modeling-env.py` | 检查 Python 环境、依赖和外部工具 | 怀疑环境有问题时 |
-| `tools/check-workspace-layout.py` | 检查目录结构和命名是否符合规范 | 提交前检查 |
-| `tools/extract-spreadsheet.py` | 批量检查 Excel 附件并流式提取带审计的 CSV/TSV | 附件较多或工作表较大时 |
-| `AGENTS.md` | Agent 的行为规则和强制门禁 | 如果你用 Codex/Claude Code 等 AI 工具 |
+| `tools/check-workspace-layout.py` | 捕获根目录高风险缓存、生成残留、批量项目产物和冲突旧结构 | 日常维护或重构后检查 |
+| `tools/extract-spreadsheet.py` | 清洗 Excel 附件并逐工作表输出标准 CSV，也支持大表流式检查/提取 | 收到 `.xlsx/.xls` 题目附件时 |
+| `tools/extract-pdf-pages.py` | 截取 PDF 指定页或页面局部并输出临时 PDF/PNG | 题面视觉分析、OCR 或临时引用时 |
+| `tools/trace-artifact-impact.py` | 从显式变化路径计算项目产物的传递影响 | 修改上游后判断哪些结果必须重生成、哪些下游内容只需复核 |
+| `AGENTS.md` | Agent 的按需加载路由与全局底线 | 如果你用 Codex/Claude Code 等 AI 工具 |
 | `ENV_SETUP.md` | 虚拟环境的手动搭建步骤 | `setup.bat` 失效时需要 |
 
 
@@ -109,7 +111,7 @@ workspace/       → 你的工作区
 # 检查建模环境、依赖和外部工具
 .\.venv-modeling\Scripts\python.exe tools/check-modeling-env.py
 
-# 检查工作区层级、根目录白名单和命名
+# 检查根目录高风险污染（不冻结顶层结构或普通命名）
 .\.venv-modeling\Scripts\python.exe tools/check-workspace-layout.py
 
 ```
@@ -128,12 +130,17 @@ workspace/       → 你的工作区
 | 你想了解什么 | 去哪看 |
 | :--- | :--- |
 | 工作区整体架构 | [工作区架构](docs/architecture/workspace-layout.md) |
-| 文件怎么放、目录怎么用 | [工作区治理规范](docs/standards/workspace-governance.md) |
+| 文件怎么放、目录怎么用 | [工作区架构](docs/architecture/workspace-layout.md) 与 [全局治理](docs/standards/workspace-governance.md) |
+| 数据、运行和复现怎么做 | [数据与复现规范](docs/standards/data-reproducibility.md) |
+| 模型、计算和验证怎么做 | [建模与计算执行规范](docs/standards/modeling-execution.md) |
 | 证据怎么追溯 | [证据契约](docs/standards/evidence-contract.md) |
-| 论文怎么写、怎么排版 | [论文写作规范](docs/standards/paper-writing.md) |
+| 论文内容怎么写 | [论文写作规范](docs/standards/paper-writing.md) |
+| LaTeX、公式、表格和版式怎么做 | [论文排版规范](docs/standards/paper-formatting.md) |
 | 论文配图怎么做 | [论文图片与科研可视化规范](docs/standards/paper-figures.md) |
-| 论文怎么审 | [论文质量审查标准](docs/standards/paper-quality-audit.md) |
+| 论文怎么审、何时复查 | [最终审查与竞争力评分标准](docs/standards/paper-quality-audit.md) |
 | 怎么命名文件和项目 | [命名规范](docs/standards/naming.md) |
+| 下游阶段怎么快速找到项目产物 | 正式项目的 `00-admin/artifact-map.yaml` |
+| 上游修改后哪些产物受影响 | `tools/trace-artifact-impact.py` |
 | 环境怎么配 | [建模环境指南](docs/guides/modeling-environment.md) |
 | 论文生产流程是什么 | [论文生产流程](docs/guides/paper-production.md) |
 | 写作前要做什么 | [写作前强制学习流程](docs/guides/pre-writing-learning.md) |
@@ -151,44 +158,24 @@ workspace/       → 你的工作区
    - Day 1-2：关注建模和代码(人类定方向，Agent 执行)
    - Day 3-4：关注审校和交付(Agent 生成草稿，人类检查逻辑、图表、排版、字体)
 
-### 论文审校与交付
+> 如果你希望在 Day 1 进行更深入的预建模研究，可以参考进阶篇的[人机协作](#人机协作)。
 
-Agent 生成论文初稿后，你需要逐项检查以下内容(按优先级排序):
+#### 论文审校与交付
 
-**1. 逻辑与表达**
-- 摘要是否清晰概括了问题、方法、结果和结论？
-- 模型假设是否在正文中有明确的说明和合理性论证？
-- 关键结论是否有数据支撑(而不是 Agent 凭空断言)？
-- 术语在全文中是否前后一致？
-- 是否有多余的废话或重复段落？
+Agent 生成 Release Candidate 后，应依据[最终审查标准](docs/standards/paper-quality-audit.md)完成证据、复现、内容一致性、排版、图表和最终 PDF 渲染检查，并提交可追溯的审查结果。具体要求分别以[论文写作规范](docs/standards/paper-writing.md)、[论文排版规范](docs/standards/paper-formatting.md)和[论文图片规范](docs/standards/paper-figures.md)为准，人类无需重复执行这些规范化检查。
 
-**2. 图表与正文的配合**
-- 每张图/表在正文中是否都有明确的引用(如“如图 3 所示”“见表 2”)？
-- 图的标题、坐标轴标签、单位是否齐全且正确？
-- 表格中的数据是否与正文中引用的数值一致？
-- 图表编号是否连续、顺序是否正确？
+人类审校重点放在规范难以穷尽的高层质量判断：
 
-**3. 排版与格式**
-- 摘要页是否独占一页(标题 + 摘要 + 关键词)？
-- 正文是否从新的一页开始？
-- 每个附录是否单独起一页？
-- 全部中文是否为宋体？全部英文/数字是否为 Times New Roman？
-- 公式编号是否右对齐、连续？
+- **消除 AI 味和工程化语言**：删除写作过程、程序实现、配置管理和任务执行式表述，修正模板化开头、机械过渡、空泛评价、重复总结及过度分点，使论文呈现为自然、凝练的数学论证，而不是 Agent 工作报告。
+- **判断获奖竞争力**：检查论文是否抓住题目核心矛盾，模型是否具有实质洞察而非方法堆砌，各问是否形成递进关系，结果是否鲜明、可信且具有应用价值。
+- **把握论证重点和阅读体验**：从评阅者视角判断摘要能否迅速传达亮点，正文主线是否突出，关键发现是否得到充分解释，次要技术细节是否喧宾夺主。
+- **确认团队真正理解论文**：检查模型选择、关键假设、结果含义和局限是否经得起追问，避免保留虽符合形式规范但团队无法解释或辩护的内容。
 
-**4. 最终 PDF 渲染检查**
-- 用 PDF 阅读器逐页翻看全文，不能只检查源文件
-- 检查是否有公式断裂、图表溢出、乱码或缺图
-- 检查 PDF 中的字体属性(工具 → 属性 → 字体，确认全部中文为宋体、英文为 Times New Roman)
-
-**原则:** Agent 负责生成“90 分”的草稿，人类负责把最后 10 分补上。这 10 分包括:逻辑连贯性、语言表达的流畅度、排版的精确度——这些是评审老师最容易感知的“舒适度”信号。
+最终交付不是再次人工核对格式清单，而是在 Agent 完成规范审查的基础上，由人类对论文的自然表达、学术判断、实质亮点和竞赛说服力作最后把关。
 
 ### 如果你是 Agent
 
-1. 首先读取 `AGENTS.md`，了解行为规则和强制门禁
-2. 读取 `docs/standards/workspace-governance.md`，了解文件路由和数据保护要求
-3. 如果涉及论文，读取 `docs/standards/paper-writing.md`
-4. 涉及图片生成时，读取 `docs/standards/paper-figures.md`
-5. 在开始写作前，执行 `docs/guides/pre-writing-learning.md` 中描述的学习流程
+请先阅读 [`AGENTS.md`](AGENTS.md)。它只提供轻量任务路由和全局底线；随后按当前任务读取对应的唯一权威文件，不要预加载无关长规范。
 
 ## 进阶篇
 
@@ -209,7 +196,7 @@ Agent 负责:读取数据、运行模型、生成代码、渲染图表、起草�
 
 **2. 证据可追溯**
 
-论文中的每一个数字都必须能追溯到具体的代码、数据和日志文件。这就是 `04-results/` + `05-evidence/` 存在的意义。`05-evidence/claims-evidence-index.md` 是论文主张和证据文件之间的桥梁。
+论文中的每一个数字都必须能追溯到具体的代码、数据和日志文件。这就是 `04-results/` + `05-evidence/` 存在的意义。`05-evidence/evidence-index.csv` 是论文主张和证据文件之间的桥梁。
 
 评审老师不需要信任我们说的任何一句话，只需要检查证据索引中的每个条目是否真实存在。
 
@@ -282,38 +269,9 @@ Agent 不需要理解化学机理，它只需要:
 
 这就是“人类决策 + Agent 执行”模式的核心实践。
 
-#### 审校分两层：自动审校 + 人工审校
+### 审校分两层：自动审校 + 人工审校
 
-写作和审校由同一方完成时，盲点是无法避免的。因此，工作区把审校拆成两层：
-
-**第一层：自动审校(Agent执行)**
-
-Agent 在发布前运行 `cumcm-paper-audit` Skill，检查客观可量化的事项：
-- 参考文献数量是否≥6 篇
-- 图表编号是否连续、顺序是否正确
-- 摘要页是否独占一页
-- 全文是否包含身份信息(关键词检测)
-- 公式编号是否右对齐
-- 文献格式是否统一
-
-自动审校的结果保存在 `07-review/release-audit.md`。Agent 无法通过的项目必须修复后才能进入下一步。
-
-**第二层：人工审校(人类执行)**
-
-自动审校只能检测“格式对不对”，无法判断“写得好不好”。以下事项必须由人类完成：
-- 摘要是否清晰、准确、有说服力
-- 模型假设是否合理且有论证
-- 关键结论是否有数据支撑(而不是Agent凭空断言)
-- 术语在全文中是否前后一致
-- 图表是否与正文紧密配合(每张图/表在正文中都有明确引用)
-- 全文读起来是否通顺、流畅
-- 最终 PDF 逐页渲染检查(是否溢出、乱码、缺图)
-- 交付物是否完整(代码、数据、清单齐全)
-
-**两层审校的边界：**
-- Agent 负责 **“格式正确”** —— 这是 60 分
-- 人类负责 **“内容可信”** —— 这是从 60 分到 90 分的差距
-- Agent 的审校结果作为“门禁”，人类的审校结果作为“定稿”
+写作和审校由同一方完成时容易留下盲点。发布前使用 `cumcm-paper-audit` Skill：脚本核验稳定、客观的机器契约，独立 Reviewer 核对模型、证据、论证和视觉表达，二者共同写入唯一的 `07-review/final-audit.md`。人类再对题意、现实假设、决策价值和最终提交负责；自动检查、Reviewer judgment 与发布门禁的边界只以[最终审查标准](docs/standards/paper-quality-audit.md)为准。
 
 ## 最后提醒
 
