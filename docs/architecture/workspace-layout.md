@@ -2,6 +2,28 @@
 
 本文档是 Agent 组织仓库与项目文件的权威指南。设计目标是让稳定文档、配置、工具和资源与频繁变化的项目数据、运行缓存分离；下列目录树是推荐基线，不是由 Python 精确复刻的固定 schema。
 
+```toml machine-contract
+recommended_project_directories = [
+  "00-admin",
+  "01-problem/attachments",
+  "02-data/raw",
+  "02-data/processed",
+  "03-models/q01",
+  "04-results/tables",
+  "04-results/figures",
+  "04-results/metrics",
+  "04-results/logs",
+  "05-evidence",
+  "06-paper/figures",
+  "06-paper/tables",
+  "07-review",
+  "08-delivery/support-materials",
+  "test",
+]
+```
+
+上方数组是初始化器使用的推荐项目骨架；它不把推荐树升级为审计 schema。目录职责仍由本文件正文解释，跨阶段状态与产物权威性由 `WG-ROUTE-001` 和 `WG-TEST-001` 管理。
+
 ## 设计原则（`LAYOUT-001`）
 
 1. **根目录主要做入口。** 常用入口仍为 `README.md`、`AGENTS.md`、`ENV_SETUP.md`、`setup.bat`、版本控制文件、隐藏环境目录和一级职责层；合理新增顶层入口或职责目录不会仅因不在旧清单中而失败。环境规则仍以 `docs/guides/modeling-environment.md` 为准。
@@ -90,47 +112,15 @@
 
 ### `test/` 实验区
 
-`test/` 与 `00-admin/` 至 `08-delivery/` 并列，但不是第 09 阶段，也不改变正式阶段的先后关系或门禁。各阶段可按需用它做小样本、小规模、短时运行的候选算法、参数和局部实现比较，以便在修改正式链路前先验证想法。
-
-- 初始化器只创建 `test/README.md`，不复制正式工作流目录树。需要实验时可在 `test/` 下按问题或想法临时组织代码、数据、结果和简短结论，无需维护统一子目录、完整运行手册、证据台账或阶段状态。
-- `test/` 内全部内容默认属于 exploratory 非权威产物。不得把其中的代码、数据、指标、图片、表格或日志登记到 `00-admin/artifact-map.yaml`，也不得直接作为 `04-results/` 的正式结果、`05-evidence/` 的证据、`06-paper/` 的引用来源或 `08-delivery/` 的交付物。
-- 实验被采纳后，须在 `03-models/` 中形成正式实现和参数，按正式数据与复现规则运行到 `04-results/`，完成适用验证并登记证据；只有这些正式路径进入产物地图和后续影响链。未采纳实验可保留或删除，不触发正式链路重跑。
-- `test/` 不豁免、替代或降低任何正式工作流门禁。正式结果仍以编号阶段中的权威产物为准。
+`test/` 与 `00-admin/` 至 `08-delivery/` 并列，不是第 09 阶段。初始化器只创建 `test/README.md`；实验可在其下按问题或想法灵活组织，不要求复制正式目录树。实验产物的权威边界与影响链执行 `WG-TEST-001`，候选比较和正式采纳执行 `WG-MODEL-001`，本文件不重复定义。
 
 ### 项目产物导航
 
-每个新初始化的正式项目包含 `00-admin/artifact-map.yaml`。它按 `common` 与 `q01`、`q02` 等稳定子问题 ID，列出下游阶段需要再次读取的关键数据、代码入口、参数、正式结果、验证产物和论文引用副本；证据部分只登记 `claim_id` 或 `citation_key`，具体来源与核验状态仍由 `05-evidence/` 台账管理。
-
-地图中的 `impact_defaults` 只保存一次通用类别依赖：数据、代码或参数影响结果，结果影响验证与论文图表副本，结果和验证要求重新核对证据、论文、审校与交付。`paper_assets` 专指 `06-paper/figures/`、`06-paper/tables/` 中从权威结果复制或导出的文件。只有一个子问题实际依赖另一问的产物时，才在该问的 `depends_on_questions` 中登记 `<question_id>.<category>`；其语义是该上游类别变化会使本问结果进入影响链。
-
-发生实质变化后可运行：
-
-```powershell
-.\.venv-modeling\Scripts\python.exe tools/trace-artifact-impact.py `
-  workspace/projects/<project-id> `
-  --changed 02-data/processed/q01-data.csv 03-models/q01/q01-parameters.yaml
-```
-
-工具只读取地图和显式变化路径并计算传递影响：`STALE` 表示列出的派生产物必须重新生成，`RECHECK` 表示证据主张、正文、审校结论或交付件需结合新结果核对，核对后确认未受影响的内容可继续复用。它不自动读取 Git diff，不写入动态失效状态，返回影响项也不等于新增发布门禁。地图缺失或路径未登记时，工具只按项目职责目录和路径中的 `qNN` 做保守推断并给出警告。
-
-该文件是导航索引，不是完整 manifest，也不是新的权威数据源或阶段门禁：
-
-- 只登记相对项目根目录的稳定关键文件，通常是运行入口和下游会引用的产物，不登记每个辅助脚本或中间文件；
-- 不登记临时预览、缓存、失败输出、文件哈希、存在状态和阶段完成状态；
-- 创建、移动或淘汰下游会复用的关键产物时，只更新受影响的 `common` 或子问题条目；
-- 通用影响关系不逐问复制，跨问依赖只登记实际例外；不维护逐次变更日志或动态失效清单；
-- Agent 进入论文写作、结果分析、制图或审校时先读取该地图，再按当前子问题定向打开文件；地图缺失或失效时只搜索相关职责目录，并修复本次实际使用的关键路径；
-- 旧项目缺少地图不自动构成发布阻断，审校也不得把地图条目本身当作主张、验证或复现证据。
-
-项目生命周期与交付治理见 `docs/standards/workspace-governance.md`，数据复现与建模执行分别见 `docs/standards/data-reproducibility.md` 和 `docs/standards/modeling-execution.md`，证据字段见 `docs/standards/evidence-contract.md`，论文质量审查见 `docs/standards/paper-quality-audit.md`。本文件不要求审计脚本复制完整目录树。
+每个新初始化的正式项目在 `00-admin/` 中包含 `artifact-map.yaml`。本文件只规定它的目录位置；登记范围、字段语义、跨问依赖、影响传播和旧项目回退行为统一执行 `WG-ROUTE-001`。初始化器实现推荐骨架，审计脚本不得据此要求项目永久复刻完整目录树。
 
 ## 需求生命周期
 
-1. 在 `workspace/inbox/<yyyy-mm-dd>-<short-name>/` 保存题目要求、用户说明和原始附件；该命名是推荐约定，不是独立机器门禁。
-2. 明确赛题后，用初始化脚本在 `workspace/projects/` 创建唯一项目。
-3. 将原题和附件分别归入项目 `01-problem/`、`02-data/raw/`。
-4. 清空对应 inbox 子目录，避免维护两份原始材料。
-5. 项目不再活跃且确认无当前依赖后，才可移入 `workspace/archive/`。
+`workspace/inbox/`、`workspace/projects/` 与 `workspace/archive/` 的位置和目录职责见上文；需求何时迁移、何时清理和何时归档统一执行 `docs/standards/workspace-governance.md`，本文件不维护第二套生命周期步骤。
 
 ## 放置决策
 

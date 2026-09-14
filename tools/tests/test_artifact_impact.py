@@ -186,6 +186,29 @@ class ArtifactImpactTests(unittest.TestCase):
             self.assertEqual(report["matched"][0]["source"], "reserved-test")
             self.assertTrue(any("no formal impact" in item for item in report["warnings"]))
 
+    def test_legacy_map_cannot_override_authority_impact_rules(self) -> None:
+        with tempfile.TemporaryDirectory(dir=TEMP_ROOT) as temporary:
+            project = Path(temporary) / "project"
+            project.mkdir()
+            map_path = write_map(project, {"q01": question("q01")})
+            artifact_map = yaml.safe_load(map_path.read_text(encoding="utf-8"))
+            artifact_map["impact_defaults"] = {
+                "results": {"depends_on": ["paper"], "effect": "RECHECK"}
+            }
+            map_path.write_text(
+                yaml.safe_dump(artifact_map, allow_unicode=True, sort_keys=False),
+                encoding="utf-8",
+            )
+
+            result = run(project, "02-data/processed/q01-input.csv")
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            report = json.loads(result.stdout)
+
+            self.assertIn("q01.results", node_ids(report["stale"]))
+            self.assertTrue(
+                any("WG-ROUTE-001 is authoritative" in item for item in report["warnings"])
+            )
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -10,20 +10,20 @@
 .\.venv-modeling\Scripts\python.exe .\.codex\skills\cumcm-paper-production\scripts\init_cumcm_project.py --root workspace\projects --contest cumcm --year 2026 --problem a
 ```
 
-初始化脚本会将 `resources/templates/cumcm-paper-framework.tex` 复制为项目 `06-paper/main.tex`，并将 `resources/templates/figure-selection-record.md` 复制为 `00-admin/figure-selection-record.md`。完成写作门禁后直接在论文副本上持续写作和修订；普通图片只在轻量 registry 登记一行，潜在误导性视觉处理才展开说明。
+初始化器的目录、模板和记录行为分别执行 `LAYOUT-001`、`WG-ROUTE-001`、`PWL-GATE-001` 与 `PW-FIG-001`；本指南只提供命令入口。
 
-完成计算后，把论文中的关键主张登记到 `05-evidence/evidence-index.csv`，把文献登记到 `05-evidence/literature-ledger.csv`。Draft 阶段可运行静态提示：
+Draft 阶段的客观静态检查命令：
 
 ```powershell
 .\.venv-modeling\Scripts\python.exe .\.codex\skills\cumcm-paper-audit\scripts\audit_cumcm_project.py workspace\projects\cumcm-2026-a --phase draft
 ```
 
-形成 Release Candidate 待审快照后，由 Final Audit 完成唯一一次 clean reproduction、最终 PDF 逐页/逐图检查并写入 `07-review/final-audit.md`，随后运行客观 preflight。审查发现问题时可返回受影响的代码、模型或数据处理阶段修正，再更新阶段状态并形成新快照：
+Release Candidate 阶段的客观 preflight 命令：
 
 ```powershell
 .\.venv-modeling\Scripts\python.exe .\.codex\skills\cumcm-paper-audit\scripts\audit_cumcm_project.py workspace\projects\cumcm-2026-a --phase release-candidate
 ```
 
-Final 阶段发生修改时按影响范围复查，再用 `--phase final` 核对报告与交付物。退出码为 0 只表示客观静态门禁通过；不能替代 clean reproduction、最终 PDF 读图和独立 Reviewer 判断。
+Final 阶段使用同一命令的 `--phase final`；阶段含义、复查范围和退出码边界只以 `PQA-REPORT-001` 与 `PQA-RELEASE-001` 为准。
 
 Agent 阶段顺序与停止条件只以 `.codex/skills/cumcm-paper-production/SKILL.md` 为准；本指南只保留用户命令。各门禁及权威分工见 `docs/README.md`。

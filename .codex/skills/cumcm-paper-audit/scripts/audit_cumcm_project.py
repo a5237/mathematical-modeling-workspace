@@ -21,20 +21,6 @@ sys.path.insert(0, str(WORKSPACE_ROOT / "tools"))
 from control_contracts import ContractError, load_workspace_contracts
 
 
-# These are semantic handoff interfaces, not a directory-tree schema. Any other
-# directories may be added, split, renamed or removed without this preflight
-# caring about them.
-RELEASE_CORE_FILES = [
-    "00-admin/runbook.md",
-    "00-admin/pre-writing-learning.md",
-    "01-problem/problem-checklist.md",
-    "03-models/model-selection.md",
-    "05-evidence/evidence-index.csv",
-    "05-evidence/literature-ledger.csv",
-    "05-evidence/ai-tool-log.md",
-    "06-paper/main.tex",
-    "08-delivery/file-list.md",
-]
 PLACEHOLDER = re.compile(r"TODO|TBD|FIXME|待填写|待补|占位|XX+", re.IGNORECASE)
 AUDIT_FIELD = re.compile(r"^\s*-\s*([a-z0-9_]+):\s*`([^`]*)`\s*$", re.MULTILINE)
 WORKFLOW_FIELD = re.compile(
@@ -42,27 +28,6 @@ WORKFLOW_FIELD = re.compile(
 )
 FINAL_AUDIT_PATH = "07-review/final-audit.md"
 LEGACY_AUDIT_PATH = "07-review/paper-quality-audit.md"
-FINAL_AUDIT_FIELDS = {
-    "audit_date",
-    "audit_phase",
-    "review_scope",
-    "final_pdf",
-    "final_pdf_sha256",
-    "body_word_count",
-    "body_page_range",
-    "body_page_count",
-    "body_figure_count",
-    "body_table_count",
-    "body_length_and_visual_count_gate",
-    "official_rules_gate",
-    "evidence_gate",
-    "clean_reproduction_gate",
-    "anonymity_gate",
-    "delivery_gate",
-    "open_critical",
-    "open_major",
-    "release_decision",
-}
 def workflow_metadata(text: str) -> dict[str, str]:
     fields: dict[str, str] = {}
     for key, raw_value in WORKFLOW_FIELD.findall(text):
@@ -195,7 +160,7 @@ def audit_final_report(
         "body_page_range", "body_page_count", "body_figure_count", "body_table_count",
         "body_length_and_visual_count_gate", "open_critical", "open_major", "release_decision",
     }
-    required = common_fields if legacy else FINAL_AUDIT_FIELDS
+    required = common_fields if legacy else set(contracts.final_audit_fields)
     missing = sorted(required - fields.keys())
     if missing:
         errors.append(f"MAJOR {path}: missing final-audit fields {missing}")
@@ -206,15 +171,20 @@ def audit_final_report(
     audit_count_fields(fields, contracts, errors)
     audit_pdf_identity(root, delivery_pdf, fields, errors)
 
-    if fields["body_length_and_visual_count_gate"] != "PASS":
-        errors.append("MAJOR retained body length/page/figure/table gate is not PASS")
-    for key in ("open_critical", "open_major"):
-        if fields[key] != "0":
-            errors.append(f"MAJOR final audit {key}: expected '0', found {fields[key]!r}")
-    if fields["release_decision"] != "READY":
-        errors.append(f"MAJOR final audit release_decision is {fields['release_decision']!r}")
-
     if legacy:
+        if fields["body_length_and_visual_count_gate"] != contracts.final_audit_pass_status:
+            errors.append(
+                "MAJOR retained body length/page/figure/table gate is not "
+                + contracts.final_audit_pass_status
+            )
+        for key in contracts.final_audit_zero_fields:
+            if fields[key] != contracts.final_audit_no_open_findings_value:
+                errors.append(
+                    f"MAJOR final audit {key}: expected "
+                    f"{contracts.final_audit_no_open_findings_value!r}, found {fields[key]!r}"
+                )
+        if fields["release_decision"] != contracts.release_ready_status:
+            errors.append(f"MAJOR final audit release_decision is {fields['release_decision']!r}")
         for key in (
             "paper_writing_compliance",
             "paper_figure_compliance",
@@ -228,16 +198,39 @@ def audit_final_report(
         )
         return
 
-    expected_phase = "RELEASE_CANDIDATE" if phase == "release-candidate" else "FINAL"
+    for key in contracts.final_audit_pass_fields:
+        if fields[key] != contracts.final_audit_pass_status:
+            errors.append(
+                f"MAJOR final audit {key} is not {contracts.final_audit_pass_status}"
+            )
+    for key in contracts.final_audit_zero_fields:
+        if fields[key] != contracts.final_audit_no_open_findings_value:
+            errors.append(
+                f"MAJOR final audit {key}: expected "
+                f"{contracts.final_audit_no_open_findings_value!r}, found {fields[key]!r}"
+            )
+    if fields["release_decision"] != contracts.release_ready_status:
+        errors.append(f"MAJOR final audit release_decision is {fields['release_decision']!r}")
+
+    expected_phase = (
+        contracts.release_candidate_phase_value
+        if phase == "release-candidate"
+        else contracts.final_phase_value
+    )
     if fields["audit_phase"] != expected_phase:
         errors.append(f"MAJOR final audit audit_phase must be {expected_phase}")
-    allowed_scope = {"FULL"} if phase == "release-candidate" else {"FULL", "IMPACTED"}
+    allowed_scope = set(
+        contracts.release_candidate_review_scopes
+        if phase == "release-candidate"
+        else contracts.final_review_scopes
+    )
     if fields["review_scope"] not in allowed_scope:
         errors.append(f"MAJOR final audit review_scope must be one of {sorted(allowed_scope)}")
-    for key in ("official_rules_gate", "evidence_gate", "anonymity_gate", "delivery_gate"):
-        if fields[key] != "PASS":
-            errors.append(f"MAJOR final audit {key} is not PASS")
-    allowed_reproduction = {"PASS"} if phase == "release-candidate" else {"PASS", "REUSED_UNCHANGED"}
+    allowed_reproduction = set(
+        contracts.release_candidate_reproduction_statuses
+        if phase == "release-candidate"
+        else contracts.final_reproduction_statuses
+    )
     if fields["clean_reproduction_gate"] not in allowed_reproduction:
         errors.append(
             f"MAJOR final audit clean_reproduction_gate must be one of {sorted(allowed_reproduction)}"
@@ -295,7 +288,7 @@ def main() -> int:
         parser.error(f"project does not exist: {root}")
 
     if release_phase:
-        for relative in RELEASE_CORE_FILES:
+        for relative in contracts.release_core_files:
             if not (root / relative).is_file():
                 errors.append(f"MAJOR missing core release artifact: {relative}")
         audit_workflow_gate(
@@ -367,7 +360,9 @@ def main() -> int:
             warnings,
         )
     else:
-        missing_draft = [relative for relative in RELEASE_CORE_FILES if not (root / relative).is_file()]
+        missing_draft = [
+            relative for relative in contracts.release_core_files if not (root / relative).is_file()
+        ]
         if missing_draft:
             warnings.append(
                 "draft is incomplete, which is allowed; missing future release artifacts: "

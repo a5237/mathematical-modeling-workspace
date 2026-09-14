@@ -8,6 +8,7 @@ from collections import defaultdict, deque
 import json
 from pathlib import Path, PurePosixPath
 import re
+import sys
 from typing import Any, Iterable
 
 try:
@@ -18,27 +19,23 @@ except ImportError as exc:  # pragma: no cover - exercised only outside the work
     ) from exc
 
 
+WORKSPACE_ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(WORKSPACE_ROOT / "tools"))
+
+from control_contracts import ContractError, load_workspace_contracts
+
+
+try:
+    CONTRACTS = load_workspace_contracts(WORKSPACE_ROOT)
+except ContractError as exc:  # pragma: no cover - workspace installation failure
+    raise SystemExit(f"invalid authority contract: {exc}") from exc
+
+
 MAP_RELATIVE_PATH = Path("00-admin/artifact-map.yaml")
-DEFAULT_MAP_TEMPLATE = (
-    Path(__file__).resolve().parents[1] / "resources" / "templates" / "artifact-map.yaml"
-)
-PATH_CATEGORIES = (
-    "data",
-    "code",
-    "parameters",
-    "results",
-    "validation",
-    "paper_assets",
-)
-ALL_CATEGORIES = PATH_CATEGORIES + ("evidence", "paper", "review", "delivery")
-SEMANTIC_CATEGORIES = {"evidence", "paper", "review", "delivery"}
-INDEX_CATEGORIES = {
-    "claims": "evidence",
-    "literature": "evidence",
-    "paper": "paper",
-    "review": "review",
-    "delivery": "delivery",
-}
+PATH_CATEGORIES = CONTRACTS.artifact_path_categories
+SEMANTIC_CATEGORIES = set(CONTRACTS.artifact_semantic_categories)
+ALL_CATEGORIES = PATH_CATEGORIES + CONTRACTS.artifact_semantic_categories
+INDEX_CATEGORIES = CONTRACTS.artifact_index_categories
 QUESTION_REFERENCE = re.compile(r"^(q\d+)\.([a-z_]+)$", re.IGNORECASE)
 QUESTION_TOKEN = re.compile(r"(?<![a-z0-9])q\d+(?![a-z0-9])", re.IGNORECASE)
 STATUS_RANK = {"RECHECK": 1, "STALE": 2, "CHANGED": 3}
@@ -121,17 +118,11 @@ def sequence(value: Any, label: str) -> list[Any]:
 
 
 def parse_impact_defaults(raw: Any, warnings: list[str]) -> dict[str, dict[str, Any]]:
-    if raw is None:
-        try:
-            template = yaml.safe_load(DEFAULT_MAP_TEMPLATE.read_text(encoding="utf-8"))
-        except (OSError, UnicodeError, yaml.YAMLError) as exc:
-            raise ImpactMapError(f"cannot load default impact graph: {exc}") from exc
-        if not isinstance(template, dict) or "impact_defaults" not in template:
-            raise ImpactMapError("default artifact-map template has no impact_defaults")
-        raw = template["impact_defaults"]
+    if raw is not None:
         warnings.append(
-            "impact_defaults is missing; using the workspace artifact-map template"
+            "legacy project impact_defaults was ignored; WG-ROUTE-001 is authoritative"
         )
+    raw = CONTRACTS.artifact_impact_defaults
     specs = mapping(raw, "impact_defaults")
     if not specs:
         raise ImpactMapError("impact_defaults cannot be empty")

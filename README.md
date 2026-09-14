@@ -33,27 +33,50 @@
 
 > 如果提示“找不到 Python”，请先安装 Python 3.10 ~ 3.13 中的任一版本，并确保 `py` 启动器可用。
 
-### 第2步:了解项目结构
+### 第2步：看懂一个赛题项目
+
+`config/`、`docs/`、`resources/` 和 `tools/` 服务整个仓库；真正属于某一道赛题的材料都放在 `workspace/projects/<project-id>/`。初始化后的项目大致如下：
 
 ```text
-
-config/          → 依赖清单(一般不用动)
-docs/            → 所有规范和指南(遇到问题先翻这里)
-resources/       → 算法资料、优秀论文、模板(写作前可以翻翻)
-tools/           → 辅助工具脚本(需要时可以调用)
-workspace/       → 你的工作区
-  ├── inbox/     → 新赛题暂存(放题目、附件的临时位置)
-  ├── projects/  → 正式赛题项目(每一道题一个独立目录)
-  └── archive/   → 历史归档(不再使用的旧项目)
-  
+workspace/projects/cumcm-2026-a/
+├── 00-admin/               # 项目配置、运行手册和产物导航，贯穿整个项目
+│   └── artifact-map.yaml   # 快速找到各问的关键数据、代码、结果和论文素材
+├── 01-problem/             # 题面、附件与问题清单：先确认每一问要解决什么
+│   └── attachments/
+├── 02-data/                # 数据：原始数据与处理后数据分开保存
+│   ├── raw/
+│   └── processed/
+├── 03-models/              # 模型选择记录、代码、参数和算法实现
+│   └── q01/
+├── 04-results/             # 正式运行产生的图、表、指标和日志
+│   ├── figures/
+│   ├── tables/
+│   ├── metrics/
+│   └── logs/
+├── 05-evidence/            # 数值主张、参考文献和 AI 使用记录
+├── 06-paper/               # 论文源文件及论文实际使用的图表副本
+│   ├── figures/
+│   └── tables/
+├── 07-review/              # 独立审校记录和最终审查报告
+├── 08-delivery/            # 最终提交文件；这里只保留真正要交付的成品
+│   └── support-materials/
+└── test/                   # 可选实验沙盒，与 00—08 并列，不是第 09 步
 ```
 
-### 第3步:开始你的第一道赛题
+可以把正式主线理解为：**读懂题目（01）→ 整理数据（02）→ 建立模型（03）→ 生成正式结果（04）→ 固化证据（05）→ 写论文（06）→ 独立审校（07）→ 整理交付（08）**。`00-admin/` 负责全程管理和导航；`test/` 只用于试错，采用后的方案仍要回到正式目录重新运行。
 
-1. 将原始赛题 PDF 和附件放入 `workspace/inbox/` 
-2. 在 Codex / Claude Code / DeepSeek Harness 中启动 Agent，提示词指向该inbox目录
-3. Agent 会先读取轻量的 `AGENTS.md`，再按当前阶段只加载数据、建模、证据、写作、排版、图片或审校所需规范
-4. 人类在 Day 3-4 介入审校和交付检查
+### 第3步：开始你的第一道赛题
+
+以“2026 年全国大学生数学建模竞赛 A 题”为例：
+
+1. 在 `workspace/inbox/` 下新建一个容易辨认的临时目录，例如 `workspace/inbox/cumcm-2026-a/`，把赛题 PDF、数据附件和你的补充说明都放进去。
+2. 在 Codex、Claude Code 或 DeepSeek Harness 中打开本仓库，把任务直接指向该目录。可以使用下面这句开场：
+
+   > 请处理 `workspace/inbox/cumcm-2026-a/` 中的新赛题，先按本仓库的 `AGENTS.md` 初始化正式项目、分类题面与原始数据并核对问题清单，再推进完整的数学建模生产流程。
+
+3. Agent 会在 `workspace/projects/cumcm-2026-a/` 创建上面的项目骨架，将题面和非数据附件归入 `01-problem/`、原始数据归入 `02-data/raw/`；确认项目副本完整后，才清理对应的 inbox 临时目录。也可以使用下方的[项目初始化命令](#项目初始化启动新赛题)手动创建骨架。
+4. 后续工作沿 `01` 到 `08` 推进，`00-admin/artifact-map.yaml` 用于快速定位关键产物。需要试验模型或局部改动时使用 `test/`，确认采用后再回到 `03-models/`、`04-results/` 等正式目录实现和运行。
+5. 形成 Release Candidate 后，Agent 先完成规范化检查，人类再对论文表达、建模洞察、结果说服力和最终交付作最后判断。详细分工见下方的[论文审校与交付](#论文审校与交付)。
 
 ## 仓库分层
 
@@ -85,7 +108,7 @@ workspace/       → 你的工作区
 | `tools/check-workspace-layout.py` | 捕获根目录高风险缓存、生成残留、批量项目产物和冲突旧结构 | 日常维护或重构后检查 |
 | `tools/extract-spreadsheet.py` | 清洗 Excel 附件并逐工作表输出标准 CSV，也支持大表流式检查/提取 | 收到 `.xlsx/.xls` 题目附件时 |
 | `tools/extract-pdf-pages.py` | 截取 PDF 指定页或页面局部并输出临时 PDF/PNG | 题面视觉分析、OCR 或临时引用时 |
-| `tools/trace-artifact-impact.py` | 从显式变化路径计算项目产物的传递影响 | 修改上游后判断哪些结果必须重生成、哪些下游内容只需复核 |
+| `tools/trace-artifact-impact.py` | 执行 `WG-ROUTE-001` 的影响分析 | 上游稳定产物发生实质变化后 |
 | `AGENTS.md` | Agent 的按需加载路由与全局底线 | 如果你用 Codex/Claude Code 等 AI 工具 |
 | `ENV_SETUP.md` | 虚拟环境的手动搭建步骤 | `setup.bat` 失效时需要 |
 
@@ -113,6 +136,9 @@ workspace/       → 你的工作区
 
 # 检查根目录高风险污染（不冻结顶层结构或普通命名）
 .\.venv-modeling\Scripts\python.exe tools/check-workspace-layout.py
+
+# 运行 v2.0 端到端基础设施 Smoke Test（自动创建并删除临时项目）
+.\.venv-modeling\Scripts\python.exe -B -m unittest discover -s tools/tests -p "test_v2_smoke.py" -v
 
 ```
 
@@ -196,19 +222,17 @@ Agent 负责:读取数据、运行模型、生成代码、渲染图表、起草�
 
 **2. 证据可追溯**
 
-论文中的每一个数字都必须能追溯到具体的代码、数据和日志文件。这就是 `04-results/` + `05-evidence/` 存在的意义。`05-evidence/evidence-index.csv` 是论文主张和证据文件之间的桥梁。
-
-评审老师不需要信任我们说的任何一句话，只需要检查证据索引中的每个条目是否真实存在。
+项目使用 `04-results/` 保存正式结果，并用 `05-evidence/` 连接论文主张与可核查来源；具体来源类型、字段和状态只执行 `WG-EVID-001`。
 
 **3. 工程与论文分离**
 
-工程信息(运行日志、依赖版本、安装步骤、目录树)放在 `00-admin/` 和 `04-results/` 中。论文正文只保留科学上必要的内容。不把工程信息复制粘贴进论文充篇幅。
+工程记录与论文内容的边界执行 `WG-ROUTE-001` 和论文写作规范；本入口只解释为何两者分离。
 
 #### 为什么要独立审校？
 
 写作和审校由同一方完成时，盲点是无法避免的。写作者天然倾向于相信自己写的东西没问题。
 
-因此，`07-review/` 目录独立于 `06-paper/`，发布前必须运行 `cumcm-paper-audit` Skill 进行独立检查。审校报告保存在 `07-review/` 中，修复必须回到权威数据、代码或论文源文件中完成，不能直接在审校目录里改成品。
+因此工作区将生产与独立审校分开；交接、报告与修复路由分别执行 `WG-RELEASE-001` 和 `PQA-REPORT-001`。
 
 #### 为什么 Agent 要先读人类思路？
 
@@ -271,10 +295,8 @@ Agent 不需要理解化学机理，它只需要:
 
 ### 审校分两层：自动审校 + 人工审校
 
-写作和审校由同一方完成时容易留下盲点。发布前使用 `cumcm-paper-audit` Skill：脚本核验稳定、客观的机器契约，独立 Reviewer 核对模型、证据、论证和视觉表达，二者共同写入唯一的 `07-review/final-audit.md`。人类再对题意、现实假设、决策价值和最终提交负责；自动检查、Reviewer judgment 与发布门禁的边界只以[最终审查标准](docs/standards/paper-quality-audit.md)为准。
+自动检查、独立 Reviewer 与人工最终判断的分工只以[最终审查标准](docs/standards/paper-quality-audit.md)为准。
 
 ## 最后提醒
 
-具体项目的计算、编译和审校命令，必须记录在该项目的 `00-admin/runbook.md` 中。
-
-**根目录不得放置项目脚本、论文、结果、临时文件或新增的专题文档**——它们各有各的位置。如果发现不知道该放哪，先查 `docs/architecture/workspace-layout.md`。
+具体项目的计算、编译和审校命令按数据复现规范维护。文件放置和根目录机器阻断边界只以[工作区架构](docs/architecture/workspace-layout.md)为准。

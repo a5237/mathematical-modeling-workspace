@@ -1,7 +1,7 @@
 % !TEX program = xelatex
 % CUMCM 论文正式写作框架（电子版）
-% 使用说明：复制为项目 06-paper/main.tex 后只修改项目副本；提交前清除占位符并逐页检查最终 PDF。
-% 结构、内容和无状态交付执行 paper-writing.md，纯排版执行 paper-formatting.md，年度格式执行 OFFICIAL-CUMCM-001，所有结论必须来自可核验证据。
+% 本文件只实现论文写作与排版权威；占位提示不定义规则。
+% 结构与内容执行 paper-writing.md，纯排版执行 PW-FMT-001，年度规则执行 OFFICIAL-CUMCM-001，证据执行 WG-EVID-001。
 
 \documentclass[UTF8,a4paper,12pt,zihao=-4]{ctexart}
 
@@ -10,8 +10,7 @@
 \usepackage{fontspec}
 \usepackage{unicode-math}
 
-% Windows 优先使用宋体和 Times New Roman；其它系统使用相近的可移植后备字体。
-% 发布前必须检查最终 PDF 字体属性，确认中文为宋体、英文与数字为 Times 系列。
+% 字体选择与最终 PDF 字体检查只执行 PW-FMT-001。
 \IfFontExistsTF{Times New Roman}
   {\setmainfont{Times New Roman}}
   {\setmainfont{TeX Gyre Termes}}
@@ -115,18 +114,18 @@
 \newcommand{\TemplateField}[1]{\textbf{【#1】}}
 \newcommand{\PaperTitle}{\TemplateField{填写准确、具体的论文题目}}
 
-% 根据实际情况设置 AI 使用状态。使用本模板生成或修改论文时不得作虚假声明。
+% AI 声明状态与内容只执行 WG-AI-001 和 OFFICIAL-CUMCM-001。
 \newif\ifusedai
 \usedaitrue
 \newcommand{\AIUsageSummary}{语言润色、代码调试与排版核验等}
 
-% 根据实际情况设置程序和支撑材料状态；三者必须与附录及提交压缩包一致。
+% 程序与支撑材料状态只执行 WG-RELEASE-001 和 OFFICIAL-CUMCM-001。
 \newif\ifusedprogram
 \usedprogramtrue
 \newif\ifhassupportmaterials
 \hassupportmaterialstrue
 
-% 图片缺失时仍可编译，但会显示醒目的占位框；正式提交前不得保留占位框。
+% 图片缺失时保持可编译并显示 PW-FIG-001 阻断占位框。
 \newcommand{\safeincludegraphics}[2][]{%
   \IfFileExists{#2}{%
     \includegraphics[#1]{#2}%
@@ -136,7 +135,7 @@
         \centering
         \textbf{图像占位}\par
         \texttt{\detokenize{#2}}\par
-        正式提交前必须替换为实际图片
+        图片缺失：PW-FIG-001 为 BLOCKED
       \end{minipage}%
     }%
   }%
@@ -150,7 +149,7 @@
     \par\noindent
     \fbox{%
       \begin{minipage}{0.94\linewidth}
-        \textbf{代码缺失：}\texttt{\detokenize{#3}}。正式提交前必须补齐完整、可运行且与论文结果一致的源程序。
+        \textbf{代码缺失：}\texttt{\detokenize{#3}}（执行 OFFICIAL-CUMCM-001）。
       \end{minipage}%
     }
     \par
@@ -195,7 +194,7 @@
 
 \subsection{问题背景}
 \TemplateField{用自己的语言概括背景、研究对象和应用意义，不照抄赛题，不提前展开模型和结果。}
-相关背景事实、公开数据和专业判断必须就近引用经核验来源，例如\cite{topic-ref-1,topic-ref-2}。
+\TemplateField{按 PW-CITE-001 与 WG-EVID-001 写入背景事实和相邻引用，例如 \cite{topic-ref-1,topic-ref-2}。}
 
 \subsection{问题要求}
 \begin{enumerate}[label=\arabic*.]
@@ -219,7 +218,7 @@
 \subsection{问题四的分析}
 \TemplateField{说明开放任务如何转化为可计算、可评价的数学问题。}
 
-% 保留的单图写法：图必须先在正文中引用，后出现，并在图后解释其作用。
+% 单图叙事、位置与图题只执行 PW-FIG-001。
 总体建模流程如\cref{fig:overall-flow}所示，该图用于说明各子问题的数据和模型继承关系。
 \begin{figure}[htbp]
   \centering
@@ -227,12 +226,12 @@
   \caption{总体建模流程}
   \label{fig:overall-flow}
 \end{figure}
-\TemplateField{解释流程图中的关键路径，不得用流程图替代模型说明。}
+\TemplateField{按 PW-FIG-001 解释该图与本问论证的关系。}
 
 \section{模型假设}
 \begin{enumerate}[label=\textbf{假设\arabic*.}]
   \item \TemplateField{必要假设及其物理、业务或统计依据。}
-  \item \TemplateField{必要假设及其合理性；不得用假设直接消除题目核心难点。}
+  \item \TemplateField{按论文写作规范填写必要假设及其合理性。}
   \item \TemplateField{对结果影响显著的假设，并在后文灵敏度或模型评价中回扣。}
 \end{enumerate}
 
@@ -259,15 +258,15 @@
 
 \subsubsection{问题一的建模准备}
 \TemplateField{给出本问正式建模前必需的坐标、几何判定、数据变换、指标口径、预备公式、继承关系或输入输出；简单问题可用三至八行，复杂内容可配公式和示意图。}
-模型抽象和算法设计可参考数学建模基础教材\cite{modelbook,algobook}，但具体关系必须由本题数据、机理和约束推导。
+\TemplateField{结合本题数据、机理和约束说明模型关系；引用执行 PW-CITE-001 与 WG-EVID-001。}
 
 \subsubsection{问题一模型的建立}
 \noindent\TemplateField{局部模型名称——说明本模型在问题一中的作用}
 \TemplateField{依次定义变量和指标，推导局部关系，然后集中汇总完整模型。公式前写依据，公式后解释含义。}
 
-\noindent\textbf{完整模型汇总：}\TemplateField{集中列出本问的核心方程、变量范围、参数条件、输入与输出；优化模型还须列出目标函数和全部约束。}
+\noindent\textbf{完整模型汇总：}\TemplateField{按论文写作规范填写本问完整模型。}
 
-% 保留并规范的优化模型汇总写法：非优化问题不得机械使用目标函数和 s.t.。
+% 下列优化模型仅示范 PW-FMT-001 的排版结构；适用性与内容执行论文写作规范。
 若本问属于优化问题，可将完整模型集中写为
 \begin{equation}
 \label{eq:q1-model}
@@ -284,7 +283,7 @@ h_1(\symbf{x}) &= 0,\\
 \right.
 \end{aligned}
 \end{equation}
-\cref{eq:q1-model}中，$f(\symbf{x})$表示\TemplateField{目标的实际含义}，$g_1$、$g_2$和$h_1$分别描述\TemplateField{资源、业务或机理约束}，$\Omega$为\TemplateField{变量定义域}。正式论文应替换整组公式，不得保留无关示例。
+\cref{eq:q1-model}中，$f(\symbf{x})$表示\TemplateField{目标的实际含义}，$g_1$、$g_2$和$h_1$分别描述\TemplateField{资源、业务或机理约束}，$\Omega$为\TemplateField{变量定义域}。\TemplateField{按实际模型替换示例。}
 
 \subsubsection{问题一模型的求解}
 \TemplateField{写明求解方法、关键步骤、影响结果的参数或容差、约束与边界检查；复杂算法可配编号步骤。}
@@ -308,7 +307,7 @@ h_1(\symbf{x}) &= 0,\\
   \end{tabular}
 \end{table}
 \TemplateField{解释表中主要发现、实际意义、判据和不确定性，不逐行朗读。}
-\TemplateField{至少给出两类适用的结果分析、误差分析、模型检验、敏感性或等效验证。}
+\TemplateField{按 PW-VAL-001 呈现本问的验证证据与判断。}
 
 \subsection{问题二模型的建立与求解}
 
@@ -352,7 +351,7 @@ h_1(\symbf{x}) &= 0,\\
 \TemplateField{写明实际算法、参数选择、数据划分或求解器设置，以及约束、泄漏、收敛或边界检查。}
 
 \subsubsection{问题二结果的分析}
-先直接回答本问：\textbf{【填写问题二最终结果】}。\TemplateField{给出至少两类适用分析或等效验证。}
+先直接回答本问：\textbf{【填写问题二最终结果】}。\TemplateField{按 PW-VAL-001 呈现本问验证。}
 
 \subsection{问题三模型的建立与求解}
 
@@ -400,8 +399,7 @@ h_1(\symbf{x}) &= 0,\\
 \TemplateField{说明推广对象、需调整的变量和约束、需补充的数据及推广后的验证方式。}
 
 % ============================================================
-% 2026 AI 新规：AI 工具使用声明必须放在参考文献之前，二选一。
-% AI 声明及配套文件执行 OFFICIAL-CUMCM-001。
+% AI 声明位置、措辞及配套文件只执行 OFFICIAL-CUMCM-001。
 % ============================================================
 \clearpage
 \section*{AI 工具使用声明}
@@ -438,8 +436,7 @@ h_1(\symbf{x}) &= 0,\\
 \end{thebibliography}
 
 % ============================================================
-% 附录：总体另起一页，每个独立附录再次另起一页。
-% 支撑材料清单、实际压缩包、论文引用和代码必须完全一致。
+% 附录分页执行 PW-FMT-001；内容与支撑材料执行论文写作规范和 OFFICIAL-CUMCM-001。
 % ============================================================
 \clearpage
 \section*{附录A\quad 支撑材料文件清单}
@@ -462,7 +459,7 @@ h_1(\symbf{x}) &= 0,\\
   \endlastfoot
   1 & \texttt{code/q1.py} & \TemplateField{问题一求解程序，对应式、表或图编号} \\
   2 & \texttt{code/q2.py} & \TemplateField{问题二求解程序，对应式、表或图编号} \\
-  3 & \texttt{data/processed-data.csv} & \TemplateField{自主查阅或处理后的必要数据；不得重复提交赛题原始数据} \\
+  3 & \texttt{data/processed-data.csv} & \TemplateField{按 OFFICIAL-CUMCM-001 填写数据文件及用途} \\
   \ifusedai
   4 & \TemplateField{按 OFFICIAL-CUMCM-001 填写} & \TemplateField{AI 使用配套文件及用途} \\
   \fi
@@ -475,7 +472,7 @@ h_1(\symbf{x}) &= 0,\\
 \clearpage
 \section*{附录B\quad 建模所用完整源程序}
 \ifusedprogram
-% 正式提交前按实际文件逐一调用；不得只附伪代码、核心片段或无法运行的节选。
+% 源程序范围与完整性只执行论文写作规范和 OFFICIAL-CUMCM-001。
 % 路径按“模板已复制到项目 06-paper/”设置，必要时按项目实际结构调整。
 \subsection*{B.1\quad 问题一源程序}
 本程序用于\TemplateField{说明所解决的子问题以及与正文公式、图表和结果的对应关系}。

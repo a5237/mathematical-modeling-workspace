@@ -17,7 +17,7 @@ AUDIT_SCRIPT = WORKSPACE_ROOT / ".codex" / "skills" / "cumcm-paper-audit" / "scr
 TEMP_ROOT = WORKSPACE_ROOT / "var" / "temp"
 sys.path.insert(0, str(WORKSPACE_ROOT / "tools"))
 
-from control_contracts import load_workspace_contracts
+from control_contracts import CONTRACT_BLOCK, DOCUMENTS, load_workspace_contracts
 
 
 def run(*args: str) -> subprocess.CompletedProcess[str]:
@@ -60,38 +60,27 @@ class LayoutTests(unittest.TestCase):
 
 class ContractTests(unittest.TestCase):
     def test_contract_loader_ignores_natural_language(self) -> None:
-        blocks = {
-            "docs/standards/evidence-contract.md": (
-                'claim_columns = ["a"]\nliterature_columns = ["b"]\n'
-                'evidence_statuses = ["verified"]'
-            ),
-            "docs/standards/paper-writing.md": "body_word_minimum = 5000",
-            "docs/standards/paper-quality-audit.md": (
-                "body_page_minimum = 20\nbody_page_maximum = 30\n"
-                "body_figure_minimum = 5\nbody_table_minimum = 3"
-            ),
-            "docs/guides/pre-writing-learning.md": (
-                'learning_paper_minimum = 2\nlearning_complete_status = "COMPLETE"\n'
-                'selection_complete_status = "COMPLETE"'
-            ),
-            "docs/standards/cumcm-current-rules.md": "paper_maximum_bytes = 20000000",
-        }
         with tempfile.TemporaryDirectory(dir=TEMP_ROOT) as temporary:
             root = Path(temporary)
-            for relative, block in blocks.items():
+            for relative in DOCUMENTS:
+                source = (WORKSPACE_ROOT / relative).read_text(encoding="utf-8")
+                blocks = CONTRACT_BLOCK.findall(source)
+                self.assertTrue(blocks, relative)
                 path = root / relative
                 path.parent.mkdir(parents=True, exist_ok=True)
                 path.write_text(
                     "任意改写的自然语言和章节。\n\n```toml machine-contract\n"
-                    + block
+                    + "\n\n".join(blocks)
                     + "\n```\n\n另一段任意文字。\n",
                     encoding="utf-8",
                 )
             contracts = load_workspace_contracts(root)
-            self.assertEqual(contracts.body_word_minimum, 5000)
-            self.assertEqual(contracts.body_figure_minimum, 5)
-            self.assertEqual(contracts.body_table_minimum, 3)
-            self.assertEqual(contracts.learning_paper_minimum, 2)
+            self.assertGreater(contracts.body_word_minimum, 0)
+            self.assertGreater(contracts.body_figure_minimum, 0)
+            self.assertGreater(contracts.body_table_minimum, 0)
+            self.assertGreater(contracts.learning_paper_minimum, 0)
+            self.assertIn("test", contracts.recommended_project_directories)
+            self.assertEqual(contracts.artifact_impact_defaults["results"]["effect"], "STALE")
 
 
 class IntakeWorkflowTests(unittest.TestCase):
@@ -127,7 +116,7 @@ class IntakeWorkflowTests(unittest.TestCase):
             model_selection = project / "03-models" / "model-selection.md"
             self.assertTrue(model_selection.is_file())
             self.assertIn(
-                "docs/standards/modeling-execution.md",
+                "WG-MODEL-001",
                 model_selection.read_text(encoding="utf-8"),
             )
             self.assertTrue((project / "00-admin" / "pre-writing-learning.md").is_file())
@@ -136,7 +125,7 @@ class IntakeWorkflowTests(unittest.TestCase):
             artifact_map_text = artifact_map.read_text(encoding="utf-8")
             self.assertIn('project_id: "cumcm-2026-a"', artifact_map_text)
             self.assertIn("questions:\n  q01:", artifact_map_text)
-            self.assertIn("impact_defaults:", artifact_map_text)
+            self.assertNotIn("impact_defaults:", artifact_map_text)
             self.assertIn("paper_assets:", artifact_map_text)
             self.assertIn("depends_on_questions: []", artifact_map_text)
             self.assertNotIn("__PROJECT_ID__", artifact_map_text)
@@ -145,7 +134,7 @@ class IntakeWorkflowTests(unittest.TestCase):
             self.assertTrue((project / "00-admin" / "figure-selection-record.md").is_file())
             self.assertTrue((project / "test" / "README.md").is_file())
             self.assertIn(
-                "exploratory 非权威产物",
+                "WG-TEST-001",
                 (project / "test" / "README.md").read_text(encoding="utf-8"),
             )
             self.assertFalse((project / "07-review" / "final-audit.md").exists())
@@ -171,6 +160,7 @@ class ReleasePreflightTests(unittest.TestCase):
             self.assertIn("generator points into reserved test/ sandbox", result.stdout)
 
     def test_extra_directories_and_low_score_do_not_block_release(self) -> None:
+        contracts = load_workspace_contracts(WORKSPACE_ROOT)
         with tempfile.TemporaryDirectory(dir=TEMP_ROOT) as temporary:
             project = Path(temporary) / "project with flexible layout"
             for relative in (
@@ -223,29 +213,31 @@ class ReleasePreflightTests(unittest.TestCase):
             pdf = project / "08-delivery/paper.pdf"
             pdf.write_bytes(b"synthetic-pdf-for-static-preflight")
             digest = hashlib.sha256(pdf.read_bytes()).hexdigest()
+            body_start_page = 2
+            body_end_page = body_start_page + contracts.body_page_minimum - 1
             (project / "07-review/final-audit.md").write_text(
                 "\n".join(
                     (
                         "# 最终审查报告",
                         "- audit_date: `2026-09-07`",
-                        "- audit_phase: `RELEASE_CANDIDATE`",
-                        "- review_scope: `FULL`",
+                        f"- audit_phase: `{contracts.release_candidate_phase_value}`",
+                        f"- review_scope: `{contracts.release_candidate_review_scopes[0]}`",
                         "- final_pdf: `08-delivery/paper.pdf`",
                         f"- final_pdf_sha256: `{digest}`",
-                        "- body_word_count: `5000`",
-                        "- body_page_range: `2-21`",
-                        "- body_page_count: `20`",
-                        "- body_figure_count: `5`",
-                        "- body_table_count: `3`",
-                        "- body_length_and_visual_count_gate: `PASS`",
-                        "- official_rules_gate: `PASS`",
-                        "- evidence_gate: `PASS`",
-                        "- clean_reproduction_gate: `PASS`",
-                        "- anonymity_gate: `PASS`",
-                        "- delivery_gate: `PASS`",
-                        "- open_critical: `0`",
-                        "- open_major: `0`",
-                        "- release_decision: `READY`",
+                        f"- body_word_count: `{contracts.body_word_minimum}`",
+                        f"- body_page_range: `{body_start_page}-{body_end_page}`",
+                        f"- body_page_count: `{contracts.body_page_minimum}`",
+                        f"- body_figure_count: `{contracts.body_figure_minimum}`",
+                        f"- body_table_count: `{contracts.body_table_minimum}`",
+                        f"- body_length_and_visual_count_gate: `{contracts.final_audit_pass_status}`",
+                        f"- official_rules_gate: `{contracts.final_audit_pass_status}`",
+                        f"- evidence_gate: `{contracts.final_audit_pass_status}`",
+                        f"- clean_reproduction_gate: `{contracts.release_candidate_reproduction_statuses[0]}`",
+                        f"- anonymity_gate: `{contracts.final_audit_pass_status}`",
+                        f"- delivery_gate: `{contracts.final_audit_pass_status}`",
+                        f"- open_critical: `{contracts.final_audit_no_open_findings_value}`",
+                        f"- open_major: `{contracts.final_audit_no_open_findings_value}`",
+                        f"- release_decision: `{contracts.release_ready_status}`",
                         "",
                         "## 竞争力评分",
                         "- total_score: 40",

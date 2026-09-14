@@ -6,14 +6,22 @@
 >
 > 核心原则：**先明确图片的论证职责与来源；图型依次服从合理的用户明确指定、模型原生结构和通用统计选择；按论文最终显示尺寸生成，并以最终 PDF 中的真实阅读效果作为通过依据。**
 
+```toml machine-contract
+figure_registry_columns = ["figure_label", "question_or_purpose", "authoritative_source", "generator", "selected_structure_or_chart", "result_artifact", "paper_copy", "final_pdf_page", "final_pdf_check"]
+figure_risk_columns = ["figure_label", "risk_trigger", "scientific_necessity", "alternatives_considered", "parameters_and_scope", "disclosure_location", "validation", "decision"]
+figure_final_pdf_statuses = ["PASS", "BLOCKED"]
+figure_initial_status = "PENDING"
+```
+
+上方字段是图片记录模板的稳定接口；具体触发条件、填报语义和判定仍由本文件正文定义。
+
 本文件是论文图片与科研可视化要求的唯一权威。正文结构和参考文献由 `docs/standards/paper-writing.md` 管理；表格、公式和通用字体由 `docs/standards/paper-formatting.md` 管理；图片的稳定产物与复现由 `docs/standards/data-reproducibility.md` 管理；证据与发布治理分别由 `docs/standards/evidence-contract.md` 和 `docs/standards/workspace-governance.md` 管理；审查报告与竞争力评分由 `docs/standards/paper-quality-audit.md` 管理。其它文件只引用 `PW-FIG-001`，不得维护第二套图型阈值、图片比例、分辨率、字号或视觉检查规则。
 
 ---
 
 ## 0. 优先级与硬规则
 
-- **必须 / 不得**为发布硬要求，未满足时按第 10 节判断 `BLOCKED`；**应 / 原则上**为默认要求；**宜 / 推荐**为质量建议；**可**表示允许。
-- 冲突时依次服从：当届官方或赛区规则、用户当前明确要求、赛题输出要求、本规范、绘图软件默认值。
+- 规范词与跨阶段冲突顺序执行 `docs/standards/workspace-governance.md` 第 1 节；赛题输出要求属于当前项目明确约定，绘图软件默认值不得覆盖本规范。
 - 图型决策依次为：**合理的用户明确指定 → 模型原生结构 → 通用统计选择**。本规范的“首选”“推荐”“原则上不使用”只约束 Agent 自主选图，不得作为拒绝用户要求的依据。
 - 用户指定图型只要无事实或数学错误、数据维度支持、不产生严重误导且不违反官方硬规则，就应生成；有可化解风险时“简要提示—优化实现—仍按要求生成”。仅在用户指定图型的选型阶段，上述四类硬冲突才构成拒绝理由；发布阻断另按第 10 节执行。拦截的是错误编码，不是图型名称。
 - **不得以生成更容易、记录更少、审查更简单或实现成本更低为理由降低图型的信息量。** 响应面、等高线、空间场、流线、相图、Pareto 前沿、网络、Sankey、科学三维、多面板和轨迹等复杂表达，只要符合数据和模型，就与普通折线图享有相同的记录成本；复杂本身不是风险。
@@ -211,7 +219,7 @@ Agent 自主选图时，不得仅为图形“干净”、风格统一或符合�
 - 确认无重叠、遮挡、裁切、压线、歧义、非等比拉伸或过度缩小；
 - 核对正文引用、图题、数值、单位和结论与最终图一致。
 
-任一适用项失败须返回生成步骤修改并重新渲染。图片、图题或正文解释变化后，只复查相关图片和页面；分页发生全局变化时重新检查全部页面。最终 PDF 哈希变化按 `paper-quality-audit.md` 的生命周期更新，不自动触发模型重跑。
+任一适用项失败须返回生成步骤修改并重新渲染；修改后的实际复查范围和最终 PDF 哈希处理只执行 `docs/standards/paper-quality-audit.md` 的审查生命周期。
 
 ## 10. `BLOCKED` 条件与发布检查
 

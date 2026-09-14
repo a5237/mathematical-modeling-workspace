@@ -9,9 +9,53 @@ body_page_minimum = 20
 body_page_maximum = 30
 body_figure_minimum = 5
 body_table_minimum = 3
+release_core_files = [
+  "00-admin/runbook.md",
+  "00-admin/pre-writing-learning.md",
+  "01-problem/problem-checklist.md",
+  "03-models/model-selection.md",
+  "05-evidence/evidence-index.csv",
+  "05-evidence/literature-ledger.csv",
+  "05-evidence/ai-tool-log.md",
+  "06-paper/main.tex",
+  "08-delivery/file-list.md",
+]
+review_log_columns = ["id", "severity", "location", "criterion", "finding", "evidence", "required_fix", "verification", "status"]
+final_audit_fields = [
+  "audit_date",
+  "audit_phase",
+  "review_scope",
+  "final_pdf",
+  "final_pdf_sha256",
+  "body_word_count",
+  "body_page_range",
+  "body_page_count",
+  "body_figure_count",
+  "body_table_count",
+  "body_length_and_visual_count_gate",
+  "official_rules_gate",
+  "evidence_gate",
+  "clean_reproduction_gate",
+  "anonymity_gate",
+  "delivery_gate",
+  "open_critical",
+  "open_major",
+  "release_decision",
+]
+final_audit_pass_fields = ["body_length_and_visual_count_gate", "official_rules_gate", "evidence_gate", "anonymity_gate", "delivery_gate"]
+final_audit_zero_fields = ["open_critical", "open_major"]
+release_candidate_phase_value = "RELEASE_CANDIDATE"
+final_phase_value = "FINAL"
+release_candidate_review_scopes = ["FULL"]
+final_review_scopes = ["FULL", "IMPACTED"]
+release_candidate_reproduction_statuses = ["PASS"]
+final_reproduction_statuses = ["PASS", "REUSED_UNCHANGED"]
+final_audit_pass_status = "PASS"
+final_audit_no_open_findings_value = "0"
+release_ready_status = "READY"
 ```
 
-上方字段只承载本工作区明确保留的客观篇幅和图表数量门禁；竞争力评分不属于机器契约。
+上方字段承载本工作区明确保留的客观篇幅/图表门禁、审查交接文件、报告字段及状态枚举；竞争力评分不属于机器契约。
 
 ---
 
@@ -37,11 +81,7 @@ body_table_minimum = 3
 
 ### 2.1 Draft
 
-- 可自由修改论文、代码和图片；
-- 中间记录只维护关键文件名、存在状态和阶段完成状态，不保存代码、数据、模型或结果文件哈希；
-- 不维护 final PDF 哈希；
-- 不要求完整审查持续有效；
-- 静态工具可给出提示，但除数据破坏、危险路径等即时高风险问题外，不以项目尚未完成为由阻断草稿工作。
+Draft 的中间状态与哈希治理执行 `docs/standards/workspace-governance.md` 第 4 节。审查侧不要求完整审查持续有效；静态工具可给出提示，但除适用权威文件已定义的即时高风险问题外，不以项目尚未完成为由阻断草稿工作。
 
 ### 2.2 Release Candidate
 
@@ -113,15 +153,7 @@ Reviewer 仍可把明确影响正确性、理解或提交安全的缺陷记为 `
 
 ## 5. 一次性最终 PDF 与图片检查
 
-Final Audit 将页面排版和图片检查合并在同一次逐页渲染中完成：
-
-- 核对页面顺序、页边距、字体、溢出、公式、表格、引用与分页；
-- 按 `PW-FIG-001` 检查所有实际出现的图片及其上下文；
-- 核对图片来源、数据口径、图题、单位、正文结论和机器结果；
-- 检查清晰度、比例、重叠、裁切、压线、乱码、图例、色标和多面板顺序；
-- 按 `docs/standards/paper-writing.md` 的“匿名性”要求检查全部拟交付件，并确认全局治理的“交付包”要求与数据复现规范的路径卫生要求已将缓存、日志和临时文件排除在交付包外。
-
-无需在质量评分、图片过程记录和发布合规报告中再分别重复一套逐图清单。复杂图型本身不是风险；响应面、等高线、空间场、流线、相图、Pareto 前沿、网络、Sankey、科学三维、多面板和轨迹图只按科学正确性、可读性与误导风险审查。
+Final Audit 只做一次拟交付 PDF 的逐页渲染，并在同一遍中执行 `PW-FMT-001`、`PW-FIG-001`、论文写作规范的匿名性要求和 `WG-RELEASE-001` 的交付路由。各控制项的具体检查内容只在对应权威文件定义；质量评分、图片过程记录和发布报告不得再维护平行逐图清单。
 
 ## 6. 国奖竞争力评分（非阻断）
 

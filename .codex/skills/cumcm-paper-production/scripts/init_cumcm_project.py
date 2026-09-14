@@ -14,107 +14,127 @@ sys.path.insert(0, str(WORKSPACE_ROOT / "tools"))
 from control_contracts import ContractError, load_workspace_contracts
 
 
-DIRS = (
-    "00-admin",
-    "01-problem/attachments",
-    "02-data/raw",
-    "02-data/processed",
-    "03-models/q01",
-    "04-results/tables",
-    "04-results/figures",
-    "04-results/metrics",
-    "04-results/logs",
-    "05-evidence",
-    "06-paper/figures",
-    "06-paper/tables",
-    "07-review",
-    "08-delivery/support-materials",
-    "test",
-)
-
 PAPER_FRAMEWORK = WORKSPACE_ROOT / "resources" / "templates" / "cumcm-paper-framework.tex"
 FIGURE_SELECTION_TEMPLATE = WORKSPACE_ROOT / "resources" / "templates" / "figure-selection-record.md"
 ARTIFACT_MAP_TEMPLATE = WORKSPACE_ROOT / "resources" / "templates" / "artifact-map.yaml"
 
 BASE_FILES = {
     "00-admin/project.yaml": "project_id: {project_id}\ncontest: {contest}\nyear: {year}\nproblem: {problem}\nstatus: intake\nrandom_seed: 20260721\n",
-    "00-admin/runbook.md": "# 运行手册\n\n记录环境、入口命令、参数、随机种子和预期输出。\n",
-    "01-problem/problem-checklist.md": (
-        "# 问题清单\n\n"
-        "## 题面与附件\n\n"
-        "| relative_file | exists | source | received_at |\n"
-        "|---|---|---|---|\n"
-        "| 待填写 | no | 待填写 | YYYY-MM-DD |\n\n"
-        "> 中间门禁只登记关键文件名与存在状态，不记录文件哈希。\n\n"
-        "## 子问题\n\n"
-        "| question_id | task | inputs | outputs | constraints | metric | status |\n"
-        "|---|---|---|---|---|---|---|\n"
-        "| q01 | 待填写 | 待填写 | 待填写 | 待填写 | 待填写 | draft |\n"
-    ),
-    "03-models/model-selection.md": "# 模型与算法选择记录\n\n- selection_status: `INCOMPLETE`\n- completed_at: `YYYY-MM-DD`\n\n> 按 `docs/standards/modeling-execution.md` 的 `WG-MODEL-001` 完成；本记录不另行定义模型数量或偏离规则。\n\n| question_id | problem_features | library_resource | candidates | suitability_checks | selected_model | deviation_reason | baseline | validation_plan |\n|---|---|---|---|---|---|---|---|---|\n| q01 | 待填写 | resources/algorithm-library/待填写 | 待填写 | 目标、假设、数据、规模、约束、依赖、指标 | 待填写 | 不适用时写无 | 待填写 | 待填写 |\n",
-    "05-evidence/ai-tool-log.md": (
-        "# AI 工具实质使用台账\n\n"
-        "> 只登记对模型、代码、论文或正式交付有实质影响的使用；普通问答、微小措辞调整和无实质影响的交互无需逐条记录。\n\n"
-        "| date | tool_and_model | stage | material_prompt_or_method | adopted_content | human_changes | verification |\n"
-        "|---|---|---|---|---|---|---|\n"
-    ),
+    "00-admin/runbook.md": "# 运行手册\n\n> 按 `docs/standards/data-reproducibility.md` 维护。\n",
     "06-paper/references.bib": "",
-    "08-delivery/file-list.md": "# 支撑材料文件清单\n\n发布前列出每个文件、用途及其对应论文位置。\n",
-    "test/README.md": (
-        "# 实验区\n\n"
-        "本目录是 `00-admin/` 至 `08-delivery/` 之外的可选实验沙盒，不是新的线性阶段。\n\n"
-        "按需建立小样本、小规模或局部对照实验即可，不要求复制正式目录树。这里的代码、数据和结果默认均为 exploratory 非权威产物，不得登记到产物地图或证据台账，也不得直接进入论文和交付。实验方案被采纳后，必须按 `docs/standards/modeling-execution.md` 在正式阶段重新实现、运行和验证。\n"
-    ),
+    "08-delivery/file-list.md": "# 支撑材料文件清单\n\n> 按 `WG-RELEASE-001`、`PQA-RELEASE-001` 与 `OFFICIAL-CUMCM-001` 维护。\n",
+    "test/README.md": "# 实验区\n\n> 目录位置执行 `LAYOUT-001`；产物边界执行 `WG-TEST-001`；实验比较与采纳执行 `WG-MODEL-001`。\n",
 }
 
-REVIEW_FIELDS = (
-    "id",
-    "severity",
-    "location",
-    "criterion",
-    "finding",
-    "evidence",
-    "required_fix",
-    "verification",
-    "status",
-)
+
+def markdown_table(columns, row: dict[str, str] | None = None) -> str:
+    header = "| " + " | ".join(columns) + " |\n"
+    separator = "|" + "|".join("---" for _ in columns) + "|\n"
+    if row is None:
+        return header + separator
+    values = "| " + " | ".join(row.get(column, "待填写") for column in columns) + " |\n"
+    return header + separator + values
 
 
 def learning_record(contracts) -> str:
-    rows = "\n".join(
-        f"| sample-{index:02d} | resources/paper-library/待填写 | 待填写 | 待填写 | 原文、公式、数据、图表、结论 | no |"
+    rows = "".join(
+        "| "
+        + " | ".join(
+            {
+                "item": f"sample-{index:02d}",
+                "path_or_source": "resources/paper-library/待填写",
+                "prohibited_copying": "待填写",
+                "reviewed": "no",
+            }.get(column, "待填写")
+            for column in contracts.learning_sample_columns
+        )
+        + " |\n"
         for index in range(1, contracts.learning_paper_minimum + 1)
     )
     return (
         "# 写作前学习记录\n\n"
-        "- learning_status: `INCOMPLETE`\n"
+        f"- learning_status: `{contracts.learning_initial_status}`\n"
         "- completed_at: `YYYY-MM-DD`\n\n"
         "> 按 `PWL-GATE-001` 完成；门禁变化后以权威流程为准。\n\n"
         "## 赛题类型与各问写作重点\n\n"
         "记录赛题数学类型，并逐项说明 q01、q02 等子问题的写作重点。\n\n"
         "## 同类优秀论文\n\n"
-        "| item | path_or_source | problem_type | structural_lessons | prohibited_copying | reviewed |\n"
-        "|---|---|---|---|---|---|\n"
-        f"{rows}\n\n"
+        f"{markdown_table(contracts.learning_sample_columns)}"
+        f"{rows}\n"
         "## 算法资料复核\n\n"
-        "| question_id | resource_path | definition_and_assumptions | applicability | code_review | status |\n"
-        "|---|---|---|---|---|---|\n"
-        "| q01 | resources/algorithm-library/待填写 | 待填写 | 待填写 | 待填写 | pending |\n\n"
+        f"{markdown_table(contracts.learning_algorithm_columns, {'question_id': 'q01', 'resource_path': 'resources/algorithm-library/待填写', 'status': 'pending'})}\n"
         "## 写作策略\n\n"
         "记录摘要、模型建立、结果分析、验证和图表叙事中可借鉴但不得复制的策略。\n"
     )
 
 
 def project_files(contracts) -> dict[str, str]:
-    review_header = "| " + " | ".join(REVIEW_FIELDS) + " |\n"
-    review_separator = "|" + "|".join("---" for _ in REVIEW_FIELDS) + "|\n"
+    problem_checklist = (
+        "# 问题清单\n\n> 字段和维护要求执行 `docs/standards/workspace-governance.md` 第 3 节。\n\n"
+        "## 题面与附件\n\n"
+        + markdown_table(
+            contracts.problem_attachment_columns,
+            {"relative_file": "待填写", "exists": "no", "received_at": "YYYY-MM-DD"},
+        )
+        + "\n## 子问题\n\n"
+        + markdown_table(
+            contracts.problem_question_columns,
+            {"question_id": "q01", "status": "draft"},
+        )
+        + "\n## 缺口与合规核对\n\n"
+        + markdown_table(contracts.problem_risk_columns, {"rules_checked_at": "YYYY-MM-DD"})
+    )
+    model_selection = (
+        "# 模型与算法选择记录\n\n"
+        f"- selection_status: `{contracts.selection_initial_status}`\n"
+        "- completed_at: `YYYY-MM-DD`\n\n"
+        "> 按 `WG-MODEL-001` 完成。\n\n"
+        + markdown_table(
+            contracts.model_selection_columns,
+            {
+                "question_id": "q01",
+                "library_resource": "resources/algorithm-library/待填写",
+            },
+        )
+    )
+    ai_tool_log = (
+        "# AI 工具实质使用台账\n\n> 按 `WG-AI-001` 维护。\n\n"
+        + markdown_table(contracts.ai_log_columns)
+    )
     return {
         **BASE_FILES,
+        "01-problem/problem-checklist.md": problem_checklist,
+        "03-models/model-selection.md": model_selection,
         "00-admin/pre-writing-learning.md": learning_record(contracts),
         "05-evidence/evidence-index.csv": ",".join(contracts.claim_columns) + "\n",
         "05-evidence/literature-ledger.csv": ",".join(contracts.literature_columns) + "\n",
-        "07-review/review-log.md": "# 审稿记录\n\n" + review_header + review_separator,
+        "05-evidence/ai-tool-log.md": ai_tool_log,
+        "07-review/review-log.md": "# 审稿记录\n\n> 字段语义执行 `PQA-REPORT-001`。\n\n" + markdown_table(contracts.review_log_columns),
     }
+
+
+def figure_selection_record(contracts, project_id: str) -> str:
+    text = FIGURE_SELECTION_TEMPLATE.read_text(encoding="utf-8").replace(
+        "- project_id: `待填写`", f"- project_id: `{project_id}`", 1
+    )
+    registry = markdown_table(
+        contracts.figure_registry_columns,
+        {
+            "figure_label": "`fig:q01-*`",
+            "authoritative_source": "待填写",
+            "generator": "待填写",
+            "result_artifact": "`04-results/figures/...`",
+            "paper_copy": "`06-paper/figures/...`",
+            "final_pdf_page": "待定",
+            "final_pdf_check": contracts.figure_initial_status,
+        },
+    ).rstrip()
+    risk = markdown_table(contracts.figure_risk_columns).rstrip()
+    return (
+        text.replace("__FIGURE_REGISTRY_TABLE__", registry, 1)
+        .replace("__FIGURE_RISK_TABLE__", risk, 1)
+        .replace("__FIGURE_INITIAL_STATUS__", contracts.figure_initial_status, 1)
+    )
 
 
 def safe_path_component(value: str, label: str, parser: argparse.ArgumentParser) -> str:
@@ -162,15 +182,13 @@ def main() -> int:
     if project.exists():
         parser.error(f"refusing to overwrite existing project: {project}")
 
-    for item in DIRS:
+    for item in contracts.recommended_project_directories:
         (project / item).mkdir(parents=True, exist_ok=False)
     values = {"project_id": project_id, "contest": contest, "year": args.year, "problem": problem}
     for relative, content in project_files(contracts).items():
         target = project / relative
         target.write_text(content.format(**values), encoding="utf-8", newline="\n")
-    figure_selection_text = FIGURE_SELECTION_TEMPLATE.read_text(encoding="utf-8").replace(
-        "- project_id: `待填写`", f"- project_id: `{project_id}`", 1
-    )
+    figure_selection_text = figure_selection_record(contracts, project_id)
     (project / "00-admin/figure-selection-record.md").write_text(
         figure_selection_text, encoding="utf-8", newline="\n"
     )

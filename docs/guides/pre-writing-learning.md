@@ -5,7 +5,9 @@
 ```toml machine-contract
 learning_paper_minimum = 2
 learning_complete_status = "COMPLETE"
-selection_complete_status = "COMPLETE"
+learning_initial_status = "INCOMPLETE"
+learning_sample_columns = ["item", "path_or_source", "problem_type", "structural_lessons", "prohibited_copying", "reviewed"]
+learning_algorithm_columns = ["question_id", "resource_path", "definition_and_assumptions", "applicability", "code_review", "status"]
 ```
 
 上方字段只承载稳定、客观的机器参数；学习质量仍由 Agent 和最终审校依据正文判断。
@@ -48,7 +50,7 @@ selection_complete_status = "COMPLETE"
 
 仅在以下条件同时满足后开始正文写作：
 
-- `03-models/model-selection.md` 的 `selection_status` 为 `COMPLETE`；
+- `WG-MODEL-001` 已达到建模执行规范定义的完成状态；
 - `00-admin/pre-writing-learning.md` 的 `learning_status` 为 `COMPLETE`；
 - 具体数值、图表和结论已有可核验产物并进入证据链；
 - 写作遵循 `docs/standards/paper-writing.md`，图片遵循 `docs/standards/paper-figures.md`，不得把学习记录或工程路径原样写入论文正文。

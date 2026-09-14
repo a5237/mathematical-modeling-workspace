@@ -6,9 +6,9 @@
 
 | 主题 | 唯一权威 | 其它文件的职责 |
 |---|---|---|
-| 仓库与项目目录职责 | `architecture/workspace-layout.md` | 入口导航、结构检查 |
+| 仓库与项目目录职责、推荐骨架及 `test/` 的空间位置 | `architecture/workspace-layout.md` | 入口导航、初始化器与结构检查执行 |
 | 文件名、项目 ID 与稳定标签 | `standards/naming.md` | 初始化脚本执行命名 |
-| 跨阶段优先级、权威来源、项目生命周期、证据/AI 路由、审校交接与交付治理 | `standards/workspace-governance.md` | 生产与审校 Skill 编排，不承载数据或模型细则 |
+| 跨阶段优先级、项目生命周期、产物导航与影响传播、正式/实验产物边界、AI 路由、审校交接与交付治理 | `standards/workspace-governance.md` | 架构只给位置；生产与审校 Skill 编排；工具执行 machine contract |
 | 原始数据、数据审计、环境、运行记录、日志、随机种子、稳定产物与复现 | `standards/data-reproducibility.md` | 建模流程调用，脚本执行；`WG-DATA-001` 在此定义 |
 | 模型与算法选择、实现、正式计算、计算检查、性能记录与验证 | `standards/modeling-execution.md` | 算法库提供候选，生产/审校 Skill 执行；`WG-MODEL-001`、`PW-VAL-001` 在此定义 |
 | 主张证据和文献台账文件、字段、状态与核验契约 | `standards/evidence-contract.md` | 治理规范规定生命周期，脚本校验字段；`WG-EVID-001` 在此定义 |
@@ -17,7 +17,7 @@
 | 论文图片与科研可视化的选择、生成、排版、导出和视觉审校 | `standards/paper-figures.md` | 生产与审校 Skill 执行；`PW-FIG-001` 在此定义 |
 | 科研图片审美参考的选择、提取与使用方法 | `guides/scientific-figure-aesthetics.md` | 引用 `PW-FIG-001`，不另设阈值；样例资产由参考库承载 |
 | 写作前学习流程与完成状态 | `guides/pre-writing-learning.md` | 其它文件只引用 `PWL-GATE-001` |
-| 最终审查生命周期、硬错误边界、竞争力评分和唯一报告模式 | `standards/paper-quality-audit.md` | 审校 Skill 执行；脚本只校验显式客观字段，不解析评分 |
+| Draft/RC/Final 审查生命周期、复查范围、硬错误边界、竞争力评分、报告字段和发布判定 | `standards/paper-quality-audit.md` | 治理规范只规定交接与路由；审校 Skill 执行；脚本只校验显式客观字段，不解析评分 |
 | 当届全国组委会规则快照 | `standards/cumcm-current-rules.md` | 提交前重新核对官网 |
 | Agent 生产与审校步骤 | 对应 `.codex/skills/` | 编排权威规则，不重新定义规范参数 |
 | 用户快速操作与命令 | `guides/paper-production.md` | 不重新定义门禁参数 |
