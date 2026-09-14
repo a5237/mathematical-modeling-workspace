@@ -89,6 +89,8 @@ class ContractTests(unittest.TestCase):
                 )
             contracts = load_workspace_contracts(root)
             self.assertEqual(contracts.body_word_minimum, 5000)
+            self.assertEqual(contracts.body_figure_minimum, 5)
+            self.assertEqual(contracts.body_table_minimum, 3)
             self.assertEqual(contracts.learning_paper_minimum, 2)
 
 
@@ -141,10 +143,33 @@ class IntakeWorkflowTests(unittest.TestCase):
             self.assertTrue((project / "05-evidence" / "evidence-index.csv").is_file())
             self.assertTrue((project / "06-paper" / "main.tex").is_file())
             self.assertTrue((project / "00-admin" / "figure-selection-record.md").is_file())
+            self.assertTrue((project / "test" / "README.md").is_file())
+            self.assertIn(
+                "exploratory 非权威产物",
+                (project / "test" / "README.md").read_text(encoding="utf-8"),
+            )
             self.assertFalse((project / "07-review" / "final-audit.md").exists())
 
 
 class ReleasePreflightTests(unittest.TestCase):
+    def test_reserved_test_artifact_cannot_be_formal_evidence(self) -> None:
+        with tempfile.TemporaryDirectory(dir=TEMP_ROOT) as temporary:
+            project = Path(temporary) / "project"
+            (project / "05-evidence").mkdir(parents=True)
+            artifact = project / "test" / "q01-fast-check" / "result.json"
+            artifact.parent.mkdir(parents=True)
+            artifact.write_text('{"value": 1}', encoding="utf-8")
+            (project / "05-evidence/evidence-index.csv").write_text(
+                "claim_id,question_id,claim,evidence_type,source_path,generator,generated_at,status\n"
+                "C-Q01-001,q01,核心结果,metric,test/q01-fast-check/result.json,test/q01-fast-check/run.py,2026-09-14T00:00:00,verified\n",
+                encoding="utf-8",
+            )
+
+            result = run(str(AUDIT_SCRIPT), str(project), "--phase", "draft")
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("reserved test/ artifact is non-authoritative", result.stdout)
+            self.assertIn("generator points into reserved test/ sandbox", result.stdout)
+
     def test_extra_directories_and_low_score_do_not_block_release(self) -> None:
         with tempfile.TemporaryDirectory(dir=TEMP_ROOT) as temporary:
             project = Path(temporary) / "project with flexible layout"

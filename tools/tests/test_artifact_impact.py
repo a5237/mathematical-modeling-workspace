@@ -170,6 +170,22 @@ class ArtifactImpactTests(unittest.TestCase):
             self.assertNotEqual(result.returncode, 0)
             self.assertIn("escapes the project root", result.stderr)
 
+    def test_reserved_test_change_does_not_enter_formal_impact_chain(self) -> None:
+        with tempfile.TemporaryDirectory(dir=TEMP_ROOT) as temporary:
+            project = Path(temporary) / "project"
+            project.mkdir()
+            write_map(project, {"q01": question("q01")})
+
+            result = run(project, "test/q01-solver-comparison/result.json")
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            report = json.loads(result.stdout)
+
+            self.assertEqual(report["mode"], "exploratory")
+            self.assertEqual(report["stale"], [])
+            self.assertEqual(report["recheck"], [])
+            self.assertEqual(report["matched"][0]["source"], "reserved-test")
+            self.assertTrue(any("no formal impact" in item for item in report["warnings"]))
+
 
 if __name__ == "__main__":
     unittest.main()

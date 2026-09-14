@@ -29,6 +29,7 @@ DIRS = (
     "06-paper/tables",
     "07-review",
     "08-delivery/support-materials",
+    "test",
 )
 
 PAPER_FRAMEWORK = WORKSPACE_ROOT / "resources" / "templates" / "cumcm-paper-framework.tex"
@@ -59,6 +60,11 @@ BASE_FILES = {
     ),
     "06-paper/references.bib": "",
     "08-delivery/file-list.md": "# 支撑材料文件清单\n\n发布前列出每个文件、用途及其对应论文位置。\n",
+    "test/README.md": (
+        "# 实验区\n\n"
+        "本目录是 `00-admin/` 至 `08-delivery/` 之外的可选实验沙盒，不是新的线性阶段。\n\n"
+        "按需建立小样本、小规模或局部对照实验即可，不要求复制正式目录树。这里的代码、数据和结果默认均为 exploratory 非权威产物，不得登记到产物地图或证据台账，也不得直接进入论文和交付。实验方案被采纳后，必须按 `docs/standards/modeling-execution.md` 在正式阶段重新实现、运行和验证。\n"
+    ),
 }
 
 REVIEW_FIELDS = (

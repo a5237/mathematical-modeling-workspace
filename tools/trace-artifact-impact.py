@@ -277,6 +277,21 @@ def classify_changes(
     sources: set[str] = set()
 
     for relative_path in changed_paths:
+        parts = PurePosixPath(relative_path.casefold()).parts
+        if parts and parts[0] == "test":
+            sources.add("exploratory-test")
+            matches.append(
+                {
+                    "path": relative_path,
+                    "scope": "project",
+                    "category": "exploratory",
+                    "source": "reserved-test",
+                }
+            )
+            warnings.append(
+                f"{relative_path}: reserved test/ artifact is exploratory; no formal impact was traced"
+            )
+            continue
         registered = registry.get(relative_path.casefold(), [])
         if registered:
             sources.add("artifact-map")
@@ -544,11 +559,14 @@ def main() -> int:
     except ImpactMapError as exc:
         parser.error(str(exc))
 
-    if not sources:
+    formal_sources = sources - {"exploratory-test"}
+    if sources == {"exploratory-test"}:
+        mode = "exploratory"
+    elif not formal_sources:
         mode = "unresolved"
-    elif not map_exists or sources == {"path-prefix"}:
+    elif not map_exists or formal_sources == {"path-prefix"}:
         mode = "inferred"
-    elif "path-prefix" in sources:
+    elif "path-prefix" in formal_sources:
         mode = "mixed"
     else:
         mode = "mapped"

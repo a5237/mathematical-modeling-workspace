@@ -29,6 +29,8 @@ evidence_statuses = ["draft", "verified", "rejected"]
 
 发布前，所有已写入论文的主张必须为 `verified`。同一具体数值只能有一个权威机器可读来源；论文表格和图应由该来源再生，禁止手工改数或把未保存的控制台输出作为唯一依据。
 
+项目 `test/` 是保留的非权威实验区。`source_path` 不得指向 `test/` 中的代码、数据或输出，`generator` 也不得把实验区实现作为正式生成入口；实验结论只能用于决定是否在正式阶段重新实现和运行，不能直接支撑论文主张。
+
 ## 2. 文献台账
 
 `05-evidence/literature-ledger.csv` 必须包含：

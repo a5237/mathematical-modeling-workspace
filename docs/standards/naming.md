@@ -11,7 +11,7 @@
 
 ## 推荐目录名
 
-初始化器默认创建 `00-admin` 至 `08-delivery`；完整推荐树、扩展方式和职责只以 `docs/architecture/workspace-layout.md` 为准。项目可按题目增加或拆分内部目录，审计不把该骨架当作完整 schema。
+初始化器默认创建 `00-admin` 至 `08-delivery`，并创建与其并列的保留目录 `test/`。`test/` 是可由各阶段调用的实验沙盒，不是新的编号阶段；完整推荐树、扩展方式和职责只以 `docs/architecture/workspace-layout.md` 为准。项目可按题目增加或拆分其它内部目录，审计不把该骨架当作完整 schema。
 
 ## 产物命名
 

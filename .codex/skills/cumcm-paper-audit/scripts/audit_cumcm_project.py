@@ -13,7 +13,7 @@ import csv
 import hashlib
 import re
 import sys
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 
 WORKSPACE_ROOT = Path(__file__).resolve().parents[4]
 sys.path.insert(0, str(WORKSPACE_ROOT / "tools"))
@@ -257,6 +257,18 @@ def read_csv(path: Path, required: set[str], errors: list[str]) -> list[dict[str
         return []
 
 
+def points_into_test(value: str) -> bool:
+    """Detect a project-relative reference to the reserved exploratory sandbox."""
+
+    normalized = value.strip().replace("\\", "/")
+    if not normalized:
+        return False
+    path = PurePosixPath(normalized)
+    if path.parts and path.parts[0].casefold() == "test":
+        return True
+    return re.search(r"(?:^|[\s\"'`=])test/", normalized, re.IGNORECASE) is not None
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("project", type=Path)
@@ -308,13 +320,22 @@ def main() -> int:
             errors.append("CRITICAL evidence index has no claims")
         for line, row in enumerate(rows, 2):
             source = row.get("source_path", "").strip()
+            generator = row.get("generator", "").strip()
             status = row.get("status", "").strip().lower()
             if status not in contracts.evidence_statuses:
                 errors.append(f"MAJOR evidence row {line}: invalid status {status!r}")
             if not source or Path(source).is_absolute() or ".." in Path(source).parts:
                 errors.append(f"CRITICAL evidence row {line}: unsafe or missing source_path")
+            elif points_into_test(source):
+                errors.append(
+                    f"CRITICAL evidence row {line}: reserved test/ artifact is non-authoritative"
+                )
             elif not (root / source).is_file():
                 errors.append(f"CRITICAL evidence row {line}: missing artifact {source}")
+            if points_into_test(generator):
+                errors.append(
+                    f"CRITICAL evidence row {line}: generator points into reserved test/ sandbox"
+                )
 
     literature_path = root / "05-evidence/literature-ledger.csv"
     if literature_path.is_file():
