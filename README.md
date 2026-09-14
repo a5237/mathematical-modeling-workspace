@@ -85,6 +85,7 @@ workspace/       → 你的工作区
 | `tools/check-workspace-layout.py` | 捕获根目录高风险缓存、生成残留、批量项目产物和冲突旧结构 | 日常维护或重构后检查 |
 | `tools/extract-spreadsheet.py` | 清洗 Excel 附件并逐工作表输出标准 CSV，也支持大表流式检查/提取 | 收到 `.xlsx/.xls` 题目附件时 |
 | `tools/extract-pdf-pages.py` | 截取 PDF 指定页或页面局部并输出临时 PDF/PNG | 题面视觉分析、OCR 或临时引用时 |
+| `tools/trace-artifact-impact.py` | 从显式变化路径计算项目产物的传递影响 | 修改上游后判断哪些结果必须重生成、哪些下游内容只需复核 |
 | `AGENTS.md` | Agent 的按需加载路由与全局底线 | 如果你用 Codex/Claude Code 等 AI 工具 |
 | `ENV_SETUP.md` | 虚拟环境的手动搭建步骤 | `setup.bat` 失效时需要 |
 
@@ -138,6 +139,8 @@ workspace/       → 你的工作区
 | 论文配图怎么做 | [论文图片与科研可视化规范](docs/standards/paper-figures.md) |
 | 论文怎么审、何时复查 | [最终审查与竞争力评分标准](docs/standards/paper-quality-audit.md) |
 | 怎么命名文件和项目 | [命名规范](docs/standards/naming.md) |
+| 下游阶段怎么快速找到项目产物 | 正式项目的 `00-admin/artifact-map.yaml` |
+| 上游修改后哪些产物受影响 | `tools/trace-artifact-impact.py` |
 | 环境怎么配 | [建模环境指南](docs/guides/modeling-environment.md) |
 | 论文生产流程是什么 | [论文生产流程](docs/guides/paper-production.md) |
 | 写作前要做什么 | [写作前强制学习流程](docs/guides/pre-writing-learning.md) |

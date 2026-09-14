@@ -17,6 +17,7 @@
 
 - 程序：`q01-<purpose>.py`，入口优先为 `run-all.py`。
 - 模型与算法选择记录：`03-models/model-selection.md`。
+- 项目产物快速导航：`00-admin/artifact-map.yaml`；其中子问题键沿用 `q01`、`q02`，文件路径相对项目根目录。
 - 写作前学习记录：`00-admin/pre-writing-learning.md`。
 - 图片 registry 与高风险视觉说明：`00-admin/figure-selection-record.md`。
 - 参数：`q01-parameters.yaml`；随机种子的记录要求执行 `docs/standards/data-reproducibility.md`。

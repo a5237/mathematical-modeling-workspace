@@ -129,6 +129,15 @@ class IntakeWorkflowTests(unittest.TestCase):
                 model_selection.read_text(encoding="utf-8"),
             )
             self.assertTrue((project / "00-admin" / "pre-writing-learning.md").is_file())
+            artifact_map = project / "00-admin" / "artifact-map.yaml"
+            self.assertTrue(artifact_map.is_file())
+            artifact_map_text = artifact_map.read_text(encoding="utf-8")
+            self.assertIn('project_id: "cumcm-2026-a"', artifact_map_text)
+            self.assertIn("questions:\n  q01:", artifact_map_text)
+            self.assertIn("impact_defaults:", artifact_map_text)
+            self.assertIn("paper_assets:", artifact_map_text)
+            self.assertIn("depends_on_questions: []", artifact_map_text)
+            self.assertNotIn("__PROJECT_ID__", artifact_map_text)
             self.assertTrue((project / "05-evidence" / "evidence-index.csv").is_file())
             self.assertTrue((project / "06-paper" / "main.tex").is_file())
             self.assertTrue((project / "00-admin" / "figure-selection-record.md").is_file())
@@ -221,6 +230,7 @@ class ReleasePreflightTests(unittest.TestCase):
                 encoding="utf-8",
             )
 
+            self.assertFalse((project / "00-admin/artifact-map.yaml").exists())
             result = run(str(AUDIT_SCRIPT), str(project), "--phase", "release-candidate")
             self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
             self.assertIn("PASS (objective static preflight", result.stdout)

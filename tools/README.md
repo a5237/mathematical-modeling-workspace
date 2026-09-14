@@ -8,6 +8,19 @@
 - `update.bat`：当`requirements-modeling.txt` 更新或发现缺包时可不重建环境直接补全缺失依赖。
 - `extract-spreadsheet.py`：把 `.xlsx/.xls` 快速清洗为逐工作表 CSV，也保留只读盘点和超大表流式提取模式。
 - `extract-pdf-pages.py`：从 PDF 快速提取整页或归一化坐标裁剪区域，输出 PDF、PNG 或两者；默认写入 `var/temp/pdf-extracts/`。
+- `trace-artifact-impact.py`：根据项目产物地图和显式变化路径计算跨子问题的传递影响；只报告 `STALE` 与 `RECHECK`，不修改项目状态。
+
+## 项目产物影响分析
+
+上游数据、代码、参数、结果或验证产物发生实质变化后，显式传入本次变化的文件；可同时传入多个路径，删除但尚未重新生成的路径也可以分析：
+
+```powershell
+.\.venv-modeling\Scripts\python.exe tools/trace-artifact-impact.py `
+  workspace/projects/cumcm-2026-a `
+  --changed 02-data/processed/q01-data.csv 03-models/q01/q01-parameters.yaml
+```
+
+默认文本输出便于直接阅读，追加 `--format json` 可供 Agent 或其它工具消费。`STALE` 表示必须重新生成的派生结果、验证或论文图表副本；`RECHECK` 表示结合新结果核对后才能继续复用的证据、正文、审校与交付范围。工具不会扫描 Git、写回地图、维护动态状态或作发布判定。旧项目缺少地图、或变化路径尚未登记时，会按 `01-problem/` 至 `08-delivery/` 路由及路径中的 `qNN` 保守推断并输出警告。
 
 ## Excel 快速清洗与大表提取
 

@@ -62,7 +62,8 @@
 
 ```text
 <project-id>/
-├── 00-admin/               # 清单、环境、运行手册、写作学习与选图决策记录和状态
+├── 00-admin/               # 清单、环境、运行手册、产物导航、写作学习与选图决策记录和状态
+│   └── artifact-map.yaml   # 按子问题定位稳定关键产物的轻量入口
 ├── 01-problem/             # 原题、附件清单和问题核对
 │   └── attachments/        # 不属于原始数据表的题面附件
 ├── 02-data/
@@ -85,6 +86,31 @@
 ```
 
 项目可根据题目增加、拆分或重构内部目录，例如 `experiments/`、`benchmarks/`、`simulations/` 或按模型组织的子树。只要原始数据保护、权威模型/参数、机器结果、证据、论文与交付关系仍明确且可复现，这些变化不构成审查错误。初始化骨架负责提供可靠起点，不限制项目后续演化。
+
+### 项目产物导航
+
+每个新初始化的正式项目包含 `00-admin/artifact-map.yaml`。它按 `common` 与 `q01`、`q02` 等稳定子问题 ID，列出下游阶段需要再次读取的关键数据、代码入口、参数、正式结果、验证产物和论文引用副本；证据部分只登记 `claim_id` 或 `citation_key`，具体来源与核验状态仍由 `05-evidence/` 台账管理。
+
+地图中的 `impact_defaults` 只保存一次通用类别依赖：数据、代码或参数影响结果，结果影响验证与论文图表副本，结果和验证要求重新核对证据、论文、审校与交付。`paper_assets` 专指 `06-paper/figures/`、`06-paper/tables/` 中从权威结果复制或导出的文件。只有一个子问题实际依赖另一问的产物时，才在该问的 `depends_on_questions` 中登记 `<question_id>.<category>`；其语义是该上游类别变化会使本问结果进入影响链。
+
+发生实质变化后可运行：
+
+```powershell
+.\.venv-modeling\Scripts\python.exe tools/trace-artifact-impact.py `
+  workspace/projects/<project-id> `
+  --changed 02-data/processed/q01-data.csv 03-models/q01/q01-parameters.yaml
+```
+
+工具只读取地图和显式变化路径并计算传递影响：`STALE` 表示列出的派生产物必须重新生成，`RECHECK` 表示证据主张、正文、审校结论或交付件需结合新结果核对，核对后确认未受影响的内容可继续复用。它不自动读取 Git diff，不写入动态失效状态，返回影响项也不等于新增发布门禁。地图缺失或路径未登记时，工具只按项目职责目录和路径中的 `qNN` 做保守推断并给出警告。
+
+该文件是导航索引，不是完整 manifest，也不是新的权威数据源或阶段门禁：
+
+- 只登记相对项目根目录的稳定关键文件，通常是运行入口和下游会引用的产物，不登记每个辅助脚本或中间文件；
+- 不登记临时预览、缓存、失败输出、文件哈希、存在状态和阶段完成状态；
+- 创建、移动或淘汰下游会复用的关键产物时，只更新受影响的 `common` 或子问题条目；
+- 通用影响关系不逐问复制，跨问依赖只登记实际例外；不维护逐次变更日志或动态失效清单；
+- Agent 进入论文写作、结果分析、制图或审校时先读取该地图，再按当前子问题定向打开文件；地图缺失或失效时只搜索相关职责目录，并修复本次实际使用的关键路径；
+- 旧项目缺少地图不自动构成发布阻断，审校也不得把地图条目本身当作主张、验证或复现证据。
 
 项目生命周期与交付治理见 `docs/standards/workspace-governance.md`，数据复现与建模执行分别见 `docs/standards/data-reproducibility.md` 和 `docs/standards/modeling-execution.md`，证据字段见 `docs/standards/evidence-contract.md`，论文质量审查见 `docs/standards/paper-quality-audit.md`。本文件不要求审计脚本复制完整目录树。
 

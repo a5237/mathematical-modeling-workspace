@@ -33,6 +33,7 @@ DIRS = (
 
 PAPER_FRAMEWORK = WORKSPACE_ROOT / "resources" / "templates" / "cumcm-paper-framework.tex"
 FIGURE_SELECTION_TEMPLATE = WORKSPACE_ROOT / "resources" / "templates" / "figure-selection-record.md"
+ARTIFACT_MAP_TEMPLATE = WORKSPACE_ROOT / "resources" / "templates" / "artifact-map.yaml"
 
 BASE_FILES = {
     "00-admin/project.yaml": "project_id: {project_id}\ncontest: {contest}\nyear: {year}\nproblem: {problem}\nstatus: intake\nrandom_seed: 20260721\n",
@@ -147,7 +148,7 @@ def main() -> int:
 
     contest = safe_path_component(args.contest, "contest", parser)
     problem = safe_path_component(args.problem, "problem", parser)
-    for template in (PAPER_FRAMEWORK, FIGURE_SELECTION_TEMPLATE):
+    for template in (PAPER_FRAMEWORK, FIGURE_SELECTION_TEMPLATE, ARTIFACT_MAP_TEMPLATE):
         if not template.is_file():
             parser.error(f"missing project template: {template}")
     project_id = f"{contest}-{args.year}-{problem}"
@@ -166,6 +167,12 @@ def main() -> int:
     )
     (project / "00-admin/figure-selection-record.md").write_text(
         figure_selection_text, encoding="utf-8", newline="\n"
+    )
+    artifact_map_text = ARTIFACT_MAP_TEMPLATE.read_text(encoding="utf-8").replace(
+        "__PROJECT_ID__", project_id, 1
+    )
+    (project / "00-admin/artifact-map.yaml").write_text(
+        artifact_map_text, encoding="utf-8", newline="\n"
     )
     shutil.copyfile(PAPER_FRAMEWORK, project / "06-paper/main.tex")
     print(f"Created {project.resolve()}")

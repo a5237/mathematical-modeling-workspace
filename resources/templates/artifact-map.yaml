@@ -1,0 +1,65 @@
+# 项目产物快速导航。只登记下游阶段会再次读取的稳定关键文件。
+# 本文件不是证据台账、运行手册或完成状态清单；不要登记临时文件、缓存、哈希或每个辅助脚本。
+# 所有路径均相对项目根目录，并尽量指向具体文件。证据详情仍以 05-evidence/ 中的台账为准。
+# impact_defaults 只描述通用依赖；工具按需计算影响，不把状态回写到本文件。
+
+schema_version: 1
+project_id: "__PROJECT_ID__"
+
+indexes:
+  problem: 01-problem/problem-checklist.md
+  runbook: 00-admin/runbook.md
+  model_selection: 03-models/model-selection.md
+  claims: 05-evidence/evidence-index.csv
+  literature: 05-evidence/literature-ledger.csv
+  paper: 06-paper/main.tex
+  review: 07-review/final-audit.md
+  delivery: 08-delivery/file-list.md
+
+# 目标类别依赖哪些上游类别。STALE 表示必须重新生成，RECHECK 表示先核对再决定是否更新。
+impact_defaults:
+  results:
+    depends_on: [data, code, parameters]
+    effect: STALE
+  validation:
+    depends_on: [results]
+    effect: STALE
+  paper_assets:
+    depends_on: [results]
+    effect: STALE
+  evidence:
+    depends_on: [results, validation]
+    effect: RECHECK
+  paper:
+    depends_on: [results, validation, paper_assets, evidence]
+    effect: RECHECK
+  review:
+    depends_on: [paper, evidence]
+    effect: RECHECK
+  delivery:
+    depends_on: [paper, review]
+    effect: RECHECK
+
+# 多个子问题共同依赖的关键文件放在这里。
+common:
+  data: []
+  code: []
+  parameters: []
+  results: []
+  validation: []
+  paper_assets: []
+
+# 新增子问题时复制 q01 块并改为稳定 question_id。
+questions:
+  q01:
+    data: []
+    code: []
+    parameters: []
+    results: []
+    validation: []
+    paper_assets: []
+    evidence:
+      claim_ids: []
+      citation_keys: []
+    # 仅在本问结果依赖其它问时填写，例如 [q01.results]。
+    depends_on_questions: []
