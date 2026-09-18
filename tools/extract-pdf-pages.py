@@ -15,7 +15,7 @@ from pathlib import Path
 from typing import Sequence
 
 
-TOOL_VERSION = "1.0.0"
+TOOL_VERSION = "1.1.0"
 WORKSPACE_ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_OUTPUT_ROOT = WORKSPACE_ROOT / "var" / "temp" / "pdf-extracts"
 
@@ -172,9 +172,12 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--format",
-        choices=("pdf", "png", "both"),
+        choices=("pdf", "png", "both", "text"),
         default="both",
-        help="output type (default: both)",
+        help=(
+            "output type (default: both); text writes the UTF-8 text layer of the "
+            "selected pages into one .txt file"
+        ),
     )
     parser.add_argument(
         "--dpi",
@@ -208,6 +211,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         if input_path.suffix.casefold() != ".pdf":
             raise PdfExtractError("input file must use a .pdf suffix")
         crop = validate_crop(args.crop)
+        if crop is not None and args.format == "text":
+            raise PdfExtractError(
+                "--format text extracts whole pages and cannot be combined with --crop"
+            )
 
         import pymupdf
 
@@ -231,12 +238,15 @@ def main(argv: Sequence[str] | None = None) -> int:
                 output_dir / f"{stem}-page-{page_number:03d}{suffix}.png"
                 for page_number in pages
             ]
+            text_path = output_dir / f"{stem}-pages-{tag}-text.txt"
             report_path = output_dir / f"{stem}-pages-{tag}{suffix}-capture-report.json"
             destinations = [report_path]
             if args.format in {"pdf", "both"}:
                 destinations.append(pdf_path)
             if args.format in {"png", "both"}:
                 destinations.extend(png_paths)
+            if args.format == "text":
+                destinations.append(text_path)
             for destination in destinations:
                 if destination.resolve() == input_path:
                     raise PdfExtractError("output must not overwrite the source PDF")
@@ -286,6 +296,30 @@ def main(argv: Sequence[str] | None = None) -> int:
                             "height_pixels": pixmap.height,
                             "exists": png_path.is_file(),
                         }
+                    )
+
+            if args.format == "text":
+                blocks: list[str] = []
+                total_characters = 0
+                for page_number in pages:
+                    page_text = document[page_number - 1].get_text("text").strip("\n")
+                    total_characters += len(page_text)
+                    blocks.append(f"===== page {page_number} =====\n\n{page_text}\n")
+                write_bytes_atomic(text_path, "\n".join(blocks).encode("utf-8"))
+                outputs.append(
+                    {
+                        "file": display_path(text_path),
+                        "kind": "text",
+                        "pages": len(pages),
+                        "characters": total_characters,
+                        "exists": text_path.is_file(),
+                    }
+                )
+                if total_characters == 0:
+                    print(
+                        "WARNING: no extractable text found; the PDF may be a scan "
+                        "without a text layer",
+                        file=sys.stderr,
                     )
 
             report: dict[str, object] = {

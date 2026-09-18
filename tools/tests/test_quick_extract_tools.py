@@ -148,6 +148,99 @@ class PdfExtractTests(unittest.TestCase):
             self.assertEqual((pixmap.width, pixmap.height), (100, 50))
             self.assertNotIn("sha256", report.read_text(encoding="utf-8").casefold())
 
+    def test_text_format_exports_utf8_text_layer(self) -> None:
+        import pymupdf
+
+        with tempfile.TemporaryDirectory(dir=TEMP_ROOT) as temporary:
+            root = Path(temporary)
+            source = root / "Problem.pdf"
+            output_dir = root / "captures"
+            document = pymupdf.open()
+            for index in range(2):
+                page = document.new_page(width=200, height=100)
+                page.insert_text((20, 30), f"page {index + 1} text")
+            document.save(source)
+            document.close()
+
+            result = run(
+                str(PDF_TOOL),
+                str(source),
+                "--pages",
+                "1-2",
+                "--format",
+                "text",
+                "--output-dir",
+                str(output_dir),
+            )
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+            text_file = output_dir / "problem-pages-001-002-text.txt"
+            report = output_dir / "problem-pages-001-002-capture-report.json"
+            self.assertTrue(text_file.is_file())
+            content = text_file.read_text(encoding="utf-8")
+            self.assertIn("===== page 1 =====", content)
+            self.assertIn("page 1 text", content)
+            self.assertIn("===== page 2 =====", content)
+            self.assertIn("page 2 text", content)
+
+            payload = json.loads(report.read_text(encoding="utf-8"))
+            self.assertIsNone(payload["dpi"])
+            self.assertEqual([item["kind"] for item in payload["outputs"]], ["text"])
+            self.assertGreater(payload["outputs"][0]["characters"], 0)
+
+    def test_text_format_warns_when_no_text_layer(self) -> None:
+        import pymupdf
+
+        with tempfile.TemporaryDirectory(dir=TEMP_ROOT) as temporary:
+            root = Path(temporary)
+            source = root / "Scan.pdf"
+            output_dir = root / "captures"
+            document = pymupdf.open()
+            document.new_page(width=120, height=80)
+            document.save(source)
+            document.close()
+
+            result = run(
+                str(PDF_TOOL),
+                str(source),
+                "--pages",
+                "1",
+                "--format",
+                "text",
+                "--output-dir",
+                str(output_dir),
+            )
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            self.assertIn("no extractable text", result.stderr)
+            self.assertTrue((output_dir / "scan-pages-001-text.txt").is_file())
+
+    def test_text_format_rejects_crop(self) -> None:
+        import pymupdf
+
+        with tempfile.TemporaryDirectory(dir=TEMP_ROOT) as temporary:
+            root = Path(temporary)
+            source = root / "Problem.pdf"
+            document = pymupdf.open()
+            document.new_page(width=200, height=100).insert_text((20, 30), "text")
+            document.save(source)
+            document.close()
+
+            result = run(
+                str(PDF_TOOL),
+                str(source),
+                "--format",
+                "text",
+                "--crop",
+                "0.1",
+                "0.1",
+                "0.9",
+                "0.9",
+                "--output-dir",
+                str(root / "captures"),
+            )
+            self.assertEqual(result.returncode, 2, result.stdout + result.stderr)
+            self.assertIn("cannot be combined with --crop", result.stderr)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -2,12 +2,14 @@
 
 仅保存可跨项目复用的环境自检、格式转换和辅助程序。某一道题专用的模型代码必须放入对应项目的 `03-models/`。工具产生的临时输出统一写入 `var/temp/`。
 
+工具输出统一为 UTF-8；Windows 控制台默认代码页 936 会把直接打到终端的中文与 JSON 显示成乱码，需要阅读的内容请使用 `--report` 或输出文件，不要依赖终端显示。
+
 - `check-modeling-env.py`：检查 Python 依赖、求解器和基础计算能力。
 - `check-workspace-layout.py`：只检查根目录的高风险缓存/生成污染、批量项目产物和冲突性废弃结构；不维护根目录白名单、完整目录树或普通命名门禁。
 - `control_contracts.py`：只读取权威文档中显式的 `toml machine-contract` 客观参数，供项目初始化器和静态 preflight 导入；不解析中文句式、报告模板或 Reviewer judgment。
 - `update.bat`：当`requirements-modeling.txt` 更新或发现缺包时可不重建环境直接补全缺失依赖。
 - `extract-spreadsheet.py`：把 `.xlsx/.xls` 快速清洗为逐工作表 CSV，也保留只读盘点和超大表流式提取模式。
-- `extract-pdf-pages.py`：从 PDF 快速提取整页或归一化坐标裁剪区域，输出 PDF、PNG 或两者；默认写入 `var/temp/pdf-extracts/`。
+- `extract-pdf-pages.py`：从 PDF 快速提取整页或归一化坐标裁剪区域为 PDF、PNG，或导出所选页的 UTF-8 文本层；默认写入 `var/temp/pdf-extracts/`。
 - `trace-artifact-impact.py`：根据项目产物地图和显式变化路径计算跨子问题的传递影响；只报告 `STALE` 与 `RECHECK`，不修改项目状态。
 
 ## 项目产物影响分析
@@ -110,5 +112,16 @@
   --crop 0.08 0.25 0.92 0.72 `
   --format png
 ```
+
+导出所选页的 UTF-8 文本层，适合先通读题面文字、再按需截图：
+
+```powershell
+.\.venv-modeling\Scripts\python.exe tools/extract-pdf-pages.py `
+  workspace/inbox/2026-01-01-example/problem.pdf `
+  --pages all `
+  --format text
+```
+
+输出为单个 `.txt` 文件，按 `===== page N =====` 分页；公式与图内文字可能缺失或乱序，扫描件没有文本层时返回 warning；`--format text` 按整页导出，不能与 `--crop` 同用。
 
 默认目录为 `var/temp/pdf-extracts/<pdf-name>/`，其中内容都是可删除过程材料，不进入正式交付目录。`--output-dir` 可改临时位置，`--dpi` 控制 PNG 清晰度，`--overwrite` 才允许覆盖同名截取结果。
