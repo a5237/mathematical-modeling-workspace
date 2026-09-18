@@ -1,8 +1,8 @@
-# 数学建模证据契约
+# 证据契约
 
 > control_id: `WG-EVID-001`
 >
-> 作用：统一规定论文主张、机器产物和文献台账的可追溯结构。生产、写作和审校流程只引用本契约，不另行维护字段或状态规则。
+> 作用：统一规定主张、机器产物和文献台账的可追溯结构。生产、写作和审校流程只引用本契约，不另行维护字段或状态规则。
 
 ```toml machine-contract
 claim_columns = ["claim_id", "question_id", "claim", "evidence_type", "source_path", "generator", "generated_at", "status"]

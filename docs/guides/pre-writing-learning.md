@@ -12,7 +12,7 @@ learning_algorithm_columns = ["question_id", "resource_path", "definition_and_as
 
 上方字段只承载稳定、客观的机器参数；学习质量仍由 Agent 和最终审校依据正文判断。
 
-本流程是论文正文写作启动门禁的唯一权威。每个正式项目必须先在 `00-admin/pre-writing-learning.md` 完成并标记学习记录，才可开始撰写正文或摘要；其它规范、Skill 和检查表只引用本控制编号，不重新定义阅读数量、状态或失效条件。
+本流程是正文写作启动门禁的唯一权威。每个正式项目必须先在 `00-admin/pre-writing-learning.md` 完成并标记学习记录，才可开始撰写正文或摘要；其它规范、Skill 和检查表只引用本控制编号，不重新定义阅读数量、状态或失效条件。
 
 ## 1. 确认学习范围
 
@@ -53,4 +53,4 @@ learning_algorithm_columns = ["question_id", "resource_path", "definition_and_as
 - `WG-MODEL-001` 已达到建模执行规范定义的完成状态；
 - `00-admin/pre-writing-learning.md` 的 `learning_status` 为 `COMPLETE`；
 - 具体数值、图表和结论已有可核验产物并进入证据链；
-- 写作遵循 `docs/standards/paper-writing.md`，图片遵循 `docs/standards/paper-figures.md`，不得把学习记录或工程路径原样写入论文正文。
+- 写作遵循 `docs/standards/paper-writing.md`，图片遵循 `docs/standards/paper-figures.md`，不得把学习记录或工程路径原样写入正文。

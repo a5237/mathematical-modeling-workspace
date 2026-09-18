@@ -7,6 +7,7 @@
 | 主题 | 唯一权威 | 其它文件的职责 |
 |---|---|---|
 | 仓库与项目目录职责、推荐骨架及 `test/` 的空间位置 | `architecture/workspace-layout.md` | 入口导航、初始化器与结构检查执行 |
+| 跨项目通用工具的使用与命令 | `tools/README.md` | 入口、Skill 与指南只引用，不复制用法 |
 | 文件名、项目 ID 与稳定标签 | `standards/naming.md` | 初始化脚本执行命名 |
 | 跨阶段优先级、项目生命周期、产物导航与影响传播、正式/实验产物边界、AI 路由、审校交接与交付治理 | `standards/workspace-governance.md` | 架构只给位置；生产与审校 Skill 编排；工具执行 machine contract |
 | 原始数据、数据审计、环境、运行记录、日志、随机种子、稳定产物与复现 | `standards/data-reproducibility.md` | 建模流程调用，脚本执行；`WG-DATA-001` 在此定义 |

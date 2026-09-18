@@ -11,6 +11,7 @@
 | 仓库/项目目录位置与放置职责 | `docs/architecture/workspace-layout.md` | 涉及稳定命名时追加 `docs/standards/naming.md` |
 | 文件名、项目 ID 与稳定标签 | `docs/standards/naming.md` | 涉及目录职责时才追加工作区架构 |
 | 数据读取、清洗、环境、运行、日志、随机种子、复现 | `docs/standards/data-reproducibility.md` | 环境安装再读 `docs/guides/modeling-environment.md` |
+| PDF 与 Excel 的读取、盘点、清洗 | `tools/README.md` | 需要运行环境或依赖时追加 `docs/guides/modeling-environment.md` |
 | 模型选择、算法、代码实现、正式计算、验证 | `docs/standards/modeling-execution.md` | 先读 `resources/algorithm-library/index.md`，再只读匹配算法说明；涉及数据时追加数据复现规范 |
 | 主张、数值或文献证据 | `docs/standards/evidence-contract.md` | 涉及跨阶段生命周期或交付时追加工作区治理规范 |
 | inbox—project—archive 生命周期、产物地图、影响传播或 `test/` 与正式链路边界 | `docs/standards/workspace-governance.md` 的 `WG-ROUTE-001`、`WG-TEST-001` | 涉及目录位置再读工作区架构；涉及实验比较再读建模执行规范 |

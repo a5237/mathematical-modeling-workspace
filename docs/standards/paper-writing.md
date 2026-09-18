@@ -1,10 +1,10 @@
-# 数学建模论文写作 Agent 强制规范
+# 论文写作规范
 
 > 适用范围：全国大学生数学建模竞赛（CUMCM）及同类本科生数学建模竞赛论文的内容组织、问题分析、模型论证、结果叙事、学术表达、引用、附录内容与匿名性。
 >
 > 核心原则：**论文围绕题目形成“数学化—求解—回答—验证”的证据闭环，内容职责不得被排版或工程记录替代。**
 >
-> 边界说明：数据与复现、模型执行、纯排版和图片分别由 `docs/standards/data-reproducibility.md`、`docs/standards/modeling-execution.md`、`docs/standards/paper-formatting.md` 和 `docs/standards/paper-figures.md` 管理。工程记录原则上不写入论文正文；凡直接影响模型定义、求解过程或结论可信度的科学设置，仍必须在论文中说明。
+> 边界说明：数据与复现、模型执行、纯排版和图片分别由 `docs/standards/data-reproducibility.md`、`docs/standards/modeling-execution.md`、`docs/standards/paper-formatting.md` 和 `docs/standards/paper-figures.md` 管理。工程记录原则上不写入正文；凡直接影响模型定义、求解过程或结论可信度的科学设置，仍必须在论文中说明。
 
 ```toml machine-contract
 body_word_minimum = 5000
@@ -30,7 +30,7 @@ body_word_minimum = 5000
 
 ### 1.2 写作启动门禁
 
-论文正文和摘要写作前必须通过 `docs/guides/pre-writing-learning.md` 的 `PWL-GATE-001`，并确认 `WG-MODEL-001` 与 `WG-EVID-001` 已满足当前写作所需状态。学习数量、记录字段、模型选择和证据状态只以对应权威文件为准。
+正文和摘要写作前必须通过 `docs/guides/pre-writing-learning.md` 的 `PWL-GATE-001`，并确认 `WG-MODEL-001` 与 `WG-EVID-001` 已满足当前写作所需状态。学习数量、记录字段、模型选择和证据状态只以对应权威文件为准。
 
 ### 1.3 唯一写作框架与无状态交付
 
@@ -576,7 +576,7 @@ body_word_minimum = 5000
 
 ### 12.1 AI 工具使用
 
-严格执行 `docs/standards/cumcm-current-rules.md` 的 `OFFICIAL-CUMCM-001`，按实际提交日期采用已生效的官方声明位置、措辞和详情文件名。完整提示方式、使用过程、采纳、人工修改和核验记录执行 `WG-AI-001`，不在论文正文堆砌工程台账。
+严格执行 `docs/standards/cumcm-current-rules.md` 的 `OFFICIAL-CUMCM-001`，按实际提交日期采用已生效的官方声明位置、措辞和详情文件名。完整提示方式、使用过程、采纳、人工修改和核验记录执行 `WG-AI-001`，不在正文堆砌工程台账。
 
 ### 12.2 附录结构与内容
 
@@ -591,7 +591,7 @@ body_word_minimum = 5000
 
 ### 12.3 匿名性
 
-拟交付的摘要、论文正文、附录、代码及其注释、文件名、图片属性与元数据、文档元数据、支撑材料和交付压缩包均不得出现队员、学校、指导教师、赛区、用户名或可反推出身份的本机路径。
+拟交付的摘要、正文、附录、代码及其注释、文件名、图片属性与元数据、文档元数据、支撑材料和交付压缩包均不得出现队员、学校、指导教师、赛区、用户名或可反推出身份的本机路径。
 
 ---
 
@@ -611,7 +611,7 @@ body_word_minimum = 5000
 - 后续问题继承的参数、变量和结论与前问一致；
 - 模型评价中的优缺点与实际验证结果一致。
 
-所有摘要关键数值和最终决策都必须能在工作区证据索引中定位，但证据索引本身不作为论文正文章节。
+所有摘要关键数值和最终决策都必须能在工作区证据索引中定位，但证据索引本身不作为正文章节。
 
 ---
 
