@@ -70,7 +70,7 @@ def learning_record(contracts) -> str:
 
 def project_files(contracts) -> dict[str, str]:
     problem_checklist = (
-        "# 问题清单\n\n> 字段和维护要求执行 `docs/standards/workspace-governance.md` 第 3 节。\n\n"
+        "# 问题清单\n\n> 字段和维护要求执行 `docs/standards/workspace-governance.md` 第 3 节；表内登记要点，实质理由写在各节正文。\n\n"
         "## 题面与附件\n\n"
         + markdown_table(
             contracts.problem_attachment_columns,
@@ -88,7 +88,7 @@ def project_files(contracts) -> dict[str, str]:
         "# 模型与算法选择记录\n\n"
         f"- selection_status: `{contracts.selection_initial_status}`\n"
         "- completed_at: `YYYY-MM-DD`\n\n"
-        "> 按 `WG-MODEL-001` 完成。\n\n"
+        "> 按 `WG-MODEL-001` 完成；表内登记要点，实质理由写在各节正文。\n\n"
         + markdown_table(
             contracts.model_selection_columns,
             {
@@ -97,6 +97,18 @@ def project_files(contracts) -> dict[str, str]:
             },
         )
     )
+    data_audit = (
+        "# 数据审计\n\n"
+        "> 记录要求执行 `docs/standards/data-reproducibility.md` §1.2；表内登记要点，实质说明写在各节正文。\n\n"
+        "## 字段与范围\n\n"
+        + markdown_table(["数据文件", "字段", "类型", "单位", "样本量", "时间范围", "空间范围"])
+        + "\n## 质量问题\n\n"
+        + markdown_table(["数据文件", "主键", "重复", "缺失", "异常", "非法编码", "数量级"])
+        + "\n## 切分与泄漏\n\n"
+        + markdown_table(["数据文件", "切分方式", "泄漏风险（时间/对象/空间/目标）", "核对结论"])
+        + "\n## 处理与代码-输出映射\n\n"
+        + markdown_table(["处理步骤", "规则", "处理前样本量", "处理后样本量", "受影响对象", "代码", "输出文件"])
+    )
     ai_tool_log = (
         "# AI 工具实质使用台账\n\n> 按 `WG-AI-001` 维护。\n\n"
         + markdown_table(contracts.ai_log_columns)
@@ -104,6 +116,7 @@ def project_files(contracts) -> dict[str, str]:
     return {
         **BASE_FILES,
         "01-problem/problem-checklist.md": problem_checklist,
+        "02-data/data-audit.md": data_audit,
         "03-models/model-selection.md": model_selection,
         "00-admin/pre-writing-learning.md": learning_record(contracts),
         "05-evidence/evidence-index.csv": ",".join(contracts.claim_columns) + "\n",
