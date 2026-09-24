@@ -2,8 +2,6 @@
 
 仅保存可跨项目复用的环境自检、格式转换和辅助程序。某一道题专用的模型代码必须放入对应项目的 `03-models/`。工具产生的临时输出统一写入 `var/temp/`。
 
-工具输出统一为 UTF-8；Windows 控制台默认代码页 936 会把直接打到终端的中文与 JSON 显示成乱码，需要阅读的内容请使用 `--report` 或输出文件，不要依赖终端显示。
-
 - `check-modeling-env.py`：检查 Python 依赖、求解器和基础计算能力。
 - `check-workspace-layout.py`：只检查根目录的高风险缓存/生成污染、批量项目产物和冲突性废弃结构；不维护根目录白名单、完整目录树或普通命名门禁。
 - `control_contracts.py`：只读取权威文档中显式的 `toml machine-contract` 客观参数，供项目初始化器和静态 preflight 导入；不解析中文句式、报告模板或 Reviewer judgment。

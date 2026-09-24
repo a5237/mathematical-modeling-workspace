@@ -41,6 +41,6 @@ Graphviz 的 Python 接口与系统可执行程序是两个独立依赖；即使
 .\.venv-modeling\Scripts\python.exe workspace/projects/<project-id>/03-models/q00-run-all.py
 ```
 
-临时脚本的运行约定：需要人/Agent 阅读的中文结果不要依赖终端显示——Windows 控制台默认代码页 936 会把 UTF-8 输出显示成乱码，一次性 `python -c` 还可能抛 `UnicodeEncodeError`。把结论写入 `var/temp/` 下的 UTF-8 文件（或使用工具的稳定输出）后再读取；也不得从截断或乱码的终端输出推断数据。
+需要人或 Agent 阅读的结果不要依赖终端显示，写入 `var/temp/` 下的 UTF-8 文件后再读取；不得从截断的终端输出推断数据。
 
 项目路径、输入输出、随机种子、预计运行时间、外部求解器和论文编译命令的权威要求执行 `docs/standards/data-reproducibility.md`；本指南不另行定义。
