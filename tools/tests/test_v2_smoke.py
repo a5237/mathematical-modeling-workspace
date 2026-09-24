@@ -138,7 +138,7 @@ class V2InfrastructureSmokeTest(unittest.TestCase):
             self.assertTrue(
                 set(contracts.artifact_question_evidence_fields).issubset(q01["evidence"])
             )
-            self.assertTrue((project / "test" / "README.md").is_file())
+            self.assertTrue((project / "sandbox" / "README.md").is_file())
             figure_record = (project / "00-admin" / "figure-selection-record.md").read_text(
                 encoding="utf-8"
             )
@@ -168,7 +168,7 @@ class V2InfrastructureSmokeTest(unittest.TestCase):
             validation_path.write_text('{"status":"PASS"}\n', encoding="utf-8")
             paper_asset = project / "06-paper" / "tables" / "q01-summary.csv"
             paper_asset.write_text("metric,value\nsum,6\n", encoding="utf-8")
-            exploratory = project / "test" / "q01-fast-check" / "result.json"
+            exploratory = project / "sandbox" / "q01-fast-check" / "result.json"
             exploratory.parent.mkdir(parents=True)
             exploratory.write_text('{"sum":6}\n', encoding="utf-8")
 

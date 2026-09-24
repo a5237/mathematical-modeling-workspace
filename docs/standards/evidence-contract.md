@@ -29,7 +29,7 @@ evidence_statuses = ["draft", "verified", "rejected"]
 
 发布前，所有已写入论文的主张必须为 `verified`。同一具体数值只能有一个权威机器可读来源；论文表格和图应由该来源再生，禁止手工改数或把未保存的控制台输出作为唯一依据。
 
-`source_path` 和 `generator` 不得指向 `test/`；该客观字段约束执行 `WG-TEST-001` 的非权威边界，审计脚本据此阻断实验产物进入正式证据链。
+`source_path` 和 `generator` 不得指向 `sandbox/`；该客观字段约束执行 `WG-TEST-001` 的非权威边界，审计脚本据此阻断实验产物进入正式证据链。
 
 ## 2. 文献台账
 

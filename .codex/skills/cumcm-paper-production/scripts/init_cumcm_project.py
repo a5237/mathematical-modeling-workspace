@@ -23,7 +23,7 @@ BASE_FILES = {
     "00-admin/runbook.md": "# 运行手册\n\n> 按 `docs/standards/data-reproducibility.md` 维护。\n",
     "06-paper/references.bib": "",
     "08-delivery/file-list.md": "# 支撑材料文件清单\n\n> 按 `WG-RELEASE-001`、`PQA-RELEASE-001` 与 `OFFICIAL-CUMCM-001` 维护。\n",
-    "test/README.md": "# 实验区\n\n> 目录位置执行 `LAYOUT-001`；产物边界执行 `WG-TEST-001`；实验比较与采纳执行 `WG-MODEL-001`。\n",
+    "sandbox/README.md": "# 实验区\n\n> 目录位置执行 `LAYOUT-001`；产物边界执行 `WG-TEST-001`；实验比较与采纳执行 `WG-MODEL-001`。\n",
 }
 
 

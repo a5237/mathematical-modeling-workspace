@@ -269,18 +269,18 @@ def classify_changes(
 
     for relative_path in changed_paths:
         parts = PurePosixPath(relative_path.casefold()).parts
-        if parts and parts[0] == "test":
-            sources.add("exploratory-test")
+        if parts and parts[0] == "sandbox":
+            sources.add("exploratory-sandbox")
             matches.append(
                 {
                     "path": relative_path,
                     "scope": "project",
                     "category": "exploratory",
-                    "source": "reserved-test",
+                    "source": "reserved-sandbox",
                 }
             )
             warnings.append(
-                f"{relative_path}: reserved test/ artifact is exploratory; no formal impact was traced"
+                f"{relative_path}: reserved sandbox/ artifact is exploratory; no formal impact was traced"
             )
             continue
         registered = registry.get(relative_path.casefold(), [])
@@ -550,8 +550,8 @@ def main() -> int:
     except ImpactMapError as exc:
         parser.error(str(exc))
 
-    formal_sources = sources - {"exploratory-test"}
-    if sources == {"exploratory-test"}:
+    formal_sources = sources - {"exploratory-sandbox"}
+    if sources == {"exploratory-sandbox"}:
         mode = "exploratory"
     elif not formal_sources:
         mode = "unresolved"

@@ -250,16 +250,16 @@ def read_csv(path: Path, required: set[str], errors: list[str]) -> list[dict[str
         return []
 
 
-def points_into_test(value: str) -> bool:
+def points_into_sandbox(value: str) -> bool:
     """Detect a project-relative reference to the reserved exploratory sandbox."""
 
     normalized = value.strip().replace("\\", "/")
     if not normalized:
         return False
     path = PurePosixPath(normalized)
-    if path.parts and path.parts[0].casefold() == "test":
+    if path.parts and path.parts[0].casefold() == "sandbox":
         return True
-    return re.search(r"(?:^|[\s\"'`=])test/", normalized, re.IGNORECASE) is not None
+    return re.search(r"(?:^|[\s\"'`=])sandbox/", normalized, re.IGNORECASE) is not None
 
 
 def main() -> int:
@@ -319,15 +319,15 @@ def main() -> int:
                 errors.append(f"MAJOR evidence row {line}: invalid status {status!r}")
             if not source or Path(source).is_absolute() or ".." in Path(source).parts:
                 errors.append(f"CRITICAL evidence row {line}: unsafe or missing source_path")
-            elif points_into_test(source):
+            elif points_into_sandbox(source):
                 errors.append(
-                    f"CRITICAL evidence row {line}: reserved test/ artifact is non-authoritative"
+                    f"CRITICAL evidence row {line}: reserved sandbox/ artifact is non-authoritative"
                 )
             elif not (root / source).is_file():
                 errors.append(f"CRITICAL evidence row {line}: missing artifact {source}")
-            if points_into_test(generator):
+            if points_into_sandbox(generator):
                 errors.append(
-                    f"CRITICAL evidence row {line}: generator points into reserved test/ sandbox"
+                    f"CRITICAL evidence row {line}: generator points into reserved sandbox/"
                 )
 
     literature_path = root / "05-evidence/literature-ledger.csv"

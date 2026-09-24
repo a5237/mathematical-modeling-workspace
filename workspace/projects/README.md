@@ -1,5 +1,5 @@
 # 正式项目总库
 
-新项目默认使用 `<contest>-<year>-<problem>` 命名，并由初始化器创建 `00-admin` 至 `08-delivery` 的推荐骨架及并列的轻量 `test/` 实验区。`test/` 不是新阶段，其中代码、数据和结果默认非权威；方案被采纳后必须回到正式阶段重新实现、运行和验证。项目可按题目增加或拆分其它内部目录；审计只关心影响生产、复现和交付的核心产物，不把完整骨架当作 Python schema。项目级权威运行说明保存在 `00-admin/runbook.md`；进入写作、结果分析、制图或审校时先从 `00-admin/artifact-map.yaml` 按子问题定位上游关键文件，上游实质变化后用 `tools/trace-artifact-impact.py` 获取需要重新生成和复核的范围。
+新项目默认使用 `<contest>-<year>-<problem>` 命名，并由初始化器创建 `00-admin` 至 `08-delivery` 的推荐骨架及并列的轻量 `sandbox/` 实验区。`sandbox/` 不是新阶段，其中代码、数据和结果默认非权威；方案被采纳后必须回到正式阶段重新实现、运行和验证。项目可按题目增加或拆分其它内部目录；审计只关心影响生产、复现和交付的核心产物，不把完整骨架当作 Python schema。项目级权威运行说明保存在 `00-admin/runbook.md`；进入写作、结果分析、制图或审校时先从 `00-admin/artifact-map.yaml` 按子问题定位上游关键文件，上游实质变化后用 `tools/trace-artifact-impact.py` 获取需要重新生成和复核的范围。
 
 建模和编码前完成 `03-models/model-selection.md`，按 `resources/algorithm-library/index.md` 优先选择适用算法；论文写作前按 `docs/guides/pre-writing-learning.md` 完成 `00-admin/pre-writing-learning.md`。两个记录未达到 `COMPLETE` 不得进入对应阶段。
