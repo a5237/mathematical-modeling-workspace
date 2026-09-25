@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import sys
 from pathlib import Path
 
 
@@ -89,7 +90,20 @@ def is_generated_file(path: Path) -> bool:
     return name.startswith("~$") or any(name.endswith(suffix) for suffix in GENERATED_SUFFIXES)
 
 
+def configure_utf8_stdio() -> None:
+    """Keep console output UTF-8 on Windows terminals and redirected streams."""
+
+    for stream in (sys.stdout, sys.stderr):
+        reconfigure = getattr(stream, "reconfigure", None)
+        if reconfigure is not None:
+            try:
+                reconfigure(encoding="utf-8", errors="replace")
+            except (OSError, ValueError):
+                pass
+
+
 def main() -> int:
+    configure_utf8_stdio()
     parser = argparse.ArgumentParser()
     parser.add_argument("--root", type=Path, default=WORKSPACE_ROOT)
     args = parser.parse_args()

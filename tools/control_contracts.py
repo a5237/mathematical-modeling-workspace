@@ -8,13 +8,9 @@ documentation edits cannot break the initializer or static audit.
 from __future__ import annotations
 
 import re
+import tomllib
 from pathlib import Path
 from types import SimpleNamespace
-
-try:
-    import tomllib
-except ModuleNotFoundError:  # Python 3.10 compatibility
-    import tomli as tomllib
 
 
 class ContractError(RuntimeError):

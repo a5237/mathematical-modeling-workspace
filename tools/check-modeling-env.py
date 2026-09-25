@@ -40,6 +40,8 @@ PACKAGES: list[tuple[str, str, bool]] = [
     ("xlrd", "xlrd", True),
     ("pymupdf", "pymupdf", True),
     ("pydot", "pydot", True),
+    ("PIL", "pillow", True),
+    ("yaml", "PyYAML", True),
     ("torch", "torch", False),
     ("torchvision", "torchvision", False),
     ("torchaudio", "torchaudio", False),
@@ -82,6 +84,8 @@ def check_graphviz() -> None:
             check=False,
             capture_output=True,
             text=True,
+            encoding="utf-8",
+            errors="replace",
             timeout=10,
         )
         version_text = (result.stderr or result.stdout).strip()
@@ -190,7 +194,20 @@ def run_smoke_tests() -> bool:
     return ok
 
 
+def configure_utf8_stdio() -> None:
+    """Keep console output UTF-8 on Windows terminals and redirected streams."""
+
+    for stream in (sys.stdout, sys.stderr):
+        reconfigure = getattr(stream, "reconfigure", None)
+        if reconfigure is not None:
+            try:
+                reconfigure(encoding="utf-8", errors="replace")
+            except (OSError, ValueError):
+                pass
+
+
 def main() -> int:
+    configure_utf8_stdio()
     print("[Python runtime]")
     print(f"  version:     {sys.version.replace(chr(10), ' ')}")
     print(f"  executable:  {sys.executable}")

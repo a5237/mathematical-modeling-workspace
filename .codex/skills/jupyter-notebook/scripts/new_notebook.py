@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import json
 import re
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -102,7 +103,20 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+def configure_utf8_stdio() -> None:
+    """Keep console output UTF-8 on Windows terminals and redirected streams."""
+
+    for stream in (sys.stdout, sys.stderr):
+        reconfigure = getattr(stream, "reconfigure", None)
+        if reconfigure is not None:
+            try:
+                reconfigure(encoding="utf-8", errors="replace")
+            except (OSError, ValueError):
+                pass
+
+
 def main() -> None:
+    configure_utf8_stdio()
     args = parse_args()
 
     script_path = Path(__file__).resolve()

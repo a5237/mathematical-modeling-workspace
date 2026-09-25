@@ -26,12 +26,12 @@
 在项目根目录双击`setup.bat`(或在 PowerShell 中执行 `.\setup.bat`)。
 
 这个脚本会自动:
-- 检测你电脑上的 Python 版本(3.10 ~ 3.13)
+- 检测你电脑上的 Python 版本(3.12 ~ 3.14)
 - 创建虚拟环境 `.venv-modeling/`
 - 安装 `config/python/requirements-modeling.txt` 中列出的所有依赖
 - 检查 LaTeX 环境(`xelatex`)是否可用
 
-> 如果提示“找不到 Python”，请先安装 Python 3.10 ~ 3.13 中的任一版本，并确保 `py` 启动器可用。
+> 如果提示“找不到 Python”，请先安装 Python 3.12 ~ 3.14 中的任一版本，并确保 `py` 启动器可用。
 
 ### 第2步：看懂一个赛题项目
 

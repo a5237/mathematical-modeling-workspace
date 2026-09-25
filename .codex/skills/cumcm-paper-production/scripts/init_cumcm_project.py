@@ -172,7 +172,20 @@ def safe_path_component(value: str, label: str, parser: argparse.ArgumentParser)
     return value.lower()
 
 
+def configure_utf8_stdio() -> None:
+    """Keep console output UTF-8 on Windows terminals and redirected streams."""
+
+    for stream in (sys.stdout, sys.stderr):
+        reconfigure = getattr(stream, "reconfigure", None)
+        if reconfigure is not None:
+            try:
+                reconfigure(encoding="utf-8", errors="replace")
+            except (OSError, ValueError):
+                pass
+
+
 def main() -> int:
+    configure_utf8_stdio()
     parser = argparse.ArgumentParser()
     parser.add_argument("--root", default="workspace/projects")
     parser.add_argument("--contest", default="cumcm")

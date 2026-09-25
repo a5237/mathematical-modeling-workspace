@@ -14,7 +14,7 @@ echo.
 echo [1/6] 检测 Python 环境...
 
 set PY_CMD=
-for %%v in (3.13 3.12 3.11 3.10) do (
+for %%v in (3.14 3.13 3.12 3.11) do (
     py -%%v -c "import sys; print(sys.version.split()[0])" >nul 2>&1
     if not errorlevel 1 (
         set PY_CMD=py -%%v
@@ -42,15 +42,15 @@ if not errorlevel 1 (
 )
 
 echo [错误] 未找到 Python。
-echo 请安装 Python 3.10 ~ 3.13，并确保 py 启动器可用。
+echo 请安装 Python 3.12 ~ 3.14，并确保 py 启动器可用。
 pause
 exit /b 1
 
 :check_version
-echo !PY_VER! | findstr /r "^3\.1[4-9] ^3\.[2-9][0-9]" >nul
-if not errorlevel 1 (
+echo !PY_VER! | findstr /r "^3\.1[234]" >nul
+if errorlevel 1 (
     echo [错误] Python !PY_VER! 不被支持。
-    echo 本项目需要 Python 3.10、3.11、3.12 或 3.13。
+    echo 本项目需要 Python 3.12、3.13 或 3.14。
     echo 请安装受支持的版本后重试。
     pause
     exit /b 1

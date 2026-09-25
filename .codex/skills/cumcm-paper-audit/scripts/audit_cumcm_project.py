@@ -262,7 +262,20 @@ def points_into_sandbox(value: str) -> bool:
     return re.search(r"(?:^|[\s\"'`=])sandbox/", normalized, re.IGNORECASE) is not None
 
 
+def configure_utf8_stdio() -> None:
+    """Keep console output UTF-8 on Windows terminals and redirected streams."""
+
+    for stream in (sys.stdout, sys.stderr):
+        reconfigure = getattr(stream, "reconfigure", None)
+        if reconfigure is not None:
+            try:
+                reconfigure(encoding="utf-8", errors="replace")
+            except (OSError, ValueError):
+                pass
+
+
 def main() -> int:
+    configure_utf8_stdio()
     parser = argparse.ArgumentParser()
     parser.add_argument("project", type=Path)
     parser.add_argument(

@@ -12,6 +12,7 @@ MPL_CONFIG_DIR.mkdir(parents=True, exist_ok=True)
 os.environ.setdefault("MPLCONFIGDIR", str(MPL_CONFIG_DIR))
 
 import matplotlib
+import sys
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
@@ -323,7 +324,20 @@ def render_overview() -> None:
     canvas.save(OUTPUT_DIR / "overview.png", dpi=(160, 160))
 
 
+def configure_utf8_stdio() -> None:
+    """Keep console output UTF-8 on Windows terminals and redirected streams."""
+
+    for stream in (sys.stdout, sys.stderr):
+        reconfigure = getattr(stream, "reconfigure", None)
+        if reconfigure is not None:
+            try:
+                reconfigure(encoding="utf-8", errors="replace")
+            except (OSError, ValueError):
+                pass
+
+
 def main() -> int:
+    configure_utf8_stdio()
     configure_style()
     render_line_uncertainty()
     render_scatter_fit()

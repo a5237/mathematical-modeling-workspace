@@ -8,6 +8,7 @@
 - 锁定依赖：`config/python/requirements-modeling.txt`
 - 通用环境检查：`tools/check-modeling-env.py`
 - 工具运行缓存：`var/temp/`
+- 受支持解释器：Python 3.12、3.13、3.14
 
 不激活环境时统一使用工作区解释器：
 
@@ -22,6 +23,12 @@
 ```
 
 `config/python/requirements-modeling.txt` 是工作区依赖入口。新增依赖时先在当前环境安装和验证，再更新该文件；哪些版本和外部依赖需要进入项目复现记录，执行数据与复现规范。
+
+依赖文件变更后，除自检外必须运行全部工具测试；测试会以子进程真实调用工具与 Skill 脚本，能发现锁未覆盖的 import 与运行期回归：
+
+```powershell
+Get-ChildItem tools/tests/test_*.py | ForEach-Object { .\.venv-modeling\Scripts\python.exe $_.FullName }
+```
 
 ## 环境自检
 

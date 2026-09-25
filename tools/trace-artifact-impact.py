@@ -515,7 +515,20 @@ def text_report(report: dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
+def configure_utf8_stdio() -> None:
+    """Keep console output UTF-8 on Windows terminals and redirected streams."""
+
+    for stream in (sys.stdout, sys.stderr):
+        reconfigure = getattr(stream, "reconfigure", None)
+        if reconfigure is not None:
+            try:
+                reconfigure(encoding="utf-8", errors="replace")
+            except (OSError, ValueError):
+                pass
+
+
 def main() -> int:
+    configure_utf8_stdio()
     parser = argparse.ArgumentParser(
         description="Trace transitive downstream impact from changed project-relative files."
     )

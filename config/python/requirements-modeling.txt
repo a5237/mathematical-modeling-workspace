@@ -62,6 +62,7 @@ pymoo==0.6.2
 pymupdf==1.28.2
 pyparsing==3.3.2
 python-dateutil==2.9.0.post0
+PyYAML==6.0.3
 pyzmq==27.1.0
 referencing==0.37.0
 rpds-py==2026.6.3
