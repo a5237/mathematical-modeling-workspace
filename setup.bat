@@ -14,13 +14,13 @@ echo.
 echo [1/6] 检测 Python 环境...
 
 set PY_CMD=
-for %%v in (3.14 3.13 3.12 3.11) do (
+for %%v in (3.14 3.13 3.12) do (
     py -%%v -c "import sys; print(sys.version.split()[0])" >nul 2>&1
     if not errorlevel 1 (
         set PY_CMD=py -%%v
         for /f "delims=" %%i in ('py -%%v -c "import sys; print(sys.version.split()[0])"') do set PY_VER=%%i
         echo 找到 Python !PY_VER!
-        goto :pyfound
+        goto :check_version
     )
 )
 
@@ -46,6 +46,7 @@ echo 请安装 Python 3.12 ~ 3.14，并确保 py 启动器可用。
 pause
 exit /b 1
 
+:: 所有 Python 探测路径都必须经由此处校验版本
 :check_version
 echo !PY_VER! | findstr /r "^3\.1[234]" >nul
 if errorlevel 1 (
