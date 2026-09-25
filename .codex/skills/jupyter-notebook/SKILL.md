@@ -92,7 +92,7 @@ Prefer `uv` for dependency management.
 Optional Python packages for local notebook execution:
 
 ```bash
-uv pip install jupyterlab ipykernel
+uv pip install ipykernel nbclient
 ```
 
 The bundled scaffold script uses only the Python standard library and does not require extra dependencies.
