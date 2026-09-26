@@ -12,12 +12,12 @@ from pathlib import Path
 WORKSPACE_ROOT = Path(__file__).resolve().parents[2]
 PYTHON = sys.executable
 LAYOUT_SCRIPT = WORKSPACE_ROOT / "tools" / "check-workspace-layout.py"
-INIT_SCRIPT = WORKSPACE_ROOT / ".codex" / "skills" / "cumcm-paper-production" / "scripts" / "init_cumcm_project.py"
-AUDIT_SCRIPT = WORKSPACE_ROOT / ".codex" / "skills" / "cumcm-paper-audit" / "scripts" / "audit_cumcm_project.py"
+INIT_SCRIPT = WORKSPACE_ROOT / ".codex" / "skills" / "modeling-paper-production" / "scripts" / "init_modeling_project.py"
+AUDIT_SCRIPT = WORKSPACE_ROOT / ".codex" / "skills" / "modeling-paper-audit" / "scripts" / "audit_modeling_project.py"
 TEMP_ROOT = WORKSPACE_ROOT / "var" / "temp"
 sys.path.insert(0, str(WORKSPACE_ROOT / "tools"))
 
-from control_contracts import CONTRACT_BLOCK, DOCUMENTS, load_workspace_contracts
+from control_contracts import CONTRACT_BLOCK, CORE_DOCUMENTS, load_workspace_contracts
 
 
 def run(*args: str) -> subprocess.CompletedProcess[str]:
@@ -62,7 +62,7 @@ class ContractTests(unittest.TestCase):
     def test_contract_loader_ignores_natural_language(self) -> None:
         with tempfile.TemporaryDirectory(dir=TEMP_ROOT) as temporary:
             root = Path(temporary)
-            for relative in DOCUMENTS:
+            for relative in CORE_DOCUMENTS:
                 source = (WORKSPACE_ROOT / relative).read_text(encoding="utf-8")
                 blocks = CONTRACT_BLOCK.findall(source)
                 self.assertTrue(blocks, relative)
@@ -147,6 +147,11 @@ class ReleasePreflightTests(unittest.TestCase):
             (project / "05-evidence").mkdir(parents=True)
             artifact = project / "sandbox" / "q01-fast-check" / "result.json"
             artifact.parent.mkdir(parents=True)
+            (project / "00-admin").mkdir(exist_ok=True)
+            (project / "00-admin/project.yaml").write_text(
+                "project_id: fixture\ncontest: cumcm\nprofile: cumcm\nyear: 2026\nproblem: a\nstatus: intake\n",
+                encoding="utf-8",
+            )
             artifact.write_text('{"value": 1}', encoding="utf-8")
             (project / "05-evidence/evidence-index.csv").write_text(
                 "claim_id,question_id,claim,evidence_type,source_path,generator,generated_at,status\n"
@@ -176,6 +181,10 @@ class ReleasePreflightTests(unittest.TestCase):
             ):
                 (project / relative).mkdir(parents=True, exist_ok=True)
 
+            (project / "00-admin/project.yaml").write_text(
+                "project_id: fixture\ncontest: cumcm\nprofile: cumcm\nyear: 2026\nproblem: a\nstatus: intake\n",
+                encoding="utf-8",
+            )
             (project / "00-admin/runbook.md").write_text("运行入口已验证。", encoding="utf-8")
             (project / "01-problem/problem-checklist.md").write_text("题目与附件已核对。", encoding="utf-8")
             (project / "03-models/model-selection.md").write_text(

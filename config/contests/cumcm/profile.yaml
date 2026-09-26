@@ -1,0 +1,11 @@
+# Contest identifiers served by this profile. A project's `contest` value in
+# 00-admin/project.yaml resolves to this profile directory.
+contests:
+  - cumcm
+
+# Machine-contract keys contributed by this profile's rules.md.
+contract_keys:
+  - paper_maximum_bytes
+
+# Paper framework template, relative to resources/templates/.
+paper_framework: contests/cumcm/paper-framework.tex

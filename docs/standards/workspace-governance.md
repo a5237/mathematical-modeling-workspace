@@ -125,7 +125,7 @@ Agent 先按 `AGENTS.md` 分类任务，只加载直接相关的权威文件。�
 - 控制编号不自动等于机器 hard gate。机器只阻断高风险、客观、稳定且可自动判断的问题；普通路由、命名、模型适用性、论证和视觉质量由 Agent 或独立 Reviewer 判断。
 - Final Audit 的 PDF 哈希、失效与复查范围只执行 `docs/standards/paper-quality-audit.md`。
 
-完整生产流程由 `.codex/skills/cumcm-paper-production/SKILL.md` 编排；完整最终审校由 `.codex/skills/cumcm-paper-audit/SKILL.md` 编排。Skill 只执行权威规则，不建立第二套门禁。
+完整生产流程由 `.codex/skills/modeling-paper-production/SKILL.md` 编排；完整最终审校由 `.codex/skills/modeling-paper-audit/SKILL.md` 编排。Skill 只执行权威规则，不建立第二套门禁。
 
 ---
 
@@ -143,7 +143,7 @@ Agent 先按 `AGENTS.md` 分类任务，只加载直接相关的权威文件。�
 - 主要采纳内容及其对应位置；
 - 人工修改、验证方式与证据。
 
-普通问答、每个小 prompt、措辞微调、无实质影响的交互和完整聊天流水账不必记录。按 `docs/standards/cumcm-current-rules.md` 从台账生成当届要求的声明和详情文件，不得在比赛结束时凭记忆补写 material AI usage。
+普通问答、每个小 prompt、措辞微调、无实质影响的交互和完整聊天流水账不必记录。按当前项目赛事 profile 的官方基线（`config/contests/<profile>/rules.md`）从台账生成当届要求的声明和详情文件，不得在比赛结束时凭记忆补写 material AI usage。
 
 ---
 
@@ -155,7 +155,7 @@ Agent 先按 `AGENTS.md` 分类任务，只加载直接相关的权威文件。�
 
 ### 6.1 交付包
 
-`08-delivery/` 只保留 `OFFICIAL-CUMCM-001` 与赛题实际要求提交的成品和 `file-list.md`；目录路由与临时文件卫生执行工作区架构和数据复现规范，匿名性与正文/附录一致性执行论文写作规范。具体交付内容由当届官方要求决定，并统一纳入 `PQA-RELEASE-001`，本节不复制提交清单。
+`08-delivery/` 只保留当前项目赛事官方基线与赛题实际要求提交的成品和 `file-list.md`；目录路由与临时文件卫生执行工作区架构和数据复现规范，匿名性与正文/附录一致性执行论文写作规范。具体交付内容由当届官方要求决定，并统一纳入 `PQA-RELEASE-001`，本节不复制提交清单。
 
 ---
 

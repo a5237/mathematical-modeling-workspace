@@ -1,6 +1,6 @@
-# 全国大学生数学建模工作区
+# 数学建模工作区
 
-这是一个面向长期复用的数学建模工作区。仓库按“文档、配置、工具、资源、工作数据、运行时产物”分层，正式赛题在各自项目内使用 `00-admin` 至 `08-delivery` 的可复现生产结构，并在编号阶段旁设置可选的 `sandbox/` 实验沙盒。
+这是一个面向长期复用的多赛事数学建模工作区。仓库按“文档、配置、工具、资源、工作数据、运行时产物”分层，正式赛题在各自项目内使用 `00-admin` 至 `08-delivery` 的可复现生产结构，并在编号阶段旁设置可选的 `sandbox/` 实验沙盒。赛事差异通过 `config/contests/<profile>/` 的赛事 profile 表达，当前支持 CUMCM；新增赛事只需新建 profile 目录，无需改动通用内核。
 
 ## 目录
 
@@ -82,7 +82,7 @@ workspace/projects/cumcm-2026-a/
 
 ```text
 .
-├── config/                 # 依赖锁定与工作区级配置
+├── config/                 # 依赖锁定、工作区级配置与赛事 profile（config/contests/）
 ├── docs/                   # 架构、规范与操作指南
 ├── resources/              # 算法资料、模板和优秀论文参考库
 ├── tools/                  # 跨项目通用工具
@@ -146,7 +146,7 @@ workspace/projects/cumcm-2026-a/
 
 ```powershell
 # 创建标准项目(以 2026 年 A 题为例)
-.\.venv-modeling\Scripts\python.exe .codex/skills/cumcm-paper-production/scripts/init_cumcm_project.py --root workspace/projects --contest cumcm --year 2026 --problem a
+.\.venv-modeling\Scripts\python.exe .codex/skills/modeling-paper-production/scripts/init_modeling_project.py --root workspace/projects --contest cumcm --year 2026 --problem a
 
 ```
 

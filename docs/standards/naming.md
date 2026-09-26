@@ -4,7 +4,8 @@
 
 ## 项目标识
 
-- 项目目录：`<contest>-<year>-<problem>`，全部小写，例如 `cumcm-2026-a`。
+- 项目目录：`<contest>-<year>-<problem>`，全部小写，例如 `cumcm-2026-a`；`contest` 必须是 `config/contests/<profile>/profile.yaml` 中 `contests` 列表声明的赛事标识。
+- 项目赛事身份：`00-admin/project.yaml` 写入 `contest` 与 `profile`；`profile` 是 `config/contests/` 下的目录键，一个 profile 可服务多个赛事（如 `mcm` 与 `icm` 共用 `mcm-icm`）。
 - 子问题编号：`q01`、`q02`，不要使用“问题1”“第一问”等不稳定路径名。
 - 文件名仅使用小写 ASCII 字母、数字和连字符；扩展名保持小写。
 - 文中中文标题不受此限制；提交文件名另以当年官方要求为准。
@@ -25,7 +26,7 @@
 - 图片文件名主干：`q01-figure-001-<topic>`；扩展名与正式导出组合执行 `docs/standards/paper-figures.md` 的 `PW-FIG-001`。
 - 指标：`q01-metrics.json`。
 - 日志：`q01-run-<yyyymmddThhmmss>.log`。
-- 通用论文框架：`resources/templates/cumcm-paper-framework.tex`；复制到正式项目后固定命名为 `06-paper/main.tex`。
+- 赛事论文框架：`resources/templates/contests/<profile>/paper-framework.tex`，profile 由项目 `00-admin/project.yaml` 解析；复制到正式项目后固定命名为 `06-paper/main.tex`。
 - 论文源文件：`main.tex`；文献库：`references.bib`。
 - 审稿台账：`review-log.md`；RC 与 Final 的唯一最终审查报告：`final-audit.md`。旧项目的 `release-audit.md`、`paper-quality-audit.md` 只作历史记录，不再产生新的平行结论。
 

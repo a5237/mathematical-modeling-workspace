@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Create a recommended evidence-driven CUMCM project without overwriting files."""
+"""Create a recommended evidence-driven modeling project without overwriting files."""
 
 from __future__ import annotations
 
@@ -8,21 +8,30 @@ import shutil
 import sys
 from pathlib import Path
 
+import yaml
+
 WORKSPACE_ROOT = Path(__file__).resolve().parents[4]
 sys.path.insert(0, str(WORKSPACE_ROOT / "tools"))
 
-from control_contracts import ContractError, load_workspace_contracts
+from control_contracts import (
+    CONTEST_PROFILE_ROOT,
+    ContractError,
+    PROFILE_CONFIG_NAME,
+    available_contests,
+    load_workspace_contracts,
+    resolve_profile,
+)
 
 
-PAPER_FRAMEWORK = WORKSPACE_ROOT / "resources" / "templates" / "cumcm-paper-framework.tex"
-FIGURE_SELECTION_TEMPLATE = WORKSPACE_ROOT / "resources" / "templates" / "figure-selection-record.md"
-ARTIFACT_MAP_TEMPLATE = WORKSPACE_ROOT / "resources" / "templates" / "artifact-map.yaml"
+TEMPLATES_ROOT = WORKSPACE_ROOT / "resources" / "templates"
+FIGURE_SELECTION_TEMPLATE = TEMPLATES_ROOT / "figure-selection-record.md"
+ARTIFACT_MAP_TEMPLATE = TEMPLATES_ROOT / "artifact-map.yaml"
 
 BASE_FILES = {
-    "00-admin/project.yaml": "project_id: {project_id}\ncontest: {contest}\nyear: {year}\nproblem: {problem}\nstatus: intake\nrandom_seed: 20260721\n",
+    "00-admin/project.yaml": "project_id: {project_id}\ncontest: {contest}\nprofile: {profile}\nyear: {year}\nproblem: {problem}\nstatus: intake\nrandom_seed: 20260721\n",
     "00-admin/runbook.md": "# 运行手册\n\n> 按 `docs/standards/data-reproducibility.md` 维护。\n",
     "06-paper/references.bib": "",
-    "08-delivery/file-list.md": "# 支撑材料文件清单\n\n> 按 `WG-RELEASE-001`、`PQA-RELEASE-001` 与 `OFFICIAL-CUMCM-001` 维护。\n",
+    "08-delivery/file-list.md": "# 支撑材料文件清单\n\n> 按 `WG-RELEASE-001`、`PQA-RELEASE-001` 与当前项目赛事 profile 的官方规则基线维护。\n",
     "sandbox/README.md": "# 实验区\n\n> 目录位置执行 `LAYOUT-001`；产物边界执行 `WG-TEST-001`；实验比较与采纳执行 `WG-MODEL-001`。\n",
 }
 
@@ -188,19 +197,29 @@ def main() -> int:
     configure_utf8_stdio()
     parser = argparse.ArgumentParser()
     parser.add_argument("--root", default="workspace/projects")
-    parser.add_argument("--contest", default="cumcm")
+    parser.add_argument("--contest", required=True)
     parser.add_argument("--year", type=int, required=True)
     parser.add_argument("--problem", required=True)
     args = parser.parse_args()
 
+    contest = safe_path_component(args.contest, "contest", parser)
+    problem = safe_path_component(args.problem, "problem", parser)
+    profile = resolve_profile(WORKSPACE_ROOT, contest)
+    if profile is None:
+        known = ", ".join(available_contests(WORKSPACE_ROOT)) or "none"
+        parser.error(f"unknown contest '{contest}'; available contests: {known}")
+
     try:
-        contracts = load_workspace_contracts(WORKSPACE_ROOT)
+        contracts = load_workspace_contracts(WORKSPACE_ROOT, contest=contest)
     except ContractError as exc:
         parser.error(f"invalid authority contract: {exc}")
 
-    contest = safe_path_component(args.contest, "contest", parser)
-    problem = safe_path_component(args.problem, "problem", parser)
-    for template in (PAPER_FRAMEWORK, FIGURE_SELECTION_TEMPLATE, ARTIFACT_MAP_TEMPLATE):
+    config = yaml.safe_load(
+        (WORKSPACE_ROOT / CONTEST_PROFILE_ROOT / profile / PROFILE_CONFIG_NAME)
+        .read_text(encoding="utf-8")
+    )
+    paper_framework = TEMPLATES_ROOT / config["paper_framework"]
+    for template in (paper_framework, FIGURE_SELECTION_TEMPLATE, ARTIFACT_MAP_TEMPLATE):
         if not template.is_file():
             parser.error(f"missing project template: {template}")
     project_id = f"{contest}-{args.year}-{problem}"
@@ -210,7 +229,13 @@ def main() -> int:
 
     for item in contracts.recommended_project_directories:
         (project / item).mkdir(parents=True, exist_ok=False)
-    values = {"project_id": project_id, "contest": contest, "year": args.year, "problem": problem}
+    values = {
+        "project_id": project_id,
+        "contest": contest,
+        "profile": profile,
+        "year": args.year,
+        "problem": problem,
+    }
     for relative, content in project_files(contracts).items():
         target = project / relative
         target.write_text(content.format(**values), encoding="utf-8", newline="\n")
@@ -224,7 +249,7 @@ def main() -> int:
     (project / "00-admin/artifact-map.yaml").write_text(
         artifact_map_text, encoding="utf-8", newline="\n"
     )
-    shutil.copyfile(PAPER_FRAMEWORK, project / "06-paper/main.tex")
+    shutil.copyfile(paper_framework, project / "06-paper/main.tex")
     print(f"Created {project.resolve()}")
     return 0
 

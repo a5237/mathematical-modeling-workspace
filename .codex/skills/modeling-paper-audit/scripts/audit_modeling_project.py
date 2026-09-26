@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Objective static preflight for CUMCM projects.
+"""Objective static preflight for mathematical modeling contest projects.
 
 Directory layout, ordinary naming, and reviewer judgment are intentionally out
 of scope. The independent audit skill remains responsible for substantive
@@ -15,10 +15,24 @@ import re
 import sys
 from pathlib import Path, PurePosixPath
 
+import yaml
+
 WORKSPACE_ROOT = Path(__file__).resolve().parents[4]
 sys.path.insert(0, str(WORKSPACE_ROOT / "tools"))
 
 from control_contracts import ContractError, load_workspace_contracts
+
+
+def project_contest(root: Path) -> str:
+    path = root / "00-admin" / "project.yaml"
+    try:
+        config = yaml.safe_load(path.read_text(encoding="utf-8"))
+    except OSError as exc:
+        raise ContractError(f"cannot read project contest identity: {exc}") from exc
+    contest = config.get("contest") if isinstance(config, dict) else None
+    if not isinstance(contest, str) or not contest:
+        raise ContractError(f"project does not declare a contest in {path.relative_to(root).as_posix()}")
+    return contest
 
 
 PLACEHOLDER = re.compile(r"TODO|TBD|FIXME|待填写|待补|占位|XX+", re.IGNORECASE)
@@ -291,14 +305,14 @@ def main() -> int:
     errors: list[str] = []
     warnings: list[str] = []
 
+    if not root.is_dir():
+        parser.error(f"project does not exist: {root}")
+
     try:
-        contracts = load_workspace_contracts(WORKSPACE_ROOT)
+        contracts = load_workspace_contracts(WORKSPACE_ROOT, contest=project_contest(root))
     except ContractError as exc:
         print(f"CRITICAL authority contract: {exc}")
         return 2
-
-    if not root.is_dir():
-        parser.error(f"project does not exist: {root}")
 
     if release_phase:
         for relative in contracts.release_core_files:
@@ -363,7 +377,7 @@ def main() -> int:
         if len(pdfs) != 1:
             errors.append(f"MAJOR delivery must contain exactly one PDF, found {len(pdfs)}")
         elif pdfs[0].stat().st_size > contracts.paper_maximum_bytes:
-            errors.append("CRITICAL delivery PDF exceeds OFFICIAL-CUMCM-001 size limit")
+            errors.append("CRITICAL delivery PDF exceeds the contest profile paper size limit")
         audit_final_report(
             root,
             pdfs[0] if len(pdfs) == 1 else None,

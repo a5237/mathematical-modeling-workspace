@@ -2,7 +2,7 @@
 
 保存未填写的论文、报告、清单和表格模板。
 
-- `cumcm-paper-framework.tex`：`paper-writing.md` 与 `paper-formatting.md` 的 LaTeX 实现；初始化时复制为项目 `06-paper/main.tex`。
+- `contests/<profile>/paper-framework.tex`：`paper-writing.md` 与 `paper-formatting.md` 在对应赛事下的 LaTeX 实现；初始化时复制为项目 `06-paper/main.tex`。
 - `figure-selection-record.md`：`PW-FIG-001` 的轻量记录实现。
 - `artifact-map.yaml`：`WG-ROUTE-001` 的项目导航实现；通用影响关系从权威 machine contract 读取，不在模板复制。
 

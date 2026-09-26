@@ -19,18 +19,18 @@ INIT_SCRIPT = (
     WORKSPACE_ROOT
     / ".codex"
     / "skills"
-    / "cumcm-paper-production"
+    / "modeling-paper-production"
     / "scripts"
-    / "init_cumcm_project.py"
+    / "init_modeling_project.py"
 )
 TRACE_SCRIPT = WORKSPACE_ROOT / "tools" / "trace-artifact-impact.py"
 AUDIT_SCRIPT = (
     WORKSPACE_ROOT
     / ".codex"
     / "skills"
-    / "cumcm-paper-audit"
+    / "modeling-paper-audit"
     / "scripts"
-    / "audit_cumcm_project.py"
+    / "audit_modeling_project.py"
 )
 LAYOUT_SCRIPT = WORKSPACE_ROOT / "tools" / "check-workspace-layout.py"
 sys.path.insert(0, str(WORKSPACE_ROOT / "tools"))
@@ -66,6 +66,7 @@ def specification_files() -> list[Path]:
         WORKSPACE_ROOT / "docs",
         WORKSPACE_ROOT / ".codex" / "skills",
         WORKSPACE_ROOT / "resources" / "templates",
+        WORKSPACE_ROOT / "config",
     )
     files = [WORKSPACE_ROOT / "AGENTS.md", WORKSPACE_ROOT / "README.md"]
     for root in roots:
@@ -116,14 +117,14 @@ class V2InfrastructureSmokeTest(unittest.TestCase):
                 "--root",
                 str(projects),
                 "--contest",
-                "smoke",
+                "cumcm",
                 "--year",
                 "2099",
                 "--problem",
                 "e2e",
             )
             self.assertEqual(initialized.returncode, 0, initialized.stdout + initialized.stderr)
-            project = projects / "smoke-2099-e2e"
+            project = projects / "cumcm-2099-e2e"
 
             for relative in contracts.recommended_project_directories:
                 self.assertTrue((project / relative).is_dir(), relative)

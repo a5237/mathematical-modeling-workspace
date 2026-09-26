@@ -19,7 +19,7 @@
 | 科研图片审美参考的选择、提取与使用方法 | `guides/scientific-figure-aesthetics.md` | 引用 `PW-FIG-001`，不另设阈值；样例资产由参考库承载 |
 | 写作前学习流程与完成状态 | `guides/pre-writing-learning.md` | 其它文件只引用 `PWL-GATE-001` |
 | Draft/RC/Final 审查生命周期、复查范围、硬错误边界、竞争力评分、报告字段和发布判定 | `standards/paper-quality-audit.md` | 治理规范只规定交接与路由；审校 Skill 执行；脚本只校验显式客观字段，不解析评分 |
-| 当届全国组委会规则快照 | `standards/cumcm-current-rules.md` | 提交前重新核对官网 |
+| 当届赛事官方规则快照（按 profile） | `../config/contests/<profile>/rules.md` | Core 文档以"当前项目赛事官方基线"中性引用，由项目 `00-admin/project.yaml` 的 `contest`/`profile` 解析；提交前重新核对官网 |
 | Agent 生产与审校步骤 | 对应 `.codex/skills/` | 编排权威规则，不重新定义规范参数 |
 | 用户快速操作与命令 | `guides/paper-production.md` | 不重新定义门禁参数 |
 
@@ -37,8 +37,11 @@
 - [论文排版规范](standards/paper-formatting.md)
 - [论文图片与科研可视化规范](standards/paper-figures.md)
 - [最终审查与竞争力评分标准](standards/paper-quality-audit.md)
-- [CUMCM 现行官方规则基线](standards/cumcm-current-rules.md)
 - [命名与文件格式规范](standards/naming.md)
+
+## 赛事 Profile
+
+- [CUMCM 现行官方规则基线](../config/contests/cumcm/rules.md)：当前唯一 profile；新增赛事在 `config/contests/` 下新建 profile 目录并配 `profile.yaml`。
 
 ## 指南
 
