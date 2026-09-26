@@ -8,9 +8,11 @@
 
 ```toml machine-contract
 paper_maximum_bytes = 20000000
+body_page_minimum = 20
+body_page_maximum = 30
 ```
 
-上方字段仅供机器执行当前 PDF 大小上限；正式提交前仍须重核官网并同步更新本文件。
+上方 `paper_maximum_bytes` 供机器执行当前 PDF 大小上限；`body_page_minimum`/`body_page_maximum` 是工作区内部质量门禁而非官方规则，其统计口径为：从摘要专用页后的“问题重述”首页至“参考文献”末页，摘要专用页和附录不计。正式提交前仍须重核官网并同步更新本文件。
 
 ## 1. 2026 论文与支撑材料规则
 

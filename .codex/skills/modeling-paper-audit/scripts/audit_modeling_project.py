@@ -97,7 +97,10 @@ def final_audit_path(root: Path) -> tuple[Path | None, bool]:
 def audit_count_fields(fields: dict[str, str], contracts, errors: list[str]) -> None:
     integer_limits = {
         "body_word_count": (contracts.body_word_minimum, None),
-        "body_page_count": (contracts.body_page_minimum, contracts.body_page_maximum),
+        "body_page_count": (
+            getattr(contracts, "body_page_minimum", 0),
+            getattr(contracts, "body_page_maximum", None),
+        ),
         "body_figure_count": (contracts.body_figure_minimum, None),
         "body_table_count": (contracts.body_table_minimum, None),
     }
@@ -110,7 +113,12 @@ def audit_count_fields(fields: dict[str, str], contracts, errors: list[str]) -> 
             continue
         parsed_counts[key] = value
         if value < minimum or (maximum is not None and value > maximum):
-            expected_range = f">= {minimum}" if maximum is None else f"{minimum}..{maximum}"
+            if minimum > 0 and maximum is not None:
+                expected_range = f"{minimum}..{maximum}"
+            elif maximum is not None:
+                expected_range = f"<= {maximum}"
+            else:
+                expected_range = f">= {minimum}"
             errors.append(f"MAJOR final audit field {key}: expected {expected_range}, found {value}")
 
     page_range = re.fullmatch(r"\s*(\d+)\s*[-–—]\s*(\d+)\s*", fields.get("body_page_range", ""))

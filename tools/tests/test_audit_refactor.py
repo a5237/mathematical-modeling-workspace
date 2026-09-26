@@ -165,7 +165,7 @@ class ReleasePreflightTests(unittest.TestCase):
             self.assertIn("generator points into reserved sandbox/", result.stdout)
 
     def test_extra_directories_and_low_score_do_not_block_release(self) -> None:
-        contracts = load_workspace_contracts(WORKSPACE_ROOT)
+        contracts = load_workspace_contracts(WORKSPACE_ROOT, contest="cumcm")
         with tempfile.TemporaryDirectory(dir=TEMP_ROOT) as temporary:
             project = Path(temporary) / "project with flexible layout"
             for relative in (

@@ -41,7 +41,8 @@
 
 ## 赛事 Profile
 
-- [CUMCM 现行官方规则基线](../config/contests/cumcm/rules.md)：当前唯一 profile；新增赛事在 `config/contests/` 下新建 profile 目录并配 `profile.yaml`。
+- [CUMCM 现行官方规则基线](../config/contests/cumcm/rules.md)
+- [MCM/ICM 现行官方规则基线](../config/contests/mcm-icm/rules.md)：`mcm` 与 `icm` 共用此 profile；新增赛事在 `config/contests/` 下新建 profile 目录并配 `profile.yaml`。
 
 ## 指南
 

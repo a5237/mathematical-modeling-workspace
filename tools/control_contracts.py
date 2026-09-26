@@ -72,8 +72,6 @@ CORE_REQUIRED_KEYS = {
     "figure_risk_columns",
     "figure_final_pdf_statuses",
     "figure_initial_status",
-    "body_page_minimum",
-    "body_page_maximum",
     "body_figure_minimum",
     "body_table_minimum",
     "release_core_files",
