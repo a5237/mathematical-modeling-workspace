@@ -1,14 +1,11 @@
 # 数学建模工作区
 
-这是一个面向长期复用的多赛事数学建模工作区。仓库按“文档、配置、工具、资源、工作数据、运行时产物”分层，正式赛题在各自项目内使用 `00-admin` 至 `08-delivery` 的可复现生产结构，并在编号阶段旁设置可选的 `sandbox/` 实验沙盒。赛事差异通过 `config/contests/<profile>/` 的赛事 profile 表达，当前支持 CUMCM；新增赛事只需新建 profile 目录，无需改动通用内核。
+这是一个面向长期复用的多赛事数学建模工作区。仓库按“文档、配置、工具、资源、工作数据、运行时产物”分层，正式赛题在各自项目内使用 `00-admin` 至 `08-delivery` 的可复现生产结构，并在编号阶段旁设置可选的 `sandbox/` 实验沙盒。赛事差异通过 `config/contests/<profile>/` 的赛事 profile 表达：支持哪些赛事由该目录下已建立的 profile 决定，本入口不维护赛事清单；新增赛事只需新建 profile 目录，无需改动通用内核。
 
 ## 目录
 
 - [快速上手工作区](#快速上手工作区)
-- [仓库分层](#仓库分层)
-- [关键文件说明](#关键文件说明)
-- [常用命令](#常用命令)
-- [快速入口](#快速入口)
+- [去哪找规则与命令](#去哪找规则与命令)
 - [接下来做什么？](#接下来做什么)
   - [如果你是人类](#如果你是人类)
   - [如果你是 Agent](#如果你是-agent)
@@ -58,8 +55,7 @@ workspace/projects/cumcm-2026-a/
 │   ├── figures/
 │   └── tables/
 ├── 07-review/              # 独立审校记录和最终审查报告
-├── 08-delivery/            # 最终提交文件；这里只保留真正要交付的成品
-│   └── support-materials/
+├── 08-delivery/            # 最终提交文件；只保留真正要交付的成品，赛事附加子目录与清单见当前 profile 交付集
 └── sandbox/                # 可选实验沙盒，与 00—08 并列，不是第 09 步
 ```
 
@@ -74,105 +70,19 @@ workspace/projects/cumcm-2026-a/
 
    > 请处理 `workspace/inbox/cumcm-2026-a/` 中的新赛题，先按本仓库的 `AGENTS.md` 初始化正式项目、分类题面与原始数据并核对问题清单，再推进完整的数学建模生产流程。
 
-3. Agent 会在 `workspace/projects/cumcm-2026-a/` 创建上面的项目骨架，将题面和非数据附件归入 `01-problem/`、原始数据归入 `02-data/raw/`；确认项目副本完整后，才清理对应的 inbox 临时目录。也可以使用下方的[项目初始化命令](#项目初始化启动新赛题)手动创建骨架。
+3. Agent 会在 `workspace/projects/cumcm-2026-a/` 创建上面的项目骨架，将题面和非数据附件归入 `01-problem/`、原始数据归入 `02-data/raw/`；确认项目副本完整后，才清理对应的 inbox 临时目录。也可以按[论文生产流程](docs/guides/paper-production.md)给出的项目初始化命令手动创建骨架。
 4. 后续工作沿 `01` 到 `08` 推进，`00-admin/artifact-map.yaml` 用于快速定位关键产物。需要试验模型或局部改动时使用 `sandbox/`，确认采用后再回到 `03-models/`、`04-results/` 等正式目录实现和运行。
 5. 形成 Release Candidate 后，Agent 先完成规范化检查，人类再对论文表达、建模洞察、结果说服力和最终交付作最后判断。详细分工见下方的[论文审校与交付](#论文审校与交付)。
 
-## 仓库分层
+## 去哪找规则与命令
 
-```text
-.
-├── config/                 # 依赖锁定、工作区级配置与赛事 profile（config/contests/）
-├── docs/                   # 架构、规范与操作指南
-├── resources/              # 算法资料、模板和优秀论文参考库
-├── tools/                  # 跨项目通用工具
-├── workspace/              # inbox、正式项目和历史归档
-├── var/                    # 可删除的运行时与临时产物
-├── .codex/                 # Codex 本地 Skills
-├── .venv-modeling/         # 本机 Python 建模环境，不纳入 Git
-├── ENV_SETUP.md 		   # 虚拟环境重建说明，由独立贡献者维护
-├── AGENTS.md               # Agent 轻量任务路由入口
-├── README.md               # 仓库入口
-└── setup.bat               # Windows 环境引导脚本，由独立贡献者维护
-```
+本入口不复制目录树、工具清单、命令示例和文件职责表，每项都只在其唯一权威文件中维护：
 
-完整职责和项目目录树见[工作区架构](docs/architecture/workspace-layout.md)，文档总索引见[文档中心](docs/README.md)。
-
-## 关键文件说明
-
-| 文件 | 用途 | 什么时候用 |
-| :--- | :--- | :--- |
-| `setup.bat` | 一键搭建 Python 虚拟环境 + 安装依赖 | 首次使用，或环境损坏时 |
-| `tools/update.bat` | 增量补全缺失的依赖(不重建环境) | `requirements-modeling.txt` 更新后，或发现缺包时 |
-| `tools/check-modeling-env.py` | 检查 Python 环境、依赖和外部工具 | 怀疑环境有问题时 |
-| `tools/check-workspace-layout.py` | 捕获根目录高风险缓存、生成残留、批量项目产物和冲突旧结构 | 日常维护或重构后检查 |
-| `tools/extract-spreadsheet.py` | 清洗 Excel 附件并逐工作表输出标准 CSV，也支持大表流式检查/提取 | 收到 `.xlsx/.xls` 题目附件时 |
-| `tools/extract-pdf-pages.py` | 截取 PDF 指定页或页面局部并输出临时 PDF/PNG | 题面视觉分析、OCR 或临时引用时 |
-| `tools/trace-artifact-impact.py` | 执行 `WG-ROUTE-001` 的影响分析 | 上游稳定产物发生实质变化后 |
-| `AGENTS.md` | Agent 的按需加载路由与全局底线 | 如果你用 Codex/Claude Code 等 AI 工具 |
-| `ENV_SETUP.md` | 虚拟环境的手动搭建步骤 | `setup.bat` 失效时需要 |
-
-
-## 常用命令
-
-### 环境准备(首次使用)
-
-```powershell
-
-# 一键搭建完整 Python 虚拟环境
-.\setup.bat
-
-```
-
-### 日常开发与维护
-
-```powershell
-
-# 同步/补全依赖(当 config/python/requirements-modeling.txt 更新后执行)
-.\tools\update.bat
-
-# 检查建模环境、依赖和外部工具
-.\.venv-modeling\Scripts\python.exe tools/check-modeling-env.py
-
-# 检查根目录高风险污染（不冻结顶层结构或普通命名）
-.\.venv-modeling\Scripts\python.exe tools/check-workspace-layout.py
-
-# 运行 v2.0 端到端基础设施 Smoke Test（自动创建并删除临时项目）
-.\.venv-modeling\Scripts\python.exe -B -m unittest discover -s tools/tests -p "test_v2_smoke.py" -v
-
-```
-
-### 项目初始化(启动新赛题)
-
-```powershell
-# 创建标准项目(以 2026 年 A 题为例)
-.\.venv-modeling\Scripts\python.exe .codex/skills/modeling-paper-production/scripts/init_modeling_project.py --root workspace/projects --contest cumcm --year 2026 --problem a
-
-```
-
-
-## 快速入口
-
-| 你想了解什么 | 去哪看 |
-| :--- | :--- |
-| 工作区整体架构 | [工作区架构](docs/architecture/workspace-layout.md) |
-| 文件怎么放、目录怎么用 | [工作区架构](docs/architecture/workspace-layout.md) 与 [全局治理](docs/standards/workspace-governance.md) |
-| 数据、运行和复现怎么做 | [数据与复现规范](docs/standards/data-reproducibility.md) |
-| 模型、计算和验证怎么做 | [建模与计算执行规范](docs/standards/modeling-execution.md) |
-| 证据怎么追溯 | [证据契约](docs/standards/evidence-contract.md) |
-| 论文内容怎么写 | [论文写作规范](docs/standards/paper-writing.md) |
-| LaTeX、公式、表格和版式怎么做 | [论文排版规范](docs/standards/paper-formatting.md) |
-| 论文配图怎么做 | [论文图片与科研可视化规范](docs/standards/paper-figures.md) |
-| 论文怎么审、何时复查 | [最终审查与竞争力评分标准](docs/standards/paper-quality-audit.md) |
-| 怎么命名文件和项目 | [命名规范](docs/standards/naming.md) |
-| 下游阶段怎么快速找到项目产物 | 正式项目的 `00-admin/artifact-map.yaml` |
-| 上游修改后哪些产物受影响 | `tools/trace-artifact-impact.py` |
-| 环境怎么配 | [建模环境指南](docs/guides/modeling-environment.md) |
-| 论文生产流程是什么 | [论文生产流程](docs/guides/paper-production.md) |
-| 写作前要做什么 | [写作前强制学习流程](docs/guides/pre-writing-learning.md) |
-| 有什么算法可以参考 | [算法资源库索引](resources/algorithm-library/index.md) |
-| 有什么模板可以用 | [资源区](resources/README.md) |
-| 项目区在哪 | [项目区](workspace/projects/README.md) |
+- 仓库与项目目录职责、放置决策、`sandbox/` 的空间位置：[工作区架构](docs/architecture/workspace-layout.md)。
+- 跨项目通用工具及其可执行命令（环境自检、根目录布局检查、Excel/PDF 提取、产物影响分析）：[通用工具](tools/README.md)。
+- 各主题规范的唯一权威分工、文档索引与跨项目资源入口：[文档中心](docs/README.md)。
+- 项目初始化和 Draft/RC/Final 阶段的用户命令：[论文生产流程](docs/guides/paper-production.md)。
+- Python 环境安装、依赖同步与自检：[建模环境指南](docs/guides/modeling-environment.md)。
 
 ## 接下来做什么？
 
@@ -181,8 +91,9 @@ workspace/projects/cumcm-2026-a/
 1. 跑完 `setup.bat`，确认环境正常
 2. 把新赛题的材料放入 `workspace/inbox/`
 3. 按 `00-admin` → `01-problem` → ... → `08-delivery` 的正式链路推进；任一阶段需要快速试错时可调用并列的 `sandbox/`，但实验产物不能代替正式结果或门禁
-   - Day 1-2：关注建模和代码(人类定方向，Agent 执行)
-   - Day 3-4：关注审校和交付(Agent 生成草稿，人类检查逻辑、图表、排版、字体)
+   - 以下为默认排期，仅用于说明阶段重心，可按当届赛程增减，不构成赛程规定：
+     - Day 1-2：关注建模和代码(人类定方向，Agent 执行)
+     - Day 3-4：关注审校和交付(Agent 生成草稿，人类检查逻辑、图表、排版、字体)
 
 > 如果你希望在 Day 1 进行更深入的预建模研究，可以参考进阶篇的[人机协作](#人机协作)。
 
@@ -283,7 +194,7 @@ Agent 的最大风险是“自说自话”——它可能选错方向、编造�
 - 结果表格化呈现，精确度保留到整数位即可
 ```
 
-人类在 Day 1 完成这份笔记后，将其放入 `workspace/inbox/2025-xx-xx-cumcm-b/`。Day 2 启动 Agent 时，第一件事就是读取这份笔记，然后基于人类确定的框架开始工作。
+人类在 Day 1 完成这份笔记后，将其放入 `workspace/inbox/cumcm-2021-b/`（inbox 目录沿用与项目 ID 相同的 `<contest>-<year>-<problem>` 形式）。Day 2 启动 Agent 时，第一件事就是读取这份笔记，然后基于人类确定的框架开始工作。
 
 Agent 不需要理解化学机理，它只需要:
 1. 读取人类确认的约束条件(禁止外推、禁止神经网络)

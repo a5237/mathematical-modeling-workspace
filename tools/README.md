@@ -3,7 +3,7 @@
 仅保存可跨项目复用的环境自检、格式转换和辅助程序。某一道题专用的模型代码必须放入对应项目的 `03-models/`。工具产生的临时输出统一写入 `var/temp/`。所有工具的 stdout/stderr 统一为 UTF-8，与终端、管道和 Agent 读取一致。
 
 - `check-modeling-env.py`：检查 Python 依赖、求解器和基础计算能力。
-- `check-workspace-layout.py`：只检查根目录的高风险缓存/生成污染、批量项目产物和冲突性废弃结构；不维护根目录白名单、完整目录树或普通命名门禁。
+- `check-workspace-layout.py`：只检查根目录的高风险缓存/生成污染、批量项目产物和冲突性废弃结构；不维护根目录白名单、完整目录树或普通命名门禁。运行：`.\.venv-modeling\Scripts\python.exe tools\check-workspace-layout.py`（在工作区根目录执行，无参数）。
 - `control_contracts.py`：只读取权威文档中显式的 `toml machine-contract` 客观参数，供项目初始化器和静态 preflight 导入；不解析中文句式、报告模板或 Reviewer judgment。
 - `update.bat`：当`requirements-modeling.txt` 更新或发现缺包时可不重建环境直接补全缺失依赖。
 - `extract-spreadsheet.py`：把 `.xlsx/.xls` 快速清洗为逐工作表 CSV，也保留只读盘点和超大表流式提取模式。

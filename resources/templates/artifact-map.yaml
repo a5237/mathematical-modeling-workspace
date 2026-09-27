@@ -12,7 +12,7 @@ indexes:
   literature: 05-evidence/literature-ledger.csv
   paper: 06-paper/main.tex
   review: 07-review/final-audit.md
-  delivery: 08-delivery/file-list.md
+  delivery: "__DELIVERY_INDEX__"
 
 common:
   data: []

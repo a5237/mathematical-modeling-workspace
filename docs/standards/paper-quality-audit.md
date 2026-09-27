@@ -5,8 +5,6 @@
 > 核心原则：**最终审查只执行一次完整验证；客观硬错误决定能否发布，竞争力评分只用于判断质量和指导修改。**
 
 ```toml machine-contract
-body_figure_minimum = 5
-body_table_minimum = 3
 release_core_files = [
   "00-admin/runbook.md",
   "00-admin/pre-writing-learning.md",
@@ -16,7 +14,6 @@ release_core_files = [
   "05-evidence/literature-ledger.csv",
   "05-evidence/ai-tool-log.md",
   "06-paper/main.tex",
-  "08-delivery/file-list.md",
 ]
 review_log_columns = ["id", "severity", "location", "criterion", "finding", "evidence", "required_fix", "verification", "status"]
 final_audit_fields = [
@@ -25,12 +22,12 @@ final_audit_fields = [
   "review_scope",
   "final_pdf",
   "final_pdf_sha256",
-  "body_word_count",
-  "body_page_range",
-  "body_page_count",
-  "body_figure_count",
-  "body_table_count",
-  "body_length_and_visual_count_gate",
+  "narrative_word_count",
+  "counted_page_range",
+  "counted_page_count",
+  "counted_figure_count",
+  "counted_table_count",
+  "length_and_visual_count_gate",
   "official_rules_gate",
   "evidence_gate",
   "clean_reproduction_gate",
@@ -40,7 +37,7 @@ final_audit_fields = [
   "open_major",
   "release_decision",
 ]
-final_audit_pass_fields = ["body_length_and_visual_count_gate", "official_rules_gate", "evidence_gate", "anonymity_gate", "delivery_gate"]
+final_audit_pass_fields = ["length_and_visual_count_gate", "official_rules_gate", "evidence_gate", "anonymity_gate", "delivery_gate"]
 final_audit_zero_fields = ["open_critical", "open_major"]
 release_candidate_phase_value = "RELEASE_CANDIDATE"
 final_phase_value = "FINAL"
@@ -51,9 +48,11 @@ final_reproduction_statuses = ["PASS", "REUSED_UNCHANGED"]
 final_audit_pass_status = "PASS"
 final_audit_no_open_findings_value = "0"
 release_ready_status = "READY"
+body_figure_minimum = 5
+body_table_minimum = 2
 ```
 
-上方字段承载本工作区明确保留的客观篇幅/图表门禁、审查交接文件、报告字段及状态枚举；竞争力评分不属于机器契约。
+上方字段承载本工作区明确保留的客观篇幅/图表门禁、审查交接文件、报告字段及状态枚举；竞争力评分不属于机器契约。`body_figure_minimum` 与 `body_table_minimum` 是全赛事通用的编号图、编号表下限，其统计区段仍由当前项目赛事 profile 定义。
 
 ---
 
@@ -139,23 +138,23 @@ Reviewer 仍可把明确影响正确性、理解或提交安全的缺陷记为 `
 
 ## 4. 保留的篇幅与图表数量门禁
 
-以下阈值保持不变，属于工作区内部质量门禁，不冒充任何组委会统一规定：
+图数与表数下限由 Core 固定为本节契约的 `body_figure_minimum` 和 `body_table_minimum`，对任何赛事与文字系统一律成立；字数下限、页数上下限及其统计口径由当前项目赛事 profile 的工作区设定段提供（`body_word_minimum`、`body_page_minimum`、`body_page_maximum`，缺省或 `0` 表示该方向不限）。本节只固定这些门禁的存在与执行方式：
 
-1. 正文叙述性内容必须通过 `PW-LEN-001`；
-2. 正文至少包含 **5 个图**和 **3 个表**；
-3. 页数上下限与统计口径由当前项目赛事 profile 的契约键（`body_page_minimum`/`body_page_maximum`，无则不限）与其官方基线共同定义，不同赛事的口径不同，不得只换数字；
-4. 统计必须以拟交付 PDF 为准，并保存正文起止页、正文页数、字数、图号和表号清单；
-5. 不得用无关文字、重复或装饰图表、拆分图号、缩小字号、压缩行距或缩窄页边距凑门禁。
+1. 叙述性正文必须通过 `PW-LEN-001` 的字数下限；
+2. 被统计区段内的编号图不少于 `body_figure_minimum`、编号表不少于 `body_table_minimum`；
+3. 页数服从 profile 声明的上下限。**统计区段由该 profile 定义**——不同赛事计的是不同区段（例如只计正文段与计整份提交 PDF 是两套口径），换赛事时必须连口径一起换，不得只改数字；
+4. 统计必须以拟交付 PDF 为准，并保存被统计区段的起止页、页数、字数、图号和表号清单；
+5. 不得用无关文字、重复或装饰图表、拆分图号、缩小字号、压缩行距或缩窄页边距凑门禁；只有承担 `PW-FIG-001` 论证职责的编号图和编号表才计入。
 
 任一项失败至少记为 `major` 并阻断发布。
 
 ## 5. 一次性最终 PDF 与图片检查
 
-Final Audit 只做一次拟交付 PDF 的逐页渲染，并在同一遍中执行 `PW-FMT-001`、`PW-FIG-001`、论文写作规范的匿名性要求和 `WG-RELEASE-001` 的交付路由。各控制项的具体检查内容只在对应权威文件定义；质量评分、图片过程记录和发布报告不得再维护平行逐图清单。
+Final Audit 只做一次拟交付 PDF 的逐页渲染，并在同一遍中执行 `PW-FMT-001`、`PW-FIG-001`、论文写作规范的匿名性要求和 `WG-RELEASE-001` 的交付路由。图片尺寸、字号与拥挤程度须在该 PDF 的实际显示比例（100%）下判定，不得只按源图或缩放视图判断。各控制项的具体检查内容只在对应权威文件定义；质量评分、图片过程记录和发布报告不得再维护平行逐图清单。
 
 ## 6. 获奖竞争力评分（非阻断）
 
-全国组委会公开标准强调假设合理性、建模创造性、结果正确性和表达清晰程度，但没有一套公开固定、可保证获奖的百分制。本表仅用于内部严格预审：
+各赛事公开的评阅导向普遍强调假设合理性、建模创造性、结果正确性和表达清晰程度，但没有一套公开固定、可保证获奖的百分制。本表仅用于内部严格预审：
 
 | 维度 | 分值 | 核心问题 |
 |---|---:|---|
@@ -171,7 +170,7 @@ Final Audit 只做一次拟交付 PDF 的逐页渲染，并在同一遍中执行
 
 | 总分 | 内部等级 | 参考判断 |
 |---:|---|---|
-| 92—100 | A+ | 具有较强的全国一等奖竞争力 |
+| 92—100 | A+ | 具有较强的当届最高奖竞争力 |
 | 85—91 | A | 达到内部获奖竞争力参考线 |
 | 75—84 | B | 尚未达到参考线 |
 | 60—74 | C | 存在明显短板 |
@@ -190,7 +189,7 @@ Final Audit 只做一次拟交付 PDF 的逐页渲染，并在同一遍中执行
 
 ## 8. 最终报告（`PQA-REPORT-001`）
 
-`07-review/final-audit.md` 至少包含以下机器摘要：
+`07-review/final-audit.md` 至少包含以下机器摘要；其字段名与顺序即本文件契约的 `final_audit_fields`，两处必须同序：
 
 ```markdown
 # 最终审查报告
@@ -202,12 +201,12 @@ Final Audit 只做一次拟交付 PDF 的逐页渲染，并在同一遍中执行
 - review_scope: `FULL` 或 `IMPACTED`
 - final_pdf: `08-delivery/paper.pdf`
 - final_pdf_sha256: `<64 位 SHA-256>`
-- body_word_count: `<整数>`
-- body_page_range: `<起始页-结束页>`
-- body_page_count: `<整数>`
-- body_figure_count: `<整数>`
-- body_table_count: `<整数>`
-- body_length_and_visual_count_gate: `PASS` 或 `BLOCKED`
+- narrative_word_count: `<整数>`
+- counted_page_range: `<起始页-结束页>`
+- counted_page_count: `<整数>`
+- counted_figure_count: `<整数>`
+- counted_table_count: `<整数>`
+- length_and_visual_count_gate: `PASS` 或 `BLOCKED`
 - official_rules_gate: `PASS` 或 `BLOCKED`
 - evidence_gate: `PASS` 或 `BLOCKED`
 - clean_reproduction_gate: `PASS`、`REUSED_UNCHANGED` 或 `BLOCKED`

@@ -6,9 +6,12 @@ documentation edits cannot break the initializer or static audit.
 
 Contracts load in two segments. Core documents under ``docs/`` define the
 contest-independent workspace contract. Contest profiles under
-``config/contests/<profile>/`` provide contest-specific values (official
-limits, disclosure formats). Callers with a project context pass ``contest``;
-workspace-level callers omit it and receive the Core contract only.
+``config/contests/<profile>/`` provide contest-specific values (official limits,
+disclosure formats, this contest's workspace settings). Callers with a project
+context pass ``contest``; workspace-level callers omit it and receive the Core
+contract only. Core's type registries below validate Core keys only, so a new
+profile never has to edit them; profile values are type-checked at their
+consumer through ``contract_int``, ``contract_str`` and ``contract_list``.
 """
 
 from __future__ import annotations
@@ -34,8 +37,8 @@ CORE_DOCUMENTS = (
     "docs/architecture/workspace-layout.md",
     "docs/standards/workspace-governance.md",
     "docs/standards/evidence-contract.md",
+    "docs/standards/data-reproducibility.md",
     "docs/standards/modeling-execution.md",
-    "docs/standards/paper-writing.md",
     "docs/standards/paper-figures.md",
     "docs/standards/paper-quality-audit.md",
     "docs/guides/pre-writing-learning.md",
@@ -67,13 +70,9 @@ CORE_REQUIRED_KEYS = {
     "selection_complete_status",
     "selection_initial_status",
     "model_selection_columns",
-    "body_word_minimum",
     "figure_registry_columns",
     "figure_risk_columns",
-    "figure_final_pdf_statuses",
     "figure_initial_status",
-    "body_figure_minimum",
-    "body_table_minimum",
     "release_core_files",
     "review_log_columns",
     "final_audit_fields",
@@ -88,11 +87,14 @@ CORE_REQUIRED_KEYS = {
     "final_audit_pass_status",
     "final_audit_no_open_findings_value",
     "release_ready_status",
+    "body_figure_minimum",
+    "body_table_minimum",
     "learning_paper_minimum",
     "learning_complete_status",
     "learning_initial_status",
     "learning_sample_columns",
     "learning_algorithm_columns",
+    "data_audit_tables",
 }
 
 STRING_ARRAY_KEYS = (
@@ -111,7 +113,6 @@ STRING_ARRAY_KEYS = (
     "model_selection_columns",
     "figure_registry_columns",
     "figure_risk_columns",
-    "figure_final_pdf_statuses",
     "release_core_files",
     "review_log_columns",
     "final_audit_fields",
@@ -136,16 +137,6 @@ NONEMPTY_STRING_KEYS = (
     "release_ready_status",
     "learning_complete_status",
     "learning_initial_status",
-)
-
-POSITIVE_INT_KEYS = (
-    "body_word_minimum",
-    "body_page_minimum",
-    "body_page_maximum",
-    "body_figure_minimum",
-    "body_table_minimum",
-    "learning_paper_minimum",
-    "paper_maximum_bytes",
 )
 
 
@@ -254,15 +245,15 @@ def _validate(values: dict[str, object]) -> None:
         if not isinstance(values[key], str) or not values[key]:
             raise ContractError(f"machine-contract key {key} must be a non-empty string")
 
-    for key in POSITIVE_INT_KEYS:
-        if key not in values:
-            continue
-        if not isinstance(values[key], int) or values[key] <= 0:
-            raise ContractError(f"machine-contract key {key} must be a positive integer")
-
-    if "body_page_minimum" in values and "body_page_maximum" in values:
-        if values["body_page_minimum"] > values["body_page_maximum"]:
-            raise ContractError("body_page_minimum cannot exceed body_page_maximum")
+    if "data_audit_tables" in values:
+        tables = values["data_audit_tables"]
+        if not isinstance(tables, dict) or not tables:
+            raise ContractError("machine-contract key data_audit_tables must be a non-empty table")
+        for title, columns in tables.items():
+            if not title or not isinstance(columns, list) or not columns or not all(
+                isinstance(column, str) and column for column in columns
+            ):
+                raise ContractError(f"invalid data audit table columns: {title}")
 
     if "artifact_impact_defaults" in values:
         impact_defaults = values["artifact_impact_defaults"]
@@ -344,3 +335,66 @@ def load_workspace_contracts(root: Path, contest: str | None = None):
 
     _validate(values)
     return SimpleNamespace(**values)
+
+
+def contract_int(contracts, name: str) -> int:
+    """Read one integer contract value through its consumer-side type check.
+
+    Profile-contributed keys are not listed in Core's type registries, so their
+    type is asserted here rather than in ``_validate``. A value of ``0`` means
+    the profile sets no limit in that direction.
+    """
+
+    value = getattr(contracts, name, None)
+    if isinstance(value, bool) or not isinstance(value, int) or value < 0:
+        raise ContractError(f"contract key {name} must be a non-negative integer")
+    return value
+
+
+def contract_str(contracts, name: str) -> str:
+    value = getattr(contracts, name, None)
+    if not isinstance(value, str) or not value:
+        raise ContractError(f"contract key {name} must be a non-empty string")
+    return value
+
+
+def contract_list(contracts, name: str) -> tuple[str, ...]:
+    value = getattr(contracts, name, None)
+    if not isinstance(value, (tuple, list)) or not value or not all(
+        isinstance(item, str) and item for item in value
+    ):
+        raise ContractError(f"contract key {name} must be a non-empty string array")
+    return tuple(value)
+
+
+def contract_optional_int(contracts, name: str) -> int | None:
+    """Read a profile-declared integer limit that some contests legitimately omit."""
+
+    value = getattr(contracts, name, None)
+    if value is None:
+        return None
+    if isinstance(value, bool) or not isinstance(value, int) or value < 0:
+        raise ContractError(f"contract key {name} must be a non-negative integer when declared")
+    return value
+
+
+def contract_optional_str(contracts, name: str) -> str | None:
+    """Read a profile-declared string that some contests legitimately omit."""
+
+    value = getattr(contracts, name, None)
+    if value is None:
+        return None
+    if not isinstance(value, str) or not value:
+        raise ContractError(f"contract key {name} must be a non-empty string when declared")
+    return value
+
+
+def contract_optional_list(contracts, name: str) -> tuple[str, ...]:
+    value = getattr(contracts, name, None)
+    if value is None:
+        return ()
+    if not isinstance(value, (tuple, list)) or not all(
+        isinstance(item, str) and item for item in value
+    ):
+        raise ContractError(f"contract key {name} must be a string array when declared")
+    return tuple(value)

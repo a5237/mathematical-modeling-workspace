@@ -14,14 +14,15 @@
 | PDF 与 Excel 的读取、盘点、清洗 | `tools/README.md` | 需要运行环境或依赖时追加 `docs/guides/modeling-environment.md` |
 | 模型选择、算法、代码实现、正式计算、验证 | `docs/standards/modeling-execution.md` | 先读 `resources/algorithm-library/index.md`，再只读匹配算法说明；涉及数据时追加数据复现规范 |
 | 主张、数值或文献证据 | `docs/standards/evidence-contract.md` | 涉及跨阶段生命周期或交付时追加工作区治理规范 |
-| inbox—project—archive 生命周期、产物地图、影响传播或 `sandbox/` 与正式链路边界 | `docs/standards/workspace-governance.md` 的 `WG-ROUTE-001`、`WG-TEST-001` | 涉及目录位置再读工作区架构；涉及实验比较再读建模执行规范 |
+| inbox—project—archive 生命周期、产物地图、影响传播或 `sandbox/` 与正式链路边界 | `docs/standards/workspace-governance.md` 的 `WG-LIFE-001`、`WG-ROUTE-001`、`WG-TEST-001` | 涉及目录位置再读工作区架构；涉及实验比较再读建模执行规范 |
 | AI 使用记录 | `docs/standards/workspace-governance.md` 的 `WG-AI-001` | 追加当前项目赛事 profile 的 `config/contests/<profile>/rules.md` 核对当届披露要求 |
 | 论文内容、结构、建模叙事、结果分析、学术表达 | `docs/standards/paper-writing.md` | 启动正式写作时追加 `docs/guides/pre-writing-learning.md`；不要因纯排版任务加载它 |
 | LaTeX、公式、表格、字体、页面与版式 | `docs/standards/paper-formatting.md` | 内容同时变化时才追加论文写作规范 |
 | 论文图片、科研可视化、流程图或最终 PDF 图片检查 | `docs/standards/paper-figures.md` | 生成或改善视觉质量时追加 `docs/guides/scientific-figure-aesthetics.md` 和 `resources/figure-style-library/README.md`，只选少量相关参考 |
 | 完整数学建模生产流程 | `.codex/skills/modeling-paper-production/SKILL.md` | 按 Skill 所列阶段加载对应权威文件 |
 | 最终审校、评分或发布门禁 | `.codex/skills/modeling-paper-audit/SKILL.md`、`docs/standards/paper-quality-audit.md` | 按实际审校范围加载数据、模型、证据、写作、排版、图片和现行规则 |
-| 当届规则、提交格式、AI 披露或匿名性 | 当前项目赛事 profile 的 `config/contests/<profile>/rules.md` | 正式提交前重新核对官网 |
+| 某条规则该留 Core 还是归赛事 profile | `docs/standards/workspace-governance.md` 的 `WG-LAYER-001` | 只裁决归属，不因此加载其它规范 |
+| 当届规则、提交格式、AI 披露或匿名性 | 当前项目赛事 profile 的 `config/contests/<profile>/rules.md`（官方条款段） | 正式提交前重新核对官网；该段以外的约定不驱动重核 |
 
 职责不清时只查 `docs/README.md` 的唯一权威矩阵，不因此加载矩阵中的全部文件。适用门禁必须执行，但控制编号的完整定义只从其唯一权威文件读取；局部任务不得被无关阶段门禁扩张为全流程任务。
 

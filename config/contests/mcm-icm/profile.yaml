@@ -4,7 +4,8 @@ contests:
   - mcm
   - icm
 
-# Machine-contract keys contributed by this profile's rules.md.
+# Machine-contract keys contributed by this profile's rules.md, covering both
+# its official-limits segment and its contest-side workspace-settings segment.
 contract_keys:
   - paper_maximum_bytes
   - body_page_maximum

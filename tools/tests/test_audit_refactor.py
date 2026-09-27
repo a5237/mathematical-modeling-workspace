@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+import re
 import shutil
 import subprocess
 import sys
@@ -75,12 +76,49 @@ class ContractTests(unittest.TestCase):
                     encoding="utf-8",
                 )
             contracts = load_workspace_contracts(root)
-            self.assertGreater(contracts.body_word_minimum, 0)
-            self.assertGreater(contracts.body_figure_minimum, 0)
-            self.assertGreater(contracts.body_table_minimum, 0)
-            self.assertGreater(contracts.learning_paper_minimum, 0)
+            contest_keys = (
+                "body_word_minimum",
+                "body_page_minimum",
+                "body_page_maximum",
+                "paper_maximum_bytes",
+            )
+            for key in contest_keys:
+                self.assertFalse(hasattr(contracts, key), key)
             self.assertIn("sandbox", contracts.recommended_project_directories)
             self.assertEqual(contracts.artifact_impact_defaults["results"]["effect"], "STALE")
+
+            merged = vars(load_workspace_contracts(WORKSPACE_ROOT, contest="cumcm"))
+            for key in contest_keys:
+                self.assertIn(key, merged, key)
+
+
+class CoreBoundaryTests(unittest.TestCase):
+    """Core rules and scripts must stay free of any single contest's identity."""
+
+    CONTEST_TERMS = re.compile(r"CUMCM|cumcm|国赛|全国组委会|赛区|支撑材料")
+
+    def core_rule_files(self) -> list[Path]:
+        candidates = [
+            *sorted((WORKSPACE_ROOT / "docs" / "standards").rglob("*.md")),
+            *sorted((WORKSPACE_ROOT / "docs" / "architecture").rglob("*.md")),
+            WORKSPACE_ROOT / "docs" / "guides" / "pre-writing-learning.md",
+            *sorted((WORKSPACE_ROOT / "tools").glob("*.py")),
+            *sorted((WORKSPACE_ROOT / "resources" / "templates").glob("*.md")),
+            *sorted((WORKSPACE_ROOT / "resources" / "templates").glob("*.yaml")),
+        ]
+        for skill in ("modeling-paper-production", "modeling-paper-audit"):
+            base = WORKSPACE_ROOT / ".codex" / "skills" / skill
+            candidates += sorted(base.rglob("*.md")) + sorted(base.rglob("*.py"))
+        return [path for path in candidates if path.is_file()]
+
+    def test_core_rules_name_no_contest(self) -> None:
+        leaks = []
+        for path in self.core_rule_files():
+            text = path.read_text(encoding="utf-8")
+            for number, line in enumerate(text.splitlines(), 1):
+                if self.CONTEST_TERMS.search(line):
+                    leaks.append(f"{path.relative_to(WORKSPACE_ROOT).as_posix()}:{number}")
+        self.assertEqual(leaks, [], f"contest-specific facts leaked into Core: {leaks}")
 
 
 class IntakeWorkflowTests(unittest.TestCase):
@@ -233,12 +271,12 @@ class ReleasePreflightTests(unittest.TestCase):
                         f"- review_scope: `{contracts.release_candidate_review_scopes[0]}`",
                         "- final_pdf: `08-delivery/paper.pdf`",
                         f"- final_pdf_sha256: `{digest}`",
-                        f"- body_word_count: `{contracts.body_word_minimum}`",
-                        f"- body_page_range: `{body_start_page}-{body_end_page}`",
-                        f"- body_page_count: `{contracts.body_page_minimum}`",
-                        f"- body_figure_count: `{contracts.body_figure_minimum}`",
-                        f"- body_table_count: `{contracts.body_table_minimum}`",
-                        f"- body_length_and_visual_count_gate: `{contracts.final_audit_pass_status}`",
+                        f"- narrative_word_count: `{contracts.body_word_minimum}`",
+                        f"- counted_page_range: `{body_start_page}-{body_end_page}`",
+                        f"- counted_page_count: `{contracts.body_page_minimum}`",
+                        f"- counted_figure_count: `{contracts.body_figure_minimum}`",
+                        f"- counted_table_count: `{contracts.body_table_minimum}`",
+                        f"- length_and_visual_count_gate: `{contracts.final_audit_pass_status}`",
                         f"- official_rules_gate: `{contracts.final_audit_pass_status}`",
                         f"- evidence_gate: `{contracts.final_audit_pass_status}`",
                         f"- clean_reproduction_gate: `{contracts.release_candidate_reproduction_statuses[0]}`",

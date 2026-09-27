@@ -17,12 +17,12 @@ recommended_project_directories = [
   "06-paper/figures",
   "06-paper/tables",
   "07-review",
-  "08-delivery/support-materials",
+  "08-delivery",
   "sandbox",
 ]
 ```
 
-上方数组是初始化器使用的推荐项目骨架；它不把推荐树升级为审计 schema。目录职责仍由本文件正文解释，跨阶段状态与产物权威性由 `WG-ROUTE-001` 和 `WG-TEST-001` 管理。
+上方数组是初始化器使用的推荐项目骨架；它不把推荐树升级为审计 schema。交付阶段的赛事专属子目录由当前项目赛事 profile 的 `extra_delivery_directories` 声明，初始化器在创建本骨架后追加。目录职责仍由本文件正文解释，跨阶段状态与产物权威性由 `WG-ROUTE-001` 和 `WG-TEST-001` 管理。
 
 ## 设计原则（`LAYOUT-001`）
 
@@ -30,7 +30,7 @@ recommended_project_directories = [
 2. **稳定资产与工作数据分离。** 规范、配置、工具和模板不与赛题项目混放。
 3. **项目彼此隔离。** 每个正式需求只有一个项目目录，项目代码不得读取其他项目的隐式产物。
 4. **原始数据受保护。** 具体不可变性和派生数据规则执行 `docs/standards/data-reproducibility.md` 的 `WG-DATA-001`。
-5. **运行时产物可删除。** 缓存、PDF 页面截取、渲染页和调试输出统一进入 `var/temp/`，不得成为唯一证据。布局机器检查只拦截明显缓存/生成污染、批量项目产物散落和会造成冲突的废弃结构，不检查普通命名与完整目录存在性。
+5. **运行时产物可删除。** 缓存、PDF 页面截取、渲染页和调试输出统一进入 `var/temp/`，其非权威性执行 `WG-ROUTE-001`。布局机器检查只拦截明显缓存/生成污染、批量项目产物散落和会造成冲突的废弃结构，不检查普通命名与完整目录存在性。
 
 ## 仓库目录树
 
@@ -103,8 +103,7 @@ recommended_project_directories = [
 │   ├── figures/
 │   └── tables/
 ├── 07-review/              # 审稿记录与 RC/Final 唯一最终审查报告
-├── 08-delivery/            # 仅保留可提交成品
-│   └── support-materials/  # 当届要求的可运行代码与支撑材料
+├── 08-delivery/            # 仅保留可提交成品；本赛事附加子目录与交付清单见当前 profile 的交付集
 └── sandbox/                # 可由任一阶段调用的轻量实验沙盒，不属于线性阶段
 ```
 
@@ -120,7 +119,7 @@ recommended_project_directories = [
 
 ## 需求生命周期
 
-`workspace/inbox/`、`workspace/projects/` 与 `workspace/archive/` 的位置和目录职责见上文；需求何时迁移、何时清理和何时归档统一执行 `docs/standards/workspace-governance.md`，本文件不维护第二套生命周期步骤。
+`workspace/inbox/`、`workspace/projects/` 与 `workspace/archive/` 的位置和目录职责见上文；需求何时迁移、何时清理和何时归档统一执行 `docs/standards/workspace-governance.md` 的 `WG-LIFE-001`，本文件不维护第二套生命周期步骤。
 
 ## 放置决策
 
@@ -134,8 +133,4 @@ recommended_project_directories = [
 
 任何无法归入上述类别的文件都应先明确生命周期和权威来源，再决定位置。单个合理的新入口不会被机器直接判错，但项目数据、模型代码、缓存和生成产物仍应路由到对应项目或 `var/temp/`。
 
-可在仓库根目录运行以下命令捕获高风险污染；该命令不验证完整目录树或普通命名：
-
-```powershell
-.\.venv-modeling\Scripts\python.exe tools/check-workspace-layout.py
-```
+根目录高风险污染由 `tools/check-workspace-layout.py` 捕获，属 `LAYOUT-001` 的机器检查部分；该检查不验证完整目录树或普通命名，可执行命令行与参数只以 `tools/README.md` 为权威，本文件不复制。
