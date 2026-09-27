@@ -48,7 +48,11 @@ body_page_maximum = 25
 
 ## 第二部分 本赛事下的工作区设定
 
-本部分是工作区为该赛事设定的门禁、结构与交付集，不冒充官方统一要求，因此**不新增机器契约键**：本赛事不设页数与字数下限（`body_page_minimum`、`body_word_minimum` 缺省即不限）。
+本部分是工作区为该赛事设定的门禁、结构与交付集，不冒充官方统一要求。
+
+```toml machine-contract
+body_word_minimum = 2000
+```
 
 ### 3. 论文结构
 
@@ -98,8 +102,8 @@ COMAP 官方只规定第 1 页必须是 Summary Sheet、其后依次为正文、
 
 ### 4. 统计区段与长度线
 
-- 页数门禁执行第一部分官方条款：整个提交 PDF 不超过 25 页，`Report on Use of AI` 不计页。本赛事不设官方页数下限，工作区亦不加设下限。
-- 叙述性字数：本赛事不设下限，`body_word_minimum` 不声明；摘要与逐问结论仍须按 Core 给出可核验数值。
+- 页数门禁执行第一部分官方条款：整个提交 PDF 不超过 25 页，`Report on Use of AI` 不计页。本赛事不设页数下限。
+- 叙述字数不少于 `body_word_minimum`：统计区段为正文 `1. Introduction` 起至 `7. Conclusion` 末，Summary Sheet、目录、参考文献、附录与 `Report on Use of AI` 均不计入；该口径以框架中的 `text:counted-first`（Introduction 处）与 `text:counted-last`（Conclusion 末）表达。
 - 编号图与编号表的统计区段与页数口径一致：从 Summary Sheet 起至附录末页，`Report on Use of AI` 一节不计入。
 
 ### 5. 交付集

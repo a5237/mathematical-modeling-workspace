@@ -721,16 +721,13 @@ class ProfileGateTests(unittest.TestCase):
                 else:
                     self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
-    def test_word_floor_only_applies_where_the_profile_declares_it(self) -> None:
-        for contest, blocked in (("cumcm", True), ("mcm", False)):
+    def test_narrative_floor_blocks_every_contest_that_declares_it(self) -> None:
+        for contest in ("cumcm", "mcm", "icm"):
             with self.subTest(contest=contest), tempfile.TemporaryDirectory(dir=TEMP_ROOT) as temporary:
                 project = self.build(temporary, contest, narrative_units=5)
                 result = run(str(AUDIT_SCRIPT), str(project), "--phase", "release-candidate")
-                if blocked:
-                    self.assertNotEqual(result.returncode, 0)
-                    self.assertIn("narrative length", result.stdout)
-                else:
-                    self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn("narrative length", result.stdout)
 
     def test_visual_floor_is_shared_across_contests(self) -> None:
         for contest in ("cumcm", "mcm"):
@@ -792,14 +789,19 @@ class FrameworkTests(unittest.TestCase):
                 )
 
     def test_frameworks_declare_their_counted_regions(self) -> None:
-        for profile, labels in (
-            ("cumcm", ("page:counted-first", "page:counted-last", "text:counted-first", "text:counted-last")),
-            ("mcm-icm", ("page:counted-first", "page:counted-last")),
-        ):
+        labels = (
+            "page:counted-first",
+            "page:counted-last",
+            "text:counted-first",
+            "text:counted-last",
+        )
+        for profile in ("cumcm", "mcm-icm"):
             with self.subTest(profile=profile):
                 text = self.framework(profile)
                 for label in labels:
                     self.assertIn(f"\\label{{{label}}}", text, label)
+                self.assertLess(text.index("\\label{text:counted-first}"), text.index("\\label{text:counted-last}"))
+                self.assertLess(text.index("\\label{text:counted-last}"), text.index("\\label{page:counted-last}"))
 
     def test_only_the_macro_definition_may_render_literal_brackets(self) -> None:
         for profile in ("cumcm", "mcm-icm"):

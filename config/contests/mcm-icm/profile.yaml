@@ -9,6 +9,7 @@ contests:
 contract_keys:
   - paper_maximum_bytes
   - body_page_maximum
+  - body_word_minimum
 
 # Paper framework template, relative to resources/templates/.
 paper_framework: contests/mcm-icm/paper-framework.tex
