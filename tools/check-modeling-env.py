@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import argparse
 import importlib
 import os
 import platform
@@ -13,8 +14,16 @@ from pathlib import Path
 
 WORKSPACE_ROOT = Path(__file__).resolve().parent.parent
 CACHE_ROOT = WORKSPACE_ROOT / "var" / "temp"
-(CACHE_ROOT / "matplotlib").mkdir(parents=True, exist_ok=True)
-os.environ.setdefault("MPLCONFIGDIR", str(CACHE_ROOT / "matplotlib"))
+
+
+def prepare_cache_root() -> None:
+    """Point matplotlib at the workspace cache, creating it only on real runs.
+
+    Importing this module or asking for usage must not write into the workspace.
+    """
+
+    (CACHE_ROOT / "matplotlib").mkdir(parents=True, exist_ok=True)
+    os.environ.setdefault("MPLCONFIGDIR", str(CACHE_ROOT / "matplotlib"))
 
 
 PACKAGES: list[tuple[str, str, bool]] = [
@@ -207,7 +216,12 @@ def configure_utf8_stdio() -> None:
 
 
 def main() -> int:
+    parser = argparse.ArgumentParser(
+        description="检查建模环境的依赖导入、Graphviz 与出图自检；无参数即执行全部检查。"
+    )
+    parser.parse_args()
     configure_utf8_stdio()
+    prepare_cache_root()
     print("[Python runtime]")
     print(f"  version:     {sys.version.replace(chr(10), ' ')}")
     print(f"  executable:  {sys.executable}")
