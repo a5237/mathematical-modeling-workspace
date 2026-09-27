@@ -195,6 +195,6 @@ echo 虚拟环境: .\.venv-modeling\Scripts\python.exe
 echo.
 echo 常用命令：
 echo   环境检查: .\.venv-modeling\Scripts\python.exe tools\check-modeling-env.py
-echo   运行模型: .\.venv-modeling\Scripts\python.exe workspace\projects\...\03-models\q00-run-all.py
+echo   运行模型: .\.venv-modeling\Scripts\python.exe workspace\projects\...\03-models\run-all.py
 echo.
 pause
