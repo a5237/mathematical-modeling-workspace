@@ -1,6 +1,6 @@
 ---
 name: modeling-paper-audit
-description: Independently audit mathematical modeling contest papers against project evidence, reproducibility, citations, anonymity, format, and delivery requirements. Use when Codex must review, score, red-team, compliance-check, or release-gate a mathematical modeling paper without inventing fixes or trusting unsupported author claims.
+description: Independently audit mathematical modeling contest papers against project evidence, reproducibility, citations, anonymity, format and delivery. Use when Codex must review, score, red-team, compliance-check or release-gate a paper without inventing fixes or trusting unsupported author claims.
 ---
 
 # Mathematical Modeling Paper Audit

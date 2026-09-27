@@ -189,33 +189,7 @@ Final Audit 只做一次拟交付 PDF 的逐页渲染，并在同一遍中执行
 
 ## 8. 最终报告（`PQA-REPORT-001`）
 
-`07-review/final-audit.md` 至少包含以下机器摘要；其字段名与顺序即本文件契约的 `final_audit_fields`，两处必须同序：
-
-```markdown
-# 最终审查报告
-
-## 机器可读摘要
-
-- audit_date: `YYYY-MM-DD`
-- audit_phase: `RELEASE_CANDIDATE` 或 `FINAL`
-- review_scope: `FULL` 或 `IMPACTED`
-- final_pdf: `08-delivery/paper.pdf`
-- final_pdf_sha256: `<64 位 SHA-256>`
-- narrative_word_count: `<整数>`
-- counted_page_range: `<起始页-结束页>`
-- counted_page_count: `<整数>`
-- counted_figure_count: `<整数>`
-- counted_table_count: `<整数>`
-- length_and_visual_count_gate: `PASS` 或 `BLOCKED`
-- official_rules_gate: `PASS` 或 `BLOCKED`
-- evidence_gate: `PASS` 或 `BLOCKED`
-- clean_reproduction_gate: `PASS`、`REUSED_UNCHANGED` 或 `BLOCKED`
-- anonymity_gate: `PASS` 或 `BLOCKED`
-- delivery_gate: `PASS` 或 `BLOCKED`
-- open_critical: `0`
-- open_major: `0`
-- release_decision: `READY` 或 `BLOCKED`
-```
+`07-review/final-audit.md` 以 `## 机器可读摘要` 起头，每行一个 `- <字段>: <值>`，字段名与顺序即本文件契约的 `final_audit_fields`。取值制度：`audit_date` 为 `YYYY-MM-DD`，`audit_phase` 为 `RELEASE_CANDIDATE` 或 `FINAL`，`review_scope` 为 `FULL` 或 `IMPACTED`，`release_decision` 为 `READY` 或 `BLOCKED`；五个 gate 字段取 `PASS` 或 `BLOCKED`，`clean_reproduction_gate` 另可取 `REUSED_UNCHANGED`；`narrative_word_count`、`counted_page_count`、`counted_figure_count`、`counted_table_count` 与两个 open 计数为整数，`counted_page_range` 为 `<起始页>-<结束页>`；`final_pdf` 指向 `08-delivery/` 的拟交付 PDF，`final_pdf_sha256` 为其 64 位十六进制哈希。
 
 正文继续记录：规则核对日期与来源、clean reproduction 命令和证据、关键结果比对、PDF/图片检查范围、发现项、修改影响分析、竞争力评分和免责声明。机器不解析竞争力评分或主观视觉维度。
 

@@ -1,6 +1,6 @@
 ---
 name: modeling-paper-production
-description: Build and operate an evidence-driven production system for mathematical modeling contest papers across contest profiles. Use when Codex must initialize a contest project, analyze a problem, select models, implement and run computations, generate traceable tables or figures, write or revise a paper from real outputs, maintain citations and AI-use records, or prepare reproducible submission materials.
+description: Evidence-driven production of mathematical modeling contest papers across contest profiles. Use when Codex must initialize a contest project, analyze a problem, select models, run computations, produce traceable tables or figures, write or revise a paper from real outputs, maintain citations and AI-use records, or prepare reproducible submission.
 ---
 
 # Mathematical Modeling Paper Production

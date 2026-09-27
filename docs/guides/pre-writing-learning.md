@@ -17,7 +17,7 @@ learning_paper_minimum = 2
 ## 1. 确认学习范围
 
 - 根据题目与各子问题的数学类型，确定需要学习的范文类别和算法类别。
-- 核对 `03-models/model-selection.md` 已记录实际选用模型、算法资源路径、适用性检查和偏离理由；算法库检索、候选比较与库外偏离的判定执行 `docs/standards/modeling-execution.md` 的 `WG-MODEL-001`，本文件不重复其规则。
+- 核对 `03-models/model-selection.md` 已记录实际选用模型、算法资源路径、适用性检查和偏离理由；算法库检索、候选比较与库外偏离的判定执行 `docs/standards/modeling-execution.md` 的 `WG-MODEL-001`。
 
 ## 2. 学习同类优秀论文
 

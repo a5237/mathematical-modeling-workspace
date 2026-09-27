@@ -14,7 +14,7 @@ figure_initial_status = "PENDING"
 
 上方字段是图片记录模板的稳定接口；具体触发条件、填报语义和判定仍由本文件正文定义。
 
-本文件是论文图片与科研可视化要求的唯一权威。正文结构和参考文献由 `docs/standards/paper-writing.md` 管理；表格、公式和通用字体由 `docs/standards/paper-formatting.md` 管理；图片的稳定产物与复现由 `docs/standards/data-reproducibility.md` 管理；证据与发布治理分别由 `docs/standards/evidence-contract.md` 和 `docs/standards/workspace-governance.md` 管理；审查报告与竞争力评分由 `docs/standards/paper-quality-audit.md` 管理。其它文件只引用 `PW-FIG-001`，不得维护第二套图型阈值、图片比例、分辨率、字号或视觉检查规则。
+本文件是论文图片与科研可视化要求的唯一权威；正文结构、排版、产物复现、证据、审查报告与竞争力评分分别由 `paper-writing.md`、`paper-formatting.md`、`data-reproducibility.md`、`evidence-contract.md`、`workspace-governance.md` 和 `paper-quality-audit.md` 管理，其它文件只引用 `PW-FIG-001`。
 
 ---
 
