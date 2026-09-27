@@ -136,6 +136,7 @@
 % 摘要内容执行 paper-writing.md，版式执行 paper-formatting.md。
 % ============================================================
 \thispagestyle{fancy}
+\label{page:counted-first}
 \begin{center}
   {\bfseries\large\PaperTitle\par}
   \vspace{0.6em}
@@ -147,15 +148,15 @@
 
 \TemplateField{Open with two or three sentences summarizing the problem, the overall modeling approach, and the main results.}
 
-For Question 1, \TemplateField{state the task and its key transformation}, we build \textbf{[core model 1]} and obtain \textbf{[key numbers with units or a clear conclusion]} via \TemplateField{solution method}; the result is validated by \TemplateField{validation method and metrics}.
+For Question 1, \TemplateField{state the task and its key transformation}, we build \TemplateField{core model 1} and obtain \TemplateField{key numbers with units or a clear conclusion} via \TemplateField{solution method}; the result is validated by \TemplateField{validation method and metrics}.
 
-For Question 2, \TemplateField{state what is inherited from Question 1 and the new task}, we construct \textbf{[core model 2]} and obtain \textbf{[final plan, ranking, prediction, or classification]}; \TemplateField{report error, robustness, or constraint checks}.
+For Question 2, \TemplateField{state what is inherited from Question 1 and the new task}, we construct \TemplateField{core model 2} and obtain \TemplateField{final plan, ranking, prediction, or classification}; \TemplateField{report error, robustness, or constraint checks}.
 
-For Question 3, \TemplateField{state how the scenario changes and how the model adapts}, we apply \textbf{[core model 3]} and obtain \textbf{[key result]}; \TemplateField{report comparison or sensitivity analysis}.
+For Question 3, \TemplateField{state how the scenario changes and how the model adapts}, we apply \TemplateField{core model 3} and obtain \TemplateField{key result}; \TemplateField{report comparison or sensitivity analysis}.
 
-For Question 4, \TemplateField{state the open-ended task or decision goal}, we propose \textbf{[final strategy or plan]}; \TemplateField{state the applicable range, reliability, and main limitations}.
+For Question 4, \TemplateField{state the open-ended task or decision goal}, we propose \TemplateField{final strategy or plan}; \TemplateField{state the applicable range, reliability, and main limitations}.
 
-Overall, \textbf{[summarize the value, boundary, and generalizable conclusions of the model system]}.
+Overall, \TemplateField{summarize the value, boundary, and generalizable conclusions of the model system}.
 
 \vspace{0.6em}
 \textbf{Keywords:} \TemplateField{research object}; \TemplateField{core model}; \TemplateField{algorithm}; \TemplateField{validation method}; \TemplateField{decision theme}
@@ -270,7 +271,7 @@ In \cref{eq:q01-model}, $f(\symbf{x})$ denotes \TemplateField{the practical mean
 \TemplateField{State the solution method, key steps, parameters or tolerances that affect the result, and constraint/boundary checks; complex algorithms may use numbered steps.}
 
 \subsubsection{Results and Analysis}
-First answer this question directly: \textbf{[final numbers with units, plan, or conclusion for Question 1]}.
+First answer this question directly: \TemplateField{final numbers with units, plan, or conclusion for Question 1}.
 
 % 三线结果表版式只执行 PW-FMT-001。
 Main results are given in \cref{tab:q01-results}.
@@ -289,6 +290,16 @@ Main results are given in \cref{tab:q01-results}.
 \end{table}
 \TemplateField{Interpret the main findings, practical meaning, criteria, and uncertainties; do not read the table row by row.}
 \TemplateField{Present the validation evidence and judgment for this question per PW-VAL-001.}
+
+% 单图叙事、位置与图题只执行 PW-FIG-001。
+The main result of Question 1 is shown in \cref{fig:q01-result}.
+\begin{figure}[htbp]
+  \centering
+  \safeincludegraphics[width=0.72\textwidth]{figures/q01-figure-001-result.pdf}
+  \caption{\TemplateField{Caption naming the main result for Question 1}}
+  \label{fig:q01-result}
+\end{figure}
+\TemplateField{Explain how this figure supports the argument of this question per PW-FIG-001.}
 
 \subsection{Model and Solution for Question 2}
 
@@ -332,7 +343,17 @@ The model structure or scenario comparison is shown in \cref{fig:q02-comparison}
 \TemplateField{State the actual algorithm, parameter choices, data splits or solver settings, and constraint, leakage, convergence, or boundary checks.}
 
 \subsubsection{Results and Analysis}
-First answer this question directly: \textbf{[final result for Question 2]}.\TemplateField{Present the validation per PW-VAL-001.}
+First answer this question directly: \TemplateField{final result for Question 2}.\TemplateField{Present the validation per PW-VAL-001.}
+
+% 单图叙事、位置与图题只执行 PW-FIG-001。
+The main result of Question 2 is shown in \cref{fig:q02-result}.
+\begin{figure}[htbp]
+  \centering
+  \safeincludegraphics[width=0.72\textwidth]{figures/q02-figure-002-result.pdf}
+  \caption{\TemplateField{Caption naming the main result for Question 2}}
+  \label{fig:q02-result}
+\end{figure}
+\TemplateField{Explain how this figure supports the argument of this question per PW-FIG-001.}
 
 \subsection{Model and Solution for Question 3}
 
@@ -349,7 +370,17 @@ First answer this question directly: \textbf{[final result for Question 2]}.\Tem
 \TemplateField{State the solution workflow, key parameters, and feasibility checks.}
 
 \subsubsection{Results and Analysis}
-First answer this question directly: \textbf{[final result for Question 3]}.\TemplateField{Report sensitivity, robustness, error, or other equivalent evidence.}
+First answer this question directly: \TemplateField{final result for Question 3}.\TemplateField{Report sensitivity, robustness, error, or other equivalent evidence.}
+
+% 单图叙事、位置与图题只执行 PW-FIG-001。
+The main result of Question 3 is shown in \cref{fig:q03-result}.
+\begin{figure}[htbp]
+  \centering
+  \safeincludegraphics[width=0.72\textwidth]{figures/q03-figure-001-result.pdf}
+  \caption{\TemplateField{Caption naming the main result for Question 3}}
+  \label{fig:q03-result}
+\end{figure}
+\TemplateField{Explain how this figure supports the argument of this question per PW-FIG-001.}
 
 \subsection{Model and Solution for Question 4}
 
@@ -366,7 +397,17 @@ First answer this question directly: \textbf{[final result for Question 3]}.\Tem
 \TemplateField{State the actual solution or plan-generation process.}
 
 \subsubsection{Results and Analysis}
-First answer this question directly: \textbf{[final plan or conclusion for Question 4]}.\TemplateField{State the validation, applicable conditions, and main limitations.}
+First answer this question directly: \TemplateField{final plan or conclusion for Question 4}.\TemplateField{State the validation, applicable conditions, and main limitations.}
+
+% 单图叙事、位置与图题只执行 PW-FIG-001。
+The main result of Question 4 is shown in \cref{fig:q04-result}.
+\begin{figure}[htbp]
+  \centering
+  \safeincludegraphics[width=0.72\textwidth]{figures/q04-figure-001-result.pdf}
+  \caption{\TemplateField{Caption naming the final plan or conclusion for Question 4}}
+  \label{fig:q04-result}
+\end{figure}
+\TemplateField{Explain how this figure supports the argument of this question per PW-FIG-001.}
 
 \section{Model Evaluation and Generalization}
 
@@ -434,7 +475,7 @@ This program solves \TemplateField{the sub-problem and its correspondence to the
 \clearpage
 \section*{Report on Use of AI}
 \ifusedai
-\TemplateField{State which AI tool and version was used, for what purpose and at which stage, the main prompting approach and usage process, what was adopted, what was manually revised, and how outputs were verified.}
+\TemplateField{State which AI tool and version was used, cited inline as \cite{ai-tool}, for what purpose and at which stage, the main prompting approach and usage process, what was adopted, what was manually revised, and how outputs were verified.}
 \else
 This team did not use any AI tools while working on this problem.
 \fi

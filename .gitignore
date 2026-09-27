@@ -11,6 +11,7 @@ var/temp/*
 
 # LaTeX intermediates (keep .tex and final PDFs)
 *.aux
+!workspace/projects/*/06-paper/main.aux
 workspace/projects/*/06-paper/*.log
 *.out
 *.toc

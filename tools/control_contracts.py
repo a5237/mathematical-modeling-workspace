@@ -67,6 +67,7 @@ CORE_REQUIRED_KEYS = {
     "claim_columns",
     "literature_columns",
     "evidence_statuses",
+    "evidence_verified_status",
     "selection_complete_status",
     "selection_initial_status",
     "model_selection_columns",
@@ -75,6 +76,7 @@ CORE_REQUIRED_KEYS = {
     "figure_initial_status",
     "release_core_files",
     "review_log_columns",
+    "review_open_statuses",
     "final_audit_fields",
     "final_audit_pass_fields",
     "final_audit_zero_fields",
@@ -115,6 +117,7 @@ STRING_ARRAY_KEYS = (
     "figure_risk_columns",
     "release_core_files",
     "review_log_columns",
+    "review_open_statuses",
     "final_audit_fields",
     "final_audit_pass_fields",
     "final_audit_zero_fields",
@@ -133,6 +136,7 @@ NONEMPTY_STRING_KEYS = (
     "release_candidate_phase_value",
     "final_phase_value",
     "final_audit_pass_status",
+    "evidence_verified_status",
     "final_audit_no_open_findings_value",
     "release_ready_status",
     "learning_complete_status",
@@ -146,6 +150,8 @@ def _document_blocks(root: Path, relative: str) -> dict[str, object]:
         text = path.read_text(encoding="utf-8")
     except OSError as exc:
         raise ContractError(f"cannot read authority file {relative}: {exc}") from exc
+    except UnicodeDecodeError as exc:
+        raise ContractError(f"authority file {relative} is not UTF-8: {exc}") from exc
 
     blocks = CONTRACT_BLOCK.findall(text)
     if not blocks:
@@ -169,6 +175,8 @@ def _load_profile_config(root: Path, profile: str) -> dict[str, object]:
         config = yaml.safe_load(path.read_text(encoding="utf-8"))
     except OSError as exc:
         raise ContractError(f"cannot read contest profile config {profile}: {exc}") from exc
+    except UnicodeDecodeError as exc:
+        raise ContractError(f"contest profile config {profile} is not UTF-8: {exc}") from exc
     if not isinstance(config, dict):
         raise ContractError(f"invalid contest profile config for {profile}")
     contests = config.get("contests")
@@ -197,8 +205,6 @@ def resolve_profile(root: Path, contest: str) -> str | None:
     if not profile_root.is_dir():
         return None
     profiles = sorted(entry.name for entry in profile_root.iterdir() if entry.is_dir())
-    if contest in profiles:
-        return contest
     for profile in profiles:
         config = _load_profile_config(root, profile)
         if contest in config["contests"]:
@@ -289,6 +295,40 @@ def _validate(values: dict[str, object]) -> None:
             raise ContractError("invalid artifact_index_categories machine contract")
 
 
+PROFILE_ALLOWED_FILES = {PROFILE_CONFIG_NAME, "rules.md"}
+
+
+def check_profile_registry(root: Path) -> None:
+    """Guard the profile registry against the failures that appear with many contests.
+
+    Two profiles claiming one identifier would be resolved silently by directory
+    order, and any extra markdown inside a profile directory becomes
+    contract-bearing through ``rglob``, so both are rejected up front.
+    """
+
+    profile_root = root / CONTEST_PROFILE_ROOT
+    if not profile_root.is_dir():
+        return
+    claimed: dict[str, str] = {}
+    for entry in sorted(profile_root.iterdir()):
+        if not entry.is_dir():
+            continue
+        for stray in sorted(entry.rglob("*")):
+            if stray.is_file() and stray.name not in PROFILE_ALLOWED_FILES:
+                raise ContractError(
+                    f"contest profile {entry.name} may contain only "
+                    f"{sorted(PROFILE_ALLOWED_FILES)}, found {stray.relative_to(entry).as_posix()}"
+                )
+        config = _load_profile_config(root, entry.name)
+        for contest in config["contests"]:
+            if contest in claimed:
+                raise ContractError(
+                    f"contest identifier {contest} is claimed by both profiles "
+                    f"{claimed[contest]} and {entry.name}"
+                )
+            claimed[contest] = entry.name
+
+
 def load_workspace_contracts(root: Path, contest: str | None = None):
     """Return validated objective values from explicit TOML contract blocks.
 
@@ -298,6 +338,7 @@ def load_workspace_contracts(root: Path, contest: str | None = None):
     """
 
     values: dict[str, object] = {}
+    check_profile_registry(root)
     for relative in CORE_DOCUMENTS:
         values.update(_document_blocks(root, relative))
 

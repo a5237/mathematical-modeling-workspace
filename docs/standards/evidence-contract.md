@@ -8,6 +8,7 @@
 claim_columns = ["claim_id", "question_id", "claim", "evidence_type", "source_path", "generator", "generated_at", "status"]
 literature_columns = ["citation_key", "title", "authors", "year", "doi_or_url", "retrieved_at", "used_in", "verified"]
 evidence_statuses = ["draft", "verified", "rejected"]
+evidence_verified_status = "verified"
 ```
 
 上方显式字段是供机器读取的稳定契约；正文负责解释语义。普通措辞或章节调整不参与程序解析。
@@ -27,7 +28,7 @@ evidence_statuses = ["draft", "verified", "rejected"]
 - `generated_at`：ISO 8601 时间；
 - `status`：仅允许 `draft`、`verified`、`rejected`。
 
-发布前，所有已写入论文的主张必须为 `verified`。同一具体数值只能有一个权威机器可读来源；论文表格和图应由该来源再生，禁止手工改数或把未保存的控制台输出作为唯一依据。
+发布前，所有已写入论文的主张必须为 `verified`。审计脚本按阶段执行：`release-candidate` 允许 `draft`（便于回退后继续核验），`final` 阶段凡非契约 `evidence_verified_status` 的状态一律阻断。同一具体数值只能有一个权威机器可读来源；论文表格和图应由该来源再生，禁止手工改数或把未保存的控制台输出作为唯一依据。
 
 `source_path` 和 `generator` 不得指向 `sandbox/`；该客观字段约束执行 `WG-TEST-001` 的非权威边界，审计脚本据此阻断实验产物进入正式证据链。`verified` 只能来自实际核验，审校阶段不得补造证据条目。
 

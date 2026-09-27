@@ -172,15 +172,15 @@
 
 \indent\TemplateField{用两至三句话概括研究对象、总体建模主线和主要成果。}
 
-针对问题一，\TemplateField{说明任务和关键转化}，建立\textbf{【核心模型一】}，采用\TemplateField{求解方法}得到\textbf{【关键数值、单位或明确结论】}；通过\TemplateField{检验方法及指标}验证结果可信。
+针对问题一，\TemplateField{说明任务和关键转化}，建立\TemplateField{核心模型一}，采用\TemplateField{求解方法}得到\TemplateField{关键数值、单位或明确结论}；通过\TemplateField{检验方法及指标}验证结果可信。
 
-针对问题二，\TemplateField{说明与前问的继承关系及新增任务}，构建\textbf{【核心模型二】}，得到\textbf{【最终方案、排序、预测或分类结果】}；\TemplateField{给出误差、稳健性或约束检查结论}。
+针对问题二，\TemplateField{说明与前问的继承关系及新增任务}，构建\TemplateField{核心模型二}，得到\TemplateField{最终方案、排序、预测或分类结果}；\TemplateField{给出误差、稳健性或约束检查结论}。
 
-针对问题三，\TemplateField{说明情景变化和模型调整}，使用\textbf{【核心模型三】}求得\textbf{【关键结果】}；\TemplateField{说明比较或敏感性分析结果}。
+针对问题三，\TemplateField{说明情景变化和模型调整}，使用\TemplateField{核心模型三}求得\TemplateField{关键结果}；\TemplateField{说明比较或敏感性分析结果}。
 
-针对问题四，\TemplateField{说明开放任务或决策目标}，提出\textbf{【最终策略或方案】}；\TemplateField{说明适用范围、可信度和主要限制}。
+针对问题四，\TemplateField{说明开放任务或决策目标}，提出\TemplateField{最终策略或方案}；\TemplateField{说明适用范围、可信度和主要限制}。
 
-综上，\textbf{【概括模型体系的主要价值、边界与可推广结论】}。
+综上，\TemplateField{概括模型体系的主要价值、边界与可推广结论}。
 
 \vspace{0.8em}
 \noindent\textbf{关键词：}\TemplateField{研究对象}；\TemplateField{核心模型}；\TemplateField{求解算法}；\TemplateField{验证方法}；\TemplateField{决策主题}
@@ -191,6 +191,8 @@
 % 正文内容执行 paper-writing.md，目录、页面与版式执行 paper-formatting.md 和 OFFICIAL-CUMCM-001。
 % ============================================================
 \section{问题重述}
+\label{page:counted-first}
+\label{text:counted-first}
 
 \subsection{问题背景}
 \TemplateField{用自己的语言概括背景、研究对象和应用意义，不照抄赛题，不提前展开模型和结果。}
@@ -262,14 +264,14 @@
 
 \subsubsection{问题一模型的建立}
 \noindent\TemplateField{局部模型名称——说明本模型在问题一中的作用}
-\TemplateField{依次定义变量和指标，推导局部关系，然后集中汇总完整模型。公式前写依据，公式后解释含义。}
+\TemplateField{依次定义变量和指标，推导局部关系，然后集中汇总完整模型；一般建模方法与模型表述形式参照教材\cite{modelbook}。公式前写依据，公式后解释含义。}
 
 \noindent\textbf{完整模型汇总：}\TemplateField{按论文写作规范填写本问完整模型。}
 
 % 下列优化模型仅示范 PW-FMT-001 的排版结构；适用性与内容执行论文写作规范。
 若本问属于优化问题，可将完整模型集中写为
 \begin{equation}
-\label{eq:q1-model}
+\label{eq:q01-model}
 \begin{aligned}
 \min_{\symbf{x}}\quad & f(\symbf{x}) \\
 \mathrm{s.t.}\quad &
@@ -283,20 +285,20 @@ h_1(\symbf{x}) &= 0,\\
 \right.
 \end{aligned}
 \end{equation}
-\cref{eq:q1-model}中，$f(\symbf{x})$表示\TemplateField{目标的实际含义}，$g_1$、$g_2$和$h_1$分别描述\TemplateField{资源、业务或机理约束}，$\Omega$为\TemplateField{变量定义域}。\TemplateField{按实际模型替换示例。}
+\cref{eq:q01-model}中，$f(\symbf{x})$表示\TemplateField{目标的实际含义}，$g_1$、$g_2$和$h_1$分别描述\TemplateField{资源、业务或机理约束}，$\Omega$为\TemplateField{变量定义域}。\TemplateField{按实际模型替换示例。}
 
 \subsubsection{问题一模型的求解}
-\TemplateField{写明求解方法、关键步骤、影响结果的参数或容差、约束与边界检查；复杂算法可配编号步骤。}
+\TemplateField{写明求解方法、关键步骤、影响结果的参数或容差、约束与边界检查；复杂算法可配编号步骤，常用求解算法的表述与实现参照教材\cite{algobook}。}
 
 \subsubsection{问题一结果的分析}
-先直接回答本问：\textbf{【填写问题一的最终数值、单位、方案或结论】}。
+先直接回答本问：\TemplateField{填写问题一的最终数值、单位、方案或结论}。
 
 % 三线结果表版式只执行 PW-FMT-001。
-主要结果见\cref{tab:q1-results}。
+主要结果见\cref{tab:q01-results}。
 \begin{table}[htbp]
   \centering
   \caption{问题一主要结果}
-  \label{tab:q1-results}
+  \label{tab:q01-results}
   \begin{tabular}{cccc}
     \toprule[1.2pt]
     对象 & 核心指标（单位） & 误差或状态（单位） & 最终结论 \\
@@ -308,6 +310,16 @@ h_1(\symbf{x}) &= 0,\\
 \end{table}
 \TemplateField{解释表中主要发现、实际意义、判据和不确定性，不逐行朗读。}
 \TemplateField{按 PW-VAL-001 呈现本问的验证证据与判断。}
+
+% 单图叙事、位置与图题只执行 PW-FIG-001。
+本问主要结果的图形化呈现如\cref{fig:q01-result}所示。
+\begin{figure}[htbp]
+  \centering
+  \safeincludegraphics[width=0.72\textwidth]{figures/q01-figure-001-result.pdf}
+  \caption{\TemplateField{问题一主要结果的图题}}
+  \label{fig:q01-result}
+\end{figure}
+\TemplateField{按 PW-FIG-001 解释该图与本问论证的关系。}
 
 \subsection{问题二模型的建立与求解}
 
@@ -321,29 +333,29 @@ h_1(\symbf{x}) &= 0,\\
 \noindent\textbf{完整模型汇总：}\TemplateField{集中列出问题二的目标函数或核心方程、约束或初边值条件、定义域、参数条件、输入与输出。}
 
 % 并排子图版式只执行 PW-FIG-001。
-模型结构或方案比较如\cref{fig:q2-comparison}所示。
+模型结构或方案比较如\cref{fig:q02-comparison}所示。
 \begin{figure}[htbp]
   \centering
   \begin{subfigure}[t]{0.31\textwidth}
     \centering
-    \safeincludegraphics[width=0.95\linewidth]{figures/q2-case-a.pdf}
+    \safeincludegraphics[width=0.95\linewidth]{figures/q02-figure-001-case-a.pdf}
     \caption{情景一}
-    \label{fig:q2-case-a}
+    \label{fig:q02-case-a}
   \end{subfigure}\hfill
   \begin{subfigure}[t]{0.31\textwidth}
     \centering
-    \safeincludegraphics[width=0.95\linewidth]{figures/q2-case-b.pdf}
+    \safeincludegraphics[width=0.95\linewidth]{figures/q02-figure-001-case-b.pdf}
     \caption{情景二}
-    \label{fig:q2-case-b}
+    \label{fig:q02-case-b}
   \end{subfigure}\hfill
   \begin{subfigure}[t]{0.31\textwidth}
     \centering
-    \safeincludegraphics[width=0.95\linewidth]{figures/q2-case-c.pdf}
+    \safeincludegraphics[width=0.95\linewidth]{figures/q02-figure-001-case-c.pdf}
     \caption{情景三}
-    \label{fig:q2-case-c}
+    \label{fig:q02-case-c}
   \end{subfigure}
   \caption{问题二不同情景的结果比较}
-  \label{fig:q2-comparison}
+  \label{fig:q02-comparison}
 \end{figure}
 \TemplateField{分别解释各子图差异，并说明它们如何支撑问题二结论。}
 
@@ -351,7 +363,17 @@ h_1(\symbf{x}) &= 0,\\
 \TemplateField{写明实际算法、参数选择、数据划分或求解器设置，以及约束、泄漏、收敛或边界检查。}
 
 \subsubsection{问题二结果的分析}
-先直接回答本问：\textbf{【填写问题二最终结果】}。\TemplateField{按 PW-VAL-001 呈现本问验证。}
+先直接回答本问：\TemplateField{填写问题二最终结果}。\TemplateField{按 PW-VAL-001 呈现本问验证。}
+
+% 单图叙事、位置与图题只执行 PW-FIG-001。
+本问主要结果的图形化呈现如\cref{fig:q02-result}所示。
+\begin{figure}[htbp]
+  \centering
+  \safeincludegraphics[width=0.72\textwidth]{figures/q02-figure-002-result.pdf}
+  \caption{\TemplateField{问题二主要结果的图题}}
+  \label{fig:q02-result}
+\end{figure}
+\TemplateField{按 PW-FIG-001 解释该图与本问论证的关系。}
 
 \subsection{问题三模型的建立与求解}
 
@@ -368,7 +390,17 @@ h_1(\symbf{x}) &= 0,\\
 \TemplateField{写明求解流程、关键参数和可行性检查。}
 
 \subsubsection{问题三结果的分析}
-先直接回答本问：\textbf{【填写问题三最终结果】}。\TemplateField{报告敏感性、稳健性、误差或其它等效证据。}
+先直接回答本问：\TemplateField{填写问题三最终结果}。\TemplateField{报告敏感性、稳健性、误差或其它等效证据。}
+
+% 单图叙事、位置与图题只执行 PW-FIG-001。
+本问主要结果的图形化呈现如\cref{fig:q03-result}所示。
+\begin{figure}[htbp]
+  \centering
+  \safeincludegraphics[width=0.72\textwidth]{figures/q03-figure-001-result.pdf}
+  \caption{\TemplateField{问题三主要结果的图题}}
+  \label{fig:q03-result}
+\end{figure}
+\TemplateField{按 PW-FIG-001 解释该图与本问论证的关系。}
 
 \subsection{问题四模型的建立与求解}
 
@@ -385,7 +417,17 @@ h_1(\symbf{x}) &= 0,\\
 \TemplateField{写明实际求解或方案生成过程。}
 
 \subsubsection{问题四结果的分析}
-先直接回答本问：\textbf{【填写问题四最终方案或结论】}。\TemplateField{说明验证、适用条件和主要限制。}
+先直接回答本问：\TemplateField{填写问题四最终方案或结论}。\TemplateField{说明验证、适用条件和主要限制。}
+
+% 单图叙事、位置与图题只执行 PW-FIG-001。
+本问主要结果的图形化呈现如\cref{fig:q04-result}所示。
+\begin{figure}[htbp]
+  \centering
+  \safeincludegraphics[width=0.72\textwidth]{figures/q04-figure-001-result.pdf}
+  \caption{\TemplateField{问题四主要结果的图题}}
+  \label{fig:q04-result}
+\end{figure}
+\TemplateField{按 PW-FIG-001 解释该图与本问论证的关系。}
 
 \section{模型的评价与推广}
 
@@ -397,6 +439,8 @@ h_1(\symbf{x}) &= 0,\\
 
 \subsection{模型的改进与推广}
 \TemplateField{说明推广对象、需调整的变量和约束、需补充的数据及推广后的验证方式。}
+
+\label{text:counted-last}
 
 % ============================================================
 % AI 声明位置、措辞及配套文件只执行 OFFICIAL-CUMCM-001。
@@ -410,7 +454,9 @@ h_1(\symbf{x}) &= 0,\\
 \fi
 
 % 文献组成、核验和正文引用执行 PW-CITE-001 与 WG-EVID-001。
-\renewcommand{\refname}{七、参考文献}
+% 编号由本文档自身的节计数器给出，避免增删一级标题后序号失配。
+\renewcommand{\refname}{\chinese{section}、参考文献}
+\addtocounter{section}{1}
 \begin{thebibliography}{99}
   \bibitem{modelbook}
   姜启源, 谢金星, 叶俊.
@@ -434,6 +480,7 @@ h_1(\symbf{x}) &= 0,\\
   \bibitem{topic-ref-4}
   \TemplateField{作者. 与参数、验证或应用场景直接相关的文献题名[类型]. 期刊或出版社, 年份. DOI.}
 \end{thebibliography}
+\label{page:counted-last}
 
 % ============================================================
 % 附录分页执行 PW-FMT-001；内容与支撑材料执行论文写作规范和 OFFICIAL-CUMCM-001。
@@ -457,8 +504,8 @@ h_1(\symbf{x}) &= 0,\\
   \endfoot
   \bottomrule[1.2pt]
   \endlastfoot
-  1 & \texttt{code/q1.py} & \TemplateField{问题一求解程序，对应式、表或图编号} \\
-  2 & \texttt{code/q2.py} & \TemplateField{问题二求解程序，对应式、表或图编号} \\
+  1 & \texttt{code/q01-solve.py} & \TemplateField{问题一求解程序，对应式、表或图编号} \\
+  2 & \texttt{code/q02-solve.py} & \TemplateField{问题二求解程序，对应式、表或图编号} \\
   3 & \texttt{data/processed-data.csv} & \TemplateField{按 OFFICIAL-CUMCM-001 填写数据文件及用途} \\
   \ifusedai
   4 & \TemplateField{按 OFFICIAL-CUMCM-001 填写} & \TemplateField{AI 使用配套文件及用途} \\
@@ -476,11 +523,11 @@ h_1(\symbf{x}) &= 0,\\
 % 路径按“模板已复制到项目 06-paper/”设置，必要时按项目实际结构调整。
 \subsection*{B.1\quad 问题一源程序}
 本程序用于\TemplateField{说明所解决的子问题以及与正文公式、图表和结果的对应关系}。
-\includecode{Python}{问题一完整源程序}{../03-models/q1.py}
+\includecode{Python}{问题一完整源程序}{../03-models/q01-solve.py}
 
 \subsection*{B.2\quad 问题二源程序}
 本程序用于\TemplateField{说明所解决的子问题以及与正文公式、图表和结果的对应关系}。
-\includecode{Python}{问题二完整源程序}{../03-models/q2.py}
+\includecode{Python}{问题二完整源程序}{../03-models/q02-solve.py}
 
 % 若存在问题三、问题四或绘图、数据处理程序，应继续逐一完整列出。
 \else

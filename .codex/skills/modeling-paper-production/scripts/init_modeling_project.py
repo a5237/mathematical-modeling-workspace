@@ -29,6 +29,7 @@ from control_contracts import (
 
 TEMPLATES_ROOT = WORKSPACE_ROOT / "resources" / "templates"
 FIGURE_SELECTION_TEMPLATE = TEMPLATES_ROOT / "figure-selection-record.md"
+FINAL_AUDIT_TEMPLATE = TEMPLATES_ROOT / "final-audit-record.md"
 ARTIFACT_MAP_TEMPLATE = TEMPLATES_ROOT / "artifact-map.yaml"
 
 BASE_FILES = {
@@ -131,6 +132,7 @@ def project_files(contracts) -> dict[str, str]:
         "05-evidence/literature-ledger.csv": ",".join(contracts.literature_columns) + "\n",
         "05-evidence/ai-tool-log.md": ai_tool_log,
         "07-review/review-log.md": "# 审稿记录\n\n> 字段语义执行 `PQA-REPORT-001`。\n\n" + markdown_table(contracts.review_log_columns),
+        "07-review/final-audit.md": final_audit_record(contracts),
     }
     manifest = contract_optional_str(contracts, "delivery_manifest_path")
     if manifest:
@@ -140,6 +142,13 @@ def project_files(contracts) -> dict[str, str]:
             "官方规则基线维护。\n"
         )
     return files
+
+
+def final_audit_record(contracts) -> str:
+    fields = "\n".join(f"- {name}: `待填写`" for name in contracts.final_audit_fields)
+    return FINAL_AUDIT_TEMPLATE.read_text(encoding="utf-8").replace(
+        "__FINAL_AUDIT_FIELDS__", fields, 1
+    )
 
 
 def figure_selection_record(contracts, project_id: str) -> str:
@@ -226,11 +235,14 @@ def main() -> int:
         .read_text(encoding="utf-8")
     )
     paper_framework = TEMPLATES_ROOT / config["paper_framework"]
-    for template in (paper_framework, FIGURE_SELECTION_TEMPLATE, ARTIFACT_MAP_TEMPLATE):
+    for template in (paper_framework, FIGURE_SELECTION_TEMPLATE, FINAL_AUDIT_TEMPLATE, ARTIFACT_MAP_TEMPLATE):
         if not template.is_file():
             parser.error(f"missing project template: {template}")
     project_id = f"{contest}-{args.year}-{problem}"
-    project = Path(args.root) / project_id
+    root = Path(args.root)
+    if not root.is_absolute():
+        root = WORKSPACE_ROOT / root
+    project = root / project_id
     if project.exists():
         parser.error(f"refusing to overwrite existing project: {project}")
 

@@ -24,40 +24,72 @@ from control_contracts import (
     ContractError,
     contract_int,
     contract_optional_int,
+    contract_optional_list,
     contract_optional_str,
     load_workspace_contracts,
+    resolve_profile,
 )
 
 
-def project_contest(root: Path) -> str:
+def project_identity(root: Path) -> tuple[str, str | None]:
+    """Read the declared contest and, when present, the declared profile key."""
+
     path = root / "00-admin" / "project.yaml"
     try:
         config = yaml.safe_load(path.read_text(encoding="utf-8"))
     except OSError as exc:
         raise ContractError(f"cannot read project contest identity: {exc}") from exc
-    contest = config.get("contest") if isinstance(config, dict) else None
+    except UnicodeDecodeError as exc:
+        raise ContractError(f"{path.as_posix()} is not UTF-8: {exc}") from exc
+    if not isinstance(config, dict):
+        raise ContractError(f"project does not declare a contest in {path.relative_to(root).as_posix()}")
+    contest = config.get("contest")
     if not isinstance(contest, str) or not contest:
         raise ContractError(f"project does not declare a contest in {path.relative_to(root).as_posix()}")
-    return contest
+    declared = config.get("profile")
+    return contest, declared if isinstance(declared, str) and declared else None
 
 
 # Workspace records are authored in the workspace's own record language, so the
 # unfilled markers are matched by word. The paper source is language-independent:
 # an unfilled slot is the template macro itself, never a Chinese word.
-RECORD_PLACEHOLDER = re.compile(r"TODO|TBD|FIXME|待填写|待补|占位|XX+", re.IGNORECASE)
+RECORD_PLACEHOLDER = re.compile(r"TODO|TBD|FIXME|待填写|待定|待补|占位|XX+", re.IGNORECASE)
 SOURCE_PLACEHOLDER = re.compile(r"\\TemplateField\{|TODO|TBD|FIXME")
 AUDIT_FIELD = re.compile(r"^\s*-\s*([a-z0-9_]+):\s*`([^`]*)`\s*$", re.MULTILINE)
 WORKFLOW_FIELD = re.compile(
     r"^\s*(?:[-*]\s*)?([a-z0-9_]+)\s*:\s*(.*?)\s*$", re.MULTILINE
 )
 FINAL_AUDIT_PATH = "07-review/final-audit.md"
-def workflow_metadata(text: str) -> dict[str, str]:
+
+
+def parse_unique_fields(
+    pattern: re.Pattern[str],
+    text: str,
+    errors: list[str],
+    label: str,
+) -> dict[str, str]:
+    """Parse ``key: value`` fields, rejecting repeats instead of last-wins.
+
+    A repeat would let an appended compliant block silently overwrite a
+    violating one, which is the whole point of the machine-readable summary.
+    """
+
     fields: dict[str, str] = {}
-    for key, raw_value in WORKFLOW_FIELD.findall(text):
-        value = raw_value.strip()
+    duplicates: set[str] = set()
+    for key, raw_value in pattern.findall(text):
+        if key in fields:
+            duplicates.add(key)
+        fields[key] = raw_value
+    if duplicates:
+        errors.append(f"MAJOR {label} repeats fields {sorted(duplicates)}")
+    return fields
+
+
+def workflow_metadata(text: str, errors: list[str]) -> dict[str, str]:
+    fields = parse_unique_fields(WORKFLOW_FIELD, text, errors, "workflow record")
+    for key, value in list(fields.items()):
         if len(value) >= 2 and value.startswith("`") and value.endswith("`"):
-            value = value[1:-1].strip()
-        fields[key] = value
+            fields[key] = value[1:-1].strip()
     return fields
 
 
@@ -88,7 +120,7 @@ def audit_workflow_gate(
     if not path.is_file():
         return
     text = path.read_text(encoding="utf-8", errors="replace")
-    fields = workflow_metadata(text)
+    fields = workflow_metadata(text, errors)
     if fields.get(status_key) != expected_status:
         errors.append(f"MAJOR workflow gate {relative}: {status_key} must be {expected_status}")
     if RECORD_PLACEHOLDER.search(text):
@@ -106,52 +138,6 @@ def sha256(path: Path) -> str:
 def final_audit_path(root: Path) -> Path | None:
     current = root / FINAL_AUDIT_PATH
     return current if current.is_file() else None
-
-
-def audit_count_fields(fields: dict[str, str], contracts, errors: list[str]) -> None:
-    """Compare the report's counted quantities against the contract budgets.
-
-    A budget of ``0`` means the contract sets no limit in that direction; the
-    counted region itself is defined by the profile, not by this script.
-    """
-
-    page_minimum = contract_optional_int(contracts, "body_page_minimum") or 0
-    page_maximum = contract_optional_int(contracts, "body_page_maximum") or 0
-    if page_minimum and page_maximum and page_minimum > page_maximum:
-        raise ContractError("body_page_minimum cannot exceed body_page_maximum")
-    integer_limits = {
-        "narrative_word_count": (contract_optional_int(contracts, "body_word_minimum") or 0, 0),
-        "counted_page_count": (page_minimum, page_maximum),
-        "counted_figure_count": (contract_int(contracts, "body_figure_minimum"), 0),
-        "counted_table_count": (contract_int(contracts, "body_table_minimum"), 0),
-    }
-    parsed_counts: dict[str, int] = {}
-    for key, (minimum, maximum) in integer_limits.items():
-        try:
-            value = int(fields[key])
-        except (KeyError, ValueError):
-            errors.append(f"MAJOR final audit field {key} must be an integer")
-            continue
-        parsed_counts[key] = value
-        if minimum and value < minimum:
-            if maximum:
-                errors.append(
-                    f"MAJOR final audit field {key}: expected {minimum}..{maximum}, found {value}"
-                )
-            else:
-                errors.append(f"MAJOR final audit field {key}: expected >= {minimum}, found {value}")
-        elif maximum and value > maximum:
-            errors.append(f"MAJOR final audit field {key}: expected <= {maximum}, found {value}")
-
-    page_range = re.fullmatch(r"\s*(\d+)\s*[-–—]\s*(\d+)\s*", fields.get("counted_page_range", ""))
-    if page_range is None:
-        errors.append("MAJOR final audit field counted_page_range must use <start>-<end>")
-    else:
-        start_page, end_page = map(int, page_range.groups())
-        if end_page < start_page:
-            errors.append("MAJOR final audit counted_page_range ends before it starts")
-        elif "counted_page_count" in parsed_counts and end_page - start_page + 1 != parsed_counts["counted_page_count"]:
-            errors.append("MAJOR final audit counted_page_range does not match counted_page_count")
 
 
 def audit_pdf_identity(
@@ -184,6 +170,244 @@ def audit_pdf_identity(
         errors.append("CRITICAL final audit PDF hash does not match the reviewed delivery PDF")
 
 
+def audit_declared_delivery_directories(root: Path, contracts, errors: list[str]) -> None:
+    """Profile-declared delivery directories must exist and hold content.
+
+    Git does not track empty directories, so a declared support-materials
+    directory can disappear between commit and submission unchecked.
+    """
+
+    for relative in contract_optional_list(contracts, "extra_delivery_directories"):
+        directory = root / relative
+        if not directory.is_dir():
+            errors.append(f"MAJOR missing profile-declared delivery directory: {relative}")
+        elif not any(directory.rglob("*")):
+            errors.append(f"MAJOR profile-declared delivery directory is empty: {relative}")
+
+
+def audit_review_ledger(root: Path, contracts, fields: dict[str, str], errors: list[str]) -> None:
+    """Cross-check the open finding counts against the review ledger.
+
+    The summary's open counts and the ledger are authored by the same reviewer;
+    a disagreement means one of them is stale, which is mechanically decidable.
+    """
+
+    path = root / "07-review" / "review-log.md"
+    if not path.is_file():
+        return
+    columns = list(contracts.review_log_columns)
+    if "severity" not in columns or "status" not in columns:
+        return
+    severity_at = columns.index("severity")
+    status_at = columns.index("status")
+    open_statuses = {token.upper() for token in contracts.review_open_statuses}
+    open_rows: list[str] = []
+    for line in path.read_text(encoding="utf-8", errors="replace").splitlines():
+        if not line.lstrip().startswith("|"):
+            continue
+        cells = [cell.strip() for cell in line.strip().strip("|").split("|")]
+        if len(cells) != len(columns) or set("".join(cells)) <= set("-: "):
+            continue
+        if cells[status_at].upper() in open_statuses:
+            open_rows.append(cells[severity_at].upper())
+    for field in contracts.final_audit_zero_fields:
+        if not field.startswith("open_"):
+            continue
+        reported = fields.get(field, "")
+        if not reported.isdigit():
+            continue
+        severity = field[len("open_"):].upper()
+        actual = sum(1 for token in open_rows if token == severity)
+        if int(reported) != actual:
+            errors.append(
+                f"MAJOR review ledger records {actual} open {severity} findings "
+                f"but final audit reports {reported}"
+            )
+
+
+PAGE_FIRST_LABEL = "page:counted-first"
+PAGE_LAST_LABEL = "page:counted-last"
+TEXT_FIRST_LABEL = "text:counted-first"
+TEXT_LAST_LABEL = "text:counted-last"
+LATEX_COMMENT = re.compile(r"(?<!\\)%[^\n]*")
+NEWLABEL_PAGE = re.compile(r"\\newlabel\{([^{}]+)\}\{\{[^{}]*\}\{(\d+)\}")
+FLOAT_ENVIRONMENTS = ("figure", "table")
+NON_NARRATIVE_ENVIRONMENTS = (
+    "figure",
+    "table",
+    "tabular",
+    "tabularx",
+    "array",
+    "longtable",
+    "lstlisting",
+    "verbatim",
+    "thebibliography",
+    "equation",
+    "align",
+    "gather",
+    "multline",
+    "eqnarray",
+)
+LATEX_COMMAND = re.compile(r"\\[a-zA-Z]+\*?")
+INLINE_MATH = re.compile(r"\$[^$]*\$")
+HANZI = re.compile(r"[\u4e00-\u9fff]")
+LATIN_WORD = re.compile(r"[A-Za-z]+")
+NUMBER_TOKEN = re.compile(r"\d+(?:[.,]\d+)?")
+
+
+def strip_latex_comments(text: str) -> str:
+    return LATEX_COMMENT.sub("", text)
+
+
+def remove_environments(text: str, names: tuple[str, ...]) -> str:
+    for name in names:
+        pattern = re.compile(
+            r"\\begin\{" + re.escape(name) + r"\}.*?\\end\{" + re.escape(name) + r"\}",
+            re.DOTALL,
+        )
+        text = pattern.sub("", text)
+    return text
+
+
+def counted_region(
+    source: str,
+    first_label: str,
+    last_label: str,
+    errors: list[str],
+) -> str | None:
+    """Return the paper source between two region labels."""
+
+    start_at = source.find(f"\\label{{{first_label}}}")
+    end_at = source.find(f"\\label{{{last_label}}}")
+    if start_at < 0 or end_at < 0:
+        missing = [
+            name
+            for name, at in ((first_label, start_at), (last_label, end_at))
+            if at < 0
+        ]
+        errors.append(
+            "MAJOR 06-paper/main.tex cannot delimit the counted region: missing "
+            f"\\label{{{missing[0]}}}; compile the profile framework without removing its labels"
+        )
+        return None
+    if end_at <= start_at:
+        errors.append(
+            f"MAJOR counted-region labels {first_label} and {last_label} are inverted in 06-paper/main.tex"
+        )
+        return None
+    return source[start_at:end_at]
+
+
+def count_narrative_length(region: str) -> int:
+    """Apply the PW-LEN-001 counting rule: each Han char, Latin word and number counts 1."""
+
+    prose = remove_environments(region, NON_NARRATIVE_ENVIRONMENTS)
+    prose = INLINE_MATH.sub("", prose)
+    prose = LATEX_COMMAND.sub(" ", prose)
+    return (
+        len(HANZI.findall(prose))
+        + len(LATIN_WORD.findall(prose))
+        + len(NUMBER_TOKEN.findall(prose))
+    )
+
+
+def count_floats(region: str) -> tuple[int, int]:
+    figures = len(re.findall(r"\\begin\{figure\}", region))
+    tables = len(re.findall(r"\\begin\{table\}", region))
+    return figures, tables
+
+
+def label_pages(root: Path, required: tuple[str, ...], errors: list[str]) -> dict[str, int]:
+    aux = root / "06-paper" / "main.aux"
+    if not aux.is_file():
+        errors.append(
+            "MAJOR cannot resolve the counted pages: 06-paper/main.aux is missing; "
+            "run the final audit after compiling the paper"
+        )
+        return {}
+    pages = {
+        name: int(page)
+        for name, page in NEWLABEL_PAGE.findall(aux.read_text(encoding="utf-8", errors="replace"))
+    }
+    for name in required:
+        if name not in pages:
+            errors.append(f"MAJOR 06-paper/main.aux does not resolve {name}")
+    return pages
+
+
+def pdf_page_count(path: Path, errors: list[str]) -> int | None:
+    try:
+        import pymupdf
+    except ImportError:
+        errors.append("MAJOR cannot read the delivery PDF: PyMuPDF is unavailable in this environment")
+        return None
+    try:
+        with pymupdf.open(path) as document:
+            return document.page_count
+    except Exception as exc:
+        errors.append(f"CRITICAL delivery PDF cannot be opened for page counting: {exc}")
+        return None
+
+
+def audit_derived_metrics(
+    root: Path,
+    contracts,
+    delivery_pdf: Path | None,
+    errors: list[str],
+) -> None:
+    """Derive length and visual counts from the paper source, aux and PDF.
+
+    These budgets are the machine's own remit, so they are never taken from the
+    reviewer's report: a self-reported count only proves a number was written.
+    """
+
+    source = root / "06-paper" / "main.tex"
+    if not source.is_file():
+        return
+    clean = strip_latex_comments(source.read_text(encoding="utf-8", errors="replace"))
+
+    page_region = counted_region(clean, PAGE_FIRST_LABEL, PAGE_LAST_LABEL, errors)
+    if page_region is None:
+        return
+
+    figures, tables = count_floats(page_region)
+    figure_minimum = contract_int(contracts, "body_figure_minimum")
+    if figures < figure_minimum:
+        errors.append(f"MAJOR counted figures {figures} is below body_figure_minimum {figure_minimum}")
+    table_minimum = contract_int(contracts, "body_table_minimum")
+    if tables < table_minimum:
+        errors.append(f"MAJOR counted tables {tables} is below body_table_minimum {table_minimum}")
+
+    word_minimum = contract_optional_int(contracts, "body_word_minimum") or 0
+    if word_minimum:
+        text_region = counted_region(clean, TEXT_FIRST_LABEL, TEXT_LAST_LABEL, errors)
+        if text_region is not None:
+            words = count_narrative_length(text_region)
+            if words < word_minimum:
+                errors.append(
+                    f"MAJOR narrative length {words} is below body_word_minimum {word_minimum}"
+                )
+
+    page_minimum = contract_optional_int(contracts, "body_page_minimum") or 0
+    page_maximum = contract_optional_int(contracts, "body_page_maximum") or 0
+    if page_minimum and page_maximum and page_minimum > page_maximum:
+        raise ContractError("body_page_minimum cannot exceed body_page_maximum")
+    pages = label_pages(root, (PAGE_FIRST_LABEL, PAGE_LAST_LABEL), errors)
+    if PAGE_FIRST_LABEL in pages and PAGE_LAST_LABEL in pages:
+        first, last = pages[PAGE_FIRST_LABEL], pages[PAGE_LAST_LABEL]
+        counted = last - first + 1
+        if page_minimum and counted < page_minimum:
+            errors.append(f"MAJOR counted pages {counted} is below body_page_minimum {page_minimum}")
+        if page_maximum and counted > page_maximum:
+            errors.append(f"MAJOR counted pages {counted} exceeds body_page_maximum {page_maximum}")
+        if delivery_pdf is not None and delivery_pdf.is_file():
+            total = pdf_page_count(delivery_pdf, errors)
+            if total is not None and last > total:
+                errors.append(
+                    f"CRITICAL counted region ends on page {last} but the delivery PDF has {total} pages"
+                )
+
+
 def audit_final_report(
     root: Path,
     delivery_pdf: Path | None,
@@ -196,18 +420,24 @@ def audit_final_report(
         errors.append(f"MAJOR missing final audit report: {FINAL_AUDIT_PATH}")
         return
     text = path.read_text(encoding="utf-8", errors="replace")
-    fields = dict(AUDIT_FIELD.findall(text))
+    fields = parse_unique_fields(AUDIT_FIELD, text, errors, "final audit summary")
 
     required = set(contracts.final_audit_fields)
     missing = sorted(required - fields.keys())
     if missing:
         errors.append(f"MAJOR {path}: missing final-audit fields {missing}")
         return
+    if "## 机器可读摘要" not in text:
+        errors.append(f"MAJOR {path.relative_to(root)} must contain the 机器可读摘要 section")
+    sequence = [key for key, _ in AUDIT_FIELD.findall(text)]
+    if sequence != list(contracts.final_audit_fields):
+        errors.append("MAJOR final audit fields must appear in the contract order")
     if RECORD_PLACEHOLDER.search(text):
         errors.append(f"MAJOR unresolved placeholder in {path.relative_to(root)}")
 
-    audit_count_fields(fields, contracts, errors)
+    audit_derived_metrics(root, contracts, delivery_pdf, errors)
     audit_pdf_identity(root, delivery_pdf, fields, errors)
+    audit_review_ledger(root, contracts, fields, errors)
 
     for key in contracts.final_audit_pass_fields:
         if fields[key] != contracts.final_audit_pass_status:
@@ -306,10 +536,17 @@ def main() -> int:
         parser.error(f"project does not exist: {root}")
 
     try:
-        contracts = load_workspace_contracts(WORKSPACE_ROOT, contest=project_contest(root))
+        contest, declared_profile = project_identity(root)
+        resolved_profile = resolve_profile(WORKSPACE_ROOT, contest) or ""
+        contracts = load_workspace_contracts(WORKSPACE_ROOT, contest=contest)
     except ContractError as exc:
         print(f"CRITICAL authority contract: {exc}")
         return 2
+    if declared_profile and declared_profile != resolved_profile:
+        errors.append(
+            f"CRITICAL project.yaml declares profile {declared_profile!r} but contest "
+            f"{contest!r} resolves to {resolved_profile!r}"
+        )
 
     if release_phase:
         for relative in required_release_files(contracts):
@@ -341,6 +578,11 @@ def main() -> int:
             status = row.get("status", "").strip().lower()
             if status not in contracts.evidence_statuses:
                 errors.append(f"MAJOR evidence row {line}: invalid status {status!r}")
+            elif phase == "final" and status != contracts.evidence_verified_status:
+                errors.append(
+                    f"CRITICAL evidence row {line}: status {status!r} must be "
+                    f"{contracts.evidence_verified_status!r} at the final phase"
+                )
             if not source or Path(source).is_absolute() or ".." in Path(source).parts:
                 errors.append(f"CRITICAL evidence row {line}: unsafe or missing source_path")
             elif points_into_sandbox(source):
@@ -364,16 +606,12 @@ def main() -> int:
             if locator and not (locator.startswith("http://") or locator.startswith("https://") or locator.startswith("10.")):
                 errors.append(f"MAJOR literature row {line}: invalid DOI/URL")
 
-    manifest = contract_optional_str(contracts, "delivery_manifest_path")
-    record_paths = ["01-problem/problem-checklist.md"]
-    if manifest:
-        record_paths.append(manifest)
     if release_phase:
-        for relative in record_paths:
+        for relative in required_release_files(contracts):
             path = root / relative
-            if path.is_file() and RECORD_PLACEHOLDER.search(
-                path.read_text(encoding="utf-8", errors="replace")
-            ):
+            if relative.endswith(".tex") or not path.is_file():
+                continue
+            if RECORD_PLACEHOLDER.search(path.read_text(encoding="utf-8", errors="replace")):
                 errors.append(f"MAJOR unresolved placeholder in {relative}")
         paper_source = root / "06-paper/main.tex"
         if paper_source.is_file() and SOURCE_PLACEHOLDER.search(
@@ -383,6 +621,7 @@ def main() -> int:
 
     pdfs = list((root / "08-delivery").glob("*.pdf")) if (root / "08-delivery").is_dir() else []
     if release_phase:
+        audit_declared_delivery_directories(root, contracts, errors)
         if len(pdfs) != 1:
             errors.append(f"MAJOR delivery must contain exactly one PDF, found {len(pdfs)}")
         else:
@@ -417,6 +656,7 @@ def main() -> int:
             )
 
     print(f"Audit root: {root}")
+    print(f"Audit profile: {resolved_profile}")
     print(f"Audit phase: {phase}")
     for item in warnings:
         print(f"WARN - {item}")

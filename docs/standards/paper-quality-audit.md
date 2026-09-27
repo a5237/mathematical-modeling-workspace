@@ -8,26 +8,24 @@
 release_core_files = [
   "00-admin/runbook.md",
   "00-admin/pre-writing-learning.md",
+  "00-admin/figure-selection-record.md",
   "01-problem/problem-checklist.md",
+  "02-data/data-audit.md",
   "03-models/model-selection.md",
   "05-evidence/evidence-index.csv",
   "05-evidence/literature-ledger.csv",
   "05-evidence/ai-tool-log.md",
   "06-paper/main.tex",
+  "07-review/review-log.md",
 ]
 review_log_columns = ["id", "severity", "location", "criterion", "finding", "evidence", "required_fix", "verification", "status"]
+review_open_statuses = ["OPEN", "BLOCKED"]
 final_audit_fields = [
   "audit_date",
   "audit_phase",
   "review_scope",
   "final_pdf",
   "final_pdf_sha256",
-  "narrative_word_count",
-  "counted_page_range",
-  "counted_page_count",
-  "counted_figure_count",
-  "counted_table_count",
-  "length_and_visual_count_gate",
   "official_rules_gate",
   "evidence_gate",
   "clean_reproduction_gate",
@@ -37,7 +35,7 @@ final_audit_fields = [
   "open_major",
   "release_decision",
 ]
-final_audit_pass_fields = ["length_and_visual_count_gate", "official_rules_gate", "evidence_gate", "anonymity_gate", "delivery_gate"]
+final_audit_pass_fields = ["official_rules_gate", "evidence_gate", "anonymity_gate", "delivery_gate"]
 final_audit_zero_fields = ["open_critical", "open_major"]
 release_candidate_phase_value = "RELEASE_CANDIDATE"
 final_phase_value = "FINAL"
@@ -143,7 +141,7 @@ Reviewer 仍可把明确影响正确性、理解或提交安全的缺陷记为 `
 1. 叙述性正文必须通过 `PW-LEN-001` 的字数下限；
 2. 被统计区段内的编号图不少于 `body_figure_minimum`、编号表不少于 `body_table_minimum`；
 3. 页数服从 profile 声明的上下限。**统计区段由该 profile 定义**——不同赛事计的是不同区段（例如只计正文段与计整份提交 PDF 是两套口径），换赛事时必须连口径一起换，不得只改数字；
-4. 统计必须以拟交付 PDF 为准，并保存被统计区段的起止页、页数、字数、图号和表号清单；
+4. 统计区段在论文源中以两组标签定界，位置由该 profile 的论文结构与口径段决定，是 profile 口径的机器可读表达：`page:counted-first`／`page:counted-last` 定页数与编号图表的区段，`text:counted-first`／`text:counted-last` 定叙述字数区段（仅当该 profile 声明 `body_word_minimum` 时要求，两者口径可以不同）。审计脚本从编译产物 `06-paper/main.aux` 读 `page:*` 两标签页号得出起止页与页数，并用拟交付 PDF 的总页数核对；编号图与编号表在 `page:*` 区段内从论文源计数，剥去注释、公式与浮动体内容后的叙述字数按 `PW-LEN-001` 的计数法在 `text:*` 区段内统计。缺标签、缺 `main.aux` 或区段无法定界一律记 MAJOR，不得改回人自报；因此**最终审校必须在论文编译之后、中间文件清理之前执行**；
 5. 不得用无关文字、重复或装饰图表、拆分图号、缩小字号、压缩行距或缩窄页边距凑门禁；只有承担 `PW-FIG-001` 论证职责的编号图和编号表才计入。
 
 任一项失败至少记为 `major` 并阻断发布。
@@ -189,7 +187,9 @@ Final Audit 只做一次拟交付 PDF 的逐页渲染，并在同一遍中执行
 
 ## 8. 最终报告（`PQA-REPORT-001`）
 
-`07-review/final-audit.md` 以 `## 机器可读摘要` 起头，每行一个 `- <字段>: <值>`，字段名与顺序即本文件契约的 `final_audit_fields`。取值制度：`audit_date` 为 `YYYY-MM-DD`，`audit_phase` 为 `RELEASE_CANDIDATE` 或 `FINAL`，`review_scope` 为 `FULL` 或 `IMPACTED`，`release_decision` 为 `READY` 或 `BLOCKED`；五个 gate 字段取 `PASS` 或 `BLOCKED`，`clean_reproduction_gate` 另可取 `REUSED_UNCHANGED`；`narrative_word_count`、`counted_page_count`、`counted_figure_count`、`counted_table_count` 与两个 open 计数为整数，`counted_page_range` 为 `<起始页>-<结束页>`；`final_pdf` 指向 `08-delivery/` 的拟交付 PDF，`final_pdf_sha256` 为其 64 位十六进制哈希。
+`07-review/final-audit.md` 以 `## 机器可读摘要` 起头，每行一个 `- <字段>: <值>`，字段名与顺序即本文件契约的 `final_audit_fields`。取值制度：`audit_date` 为 `YYYY-MM-DD`，`audit_phase` 为 `RELEASE_CANDIDATE` 或 `FINAL`，`review_scope` 为 `FULL` 或 `IMPACTED`，`release_decision` 为 `READY` 或 `BLOCKED`；四个 gate 字段取 `PASS` 或 `BLOCKED`，`clean_reproduction_gate` 另可取 `REUSED_UNCHANGED`；`open_critical` 与 `open_major` 为整数；`final_pdf` 指向 `08-delivery/` 的拟交付 PDF，`final_pdf_sha256` 为其 64 位十六进制哈希。篇幅与图表数量不进入报告字段——起止页、页数、字数、图号和表号由审计脚本按第 4 节从论文源、`main.aux` 与拟交付 PDF 导出，人不得自报。
+
+摘要内同一字段只允许出现一次；重复出现即缺陷，不得让后写的合规取值覆盖前一的违规取值。`open_critical` 与 `open_major` 必须等于 `07-review/review-log.md` 中状态属于契约 `review_open_statuses` 的对应严重级行数。
 
 正文继续记录：规则核对日期与来源、clean reproduction 命令和证据、关键结果比对、PDF/图片检查范围、发现项、修改影响分析、竞争力评分和免责声明。机器不解析竞争力评分或主观视觉维度。
 
