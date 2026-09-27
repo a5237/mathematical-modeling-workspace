@@ -9,6 +9,7 @@
 - `extract-spreadsheet.py`：把 `.xlsx/.xls` 快速清洗为逐工作表 CSV，也保留只读盘点和超大表流式提取模式。
 - `extract-pdf-pages.py`：从 PDF 快速提取整页或归一化坐标裁剪区域为 PDF、PNG，或导出所选页的 UTF-8 文本层；默认写入 `var/temp/pdf-extracts/`。
 - `trace-artifact-impact.py`：根据项目产物地图和显式变化路径计算跨子问题的传递影响；只报告 `STALE` 与 `RECHECK`，不修改项目状态。
+- `render-figure-style-library.py`：渲染风格库样例图；重新生成的命令与输出位置见 `resources/figure-style-library/README.md`。
 
 ## 项目产物影响分析
 

@@ -46,6 +46,7 @@
 
 ## 指南
 
+- [新增赛事 profile](guides/adding-a-contest-profile.md)
 - [建模环境指南](guides/modeling-environment.md)
 - [论文生产流程](guides/paper-production.md)
 - [写作前强制学习流程](guides/pre-writing-learning.md)

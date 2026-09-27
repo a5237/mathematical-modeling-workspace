@@ -9,7 +9,7 @@
 - `references/overview.png`：合成参考图快速浏览页；
 - `references/nature/*.png`：从 Nature / Nature Communications 官方媒体服务器取得的开放许可成图，仅作审美锚点；
 - `references/nature/ATTRIBUTION.md`：Nature 参考图的逐图作者、题名、DOI、许可、原图链接、取得日期和完整性哈希；
-- `../../tools/render-figure-style-library.py`：工作区生成样例的权威脚本。
+- `tools/render-figure-style-library.py`：工作区生成样例的权威脚本，用法登记在 `tools/README.md`。
 
 根目录下的工作区生成样例使用固定随机种子和合成数据，只演示字体、轴线、配色、线点层级、留白、图例、注释、科学三维和多面板一致性。`references/nature/` 中的成图来自明确采用 CC BY 4.0 的开放获取论文，并保持官方媒体服务器提供的原始 PNG 不变。无论哪类参考，样例中的数值、变量、模型、注释、结构和结论都不得进入任何竞赛项目。
 

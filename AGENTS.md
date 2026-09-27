@@ -21,6 +21,7 @@
 | 论文图片、科研可视化、流程图或最终 PDF 图片检查 | `docs/standards/paper-figures.md` | 生成或改善视觉质量时追加 `docs/guides/scientific-figure-aesthetics.md` 和 `resources/figure-style-library/README.md`，只选少量相关参考 |
 | 完整数学建模生产流程 | `.codex/skills/modeling-paper-production/SKILL.md` | 按 Skill 所列阶段加载对应权威文件 |
 | 最终审校、评分或发布门禁 | `.codex/skills/modeling-paper-audit/SKILL.md`、`docs/standards/paper-quality-audit.md` | 按实际审校范围加载数据、模型、证据、写作、排版、图片和现行规则 |
+| 接入新赛事、新建 profile 或补论文框架标签 | `docs/guides/adding-a-contest-profile.md` | 归属争议再读 `docs/standards/workspace-governance.md` 的 `WG-LAYER-001` |
 | 某条规则该留 Core 还是归赛事 profile | `docs/standards/workspace-governance.md` 的 `WG-LAYER-001` | 只裁决归属，不因此加载其它规范 |
 | 当届规则、提交格式、AI 披露或匿名性 | 当前项目赛事 profile 的 `config/contests/<profile>/rules.md`（官方条款段） | 正式提交前重新核对官网；该段以外的约定不驱动重核 |
 

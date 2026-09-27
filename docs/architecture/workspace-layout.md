@@ -26,7 +26,7 @@ recommended_project_directories = [
 
 ## 设计原则（`LAYOUT-001`）
 
-1. **根目录主要做入口。** 常用入口仍为 `README.md`、`AGENTS.md`、`ENV_SETUP.md`、`setup.bat`、版本控制文件、隐藏环境目录和一级职责层；合理新增顶层入口或职责目录不会仅因不在旧清单中而失败。环境规则仍以 `docs/guides/modeling-environment.md` 为准。
+1. **根目录主要做入口。** 常用入口仍为 `README.md`、`AGENTS.md`、`ENV_SETUP.md`、`setup.bat`、版本控制文件、隐藏环境目录和一级职责层；合理新增顶层入口或职责目录不会仅因不在旧清单中而失败。环境规则以 `docs/standards/data-reproducibility.md` 为准，安装与自检的操作步骤见 `docs/guides/modeling-environment.md`。
 2. **稳定资产与工作数据分离。** 规范、配置、工具和模板不与赛题项目混放。
 3. **项目彼此隔离。** 每个正式需求只有一个项目目录，项目代码不得读取其他项目的隐式产物。
 4. **原始数据受保护。** 具体不可变性和派生数据规则执行 `docs/standards/data-reproducibility.md` 的 `WG-DATA-001`。
@@ -37,17 +37,24 @@ recommended_project_directories = [
 ```text
 .
 ├── config/
+│   ├── contests/
+│   │   └── <profile>/
+│   │       ├── profile.yaml
+│   │       └── rules.md
 │   └── python/
 │       └── requirements-modeling.txt
 ├── docs/
 │   ├── architecture/
 │   ├── guides/
 │   └── standards/
+├── plan/
 ├── resources/
 │   ├── algorithm-library/
 │   ├── figure-style-library/
 │   ├── paper-library/
 │   └── templates/
+│       └── contests/
+│           └── <profile>/paper-framework.tex
 ├── tools/
 ├── workspace/
 │   ├── inbox/
@@ -56,6 +63,7 @@ recommended_project_directories = [
 ├── var/
 │   └── temp/
 ├── .codex/
+├── .gitignore
 ├── .venv-modeling/
 ├── AGENTS.md
 ├── ENV_SETUP.md
