@@ -80,7 +80,6 @@ class ContractTests(unittest.TestCase):
                 "body_word_minimum",
                 "body_page_minimum",
                 "body_page_maximum",
-                "learning_paper_minimum",
                 "paper_maximum_bytes",
             )
             for key in contest_keys:

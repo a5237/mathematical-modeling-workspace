@@ -26,9 +26,9 @@
 - 图片文件名主干：`q01-figure-001-<topic>`；扩展名与正式导出组合执行 `docs/standards/paper-figures.md` 的 `PW-FIG-001`。
 - 指标：`q01-metrics.json`。
 - 日志：`q01-run-<yyyymmddThhmmss>.log`。
-- 赛事论文框架：`resources/templates/contests/<profile>/paper-framework.tex`，profile 由项目 `00-admin/project.yaml` 解析；复制到正式项目后固定命名为 `06-paper/main.tex`。
+- 赛事论文框架模板：`resources/templates/contests/<profile>/paper-framework.tex`，profile 由项目 `00-admin/project.yaml` 解析；模板复制进项目后的唯一论文源要求执行 `docs/standards/paper-writing.md`。
 - 论文源文件：`main.tex`；文献库：`references.bib`。
-- 审稿台账：`review-log.md`；RC 与 Final 的唯一最终审查报告：`final-audit.md`。旧项目的 `release-audit.md`、`paper-quality-audit.md` 只作历史记录，不再产生新的平行结论。
+- 审稿台账：`review-log.md`；RC 与 Final 的唯一最终审查报告：`final-audit.md`，旧项目的 `release-audit.md`、`paper-quality-audit.md` 均对应这一现行文件名。
 
 ## 稳定标识
 

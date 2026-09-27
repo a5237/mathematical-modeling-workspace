@@ -37,6 +37,7 @@ CORE_DOCUMENTS = (
     "docs/architecture/workspace-layout.md",
     "docs/standards/workspace-governance.md",
     "docs/standards/evidence-contract.md",
+    "docs/standards/data-reproducibility.md",
     "docs/standards/modeling-execution.md",
     "docs/standards/paper-figures.md",
     "docs/standards/paper-quality-audit.md",
@@ -88,10 +89,12 @@ CORE_REQUIRED_KEYS = {
     "release_ready_status",
     "body_figure_minimum",
     "body_table_minimum",
+    "learning_paper_minimum",
     "learning_complete_status",
     "learning_initial_status",
     "learning_sample_columns",
     "learning_algorithm_columns",
+    "data_audit_tables",
 }
 
 STRING_ARRAY_KEYS = (
@@ -241,6 +244,16 @@ def _validate(values: dict[str, object]) -> None:
             continue
         if not isinstance(values[key], str) or not values[key]:
             raise ContractError(f"machine-contract key {key} must be a non-empty string")
+
+    if "data_audit_tables" in values:
+        tables = values["data_audit_tables"]
+        if not isinstance(tables, dict) or not tables:
+            raise ContractError("machine-contract key data_audit_tables must be a non-empty table")
+        for title, columns in tables.items():
+            if not title or not isinstance(columns, list) or not columns or not all(
+                isinstance(column, str) and column for column in columns
+            ):
+                raise ContractError(f"invalid data audit table columns: {title}")
 
     if "artifact_impact_defaults" in values:
         impact_defaults = values["artifact_impact_defaults"]

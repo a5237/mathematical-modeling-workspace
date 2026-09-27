@@ -38,7 +38,7 @@
 \setlength{\emergencystretch}{2em}
 \setlist{nosep,leftmargin=2em}
 
-% 页眉执行 OFFICIAL-MCM-ICM-001：每页含队控制号与页码，官方示例 Team # 0000000, Page 6 of 25。
+% 页眉版式只执行 OFFICIAL-MCM-ICM-001。
 \newcommand{\TeamControlNumber}{\TemplateField{Team Control Number}}
 \newcommand{\ProblemChoice}{\TemplateField{A/B/C/D/E/F}}
 \pagestyle{fancy}
@@ -132,7 +132,7 @@
 \setcounter{page}{1}
 
 % ============================================================
-% Summary Sheet 执行 OFFICIAL-MCM-ICM-001：必须是提交 PDF 第 1 页并计入 25 页。
+% Summary Sheet 的位置与页数口径只执行 OFFICIAL-MCM-ICM-001。
 % 摘要内容执行 paper-writing.md，版式执行 paper-formatting.md。
 % ============================================================
 \thispagestyle{fancy}
@@ -163,7 +163,7 @@ Overall, \textbf{[summarize the value, boundary, and generalizable conclusions o
 \clearpage
 
 % ============================================================
-% 目录执行 OFFICIAL-MCM-ICM-001：鼓励使用且计入 25 页。
+% 目录只执行 OFFICIAL-MCM-ICM-001。
 % ============================================================
 \renewcommand\contentsname{Contents}
 \tableofcontents
@@ -218,7 +218,7 @@ The overall modeling workflow is shown in \cref{fig:overall-flow}, which illustr
 \end{enumerate}
 
 \section{Notation}
-% 符号表优先采用“Symbol—Meaning—Unit”三列；局部临时变量可在公式附近定义。
+% 符号表版式只执行 PW-FMT-001。
 \begin{table}[htbp]
   \centering
   \caption{Main notation and definitions}
@@ -272,7 +272,7 @@ In \cref{eq:q1-model}, $f(\symbf{x})$ denotes \TemplateField{the practical meani
 \subsubsection{Results and Analysis}
 First answer this question directly: \textbf{[final numbers with units, plan, or conclusion for Question 1]}.
 
-% 保留的三线结果表写法：表题在上，单位放入表头，小数位和有效数字统一。
+% 三线结果表版式只执行 PW-FMT-001。
 Main results are given in \cref{tab:q1-results}.
 \begin{table}[htbp]
   \centering
@@ -301,7 +301,7 @@ Main results are given in \cref{tab:q1-results}.
 
 \noindent\textbf{Complete model:}\TemplateField{Consolidate the objective or core equations, constraints or initial/boundary conditions, domain, parameter conditions, inputs, and outputs.}
 
-% 保留的并排子图写法：各子图与总图均有唯一标签。
+% 并排子图版式只执行 PW-FIG-001。
 The model structure or scenario comparison is shown in \cref{fig:q2-comparison}.
 \begin{figure}[htbp]
   \centering
@@ -415,7 +415,7 @@ First answer this question directly: \textbf{[final plan or conclusion for Quest
 \end{thebibliography}
 
 % ============================================================
-% 附录计入 25 页执行 OFFICIAL-MCM-ICM-001；代码在 PDF 内排印（不单独提交程序文件）。
+% 附录范围、代码排印方式与页数口径只执行 OFFICIAL-MCM-ICM-001。
 % ============================================================
 \appendix
 \section{Code}
@@ -431,7 +431,7 @@ This program solves \TemplateField{the sub-problem and its correspondence to the
 % 若存在问题三、问题四或绘图、数据处理程序，应继续逐一完整列出。
 
 % ============================================================
-% Report on Use of AI 执行 OFFICIAL-MCM-ICM-001：置于 25 页方案之后，不计页数且无页数限制。
+% Report on Use of AI 只执行 OFFICIAL-MCM-ICM-001。
 % ============================================================
 \clearpage
 \section{Report on Use of AI}

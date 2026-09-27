@@ -39,21 +39,8 @@ Identify the notebook kind: `experiment` or `tutorial`.
 Capture the objective, audience, and what "done" looks like.
 
 2. Scaffold from the template.
-Use the helper script to avoid hand-authoring raw notebook JSON.
-
-```bash
-uv run --python 3.12 python "$JUPYTER_NOTEBOOK_CLI" \
-  --kind experiment \
-  --title "Compare prompt variants" \
-  --out output/jupyter-notebook/compare-prompt-variants.ipynb
-```
-
-```bash
-uv run --python 3.12 python "$JUPYTER_NOTEBOOK_CLI" \
-  --kind tutorial \
-  --title "Intro to embeddings" \
-  --out output/jupyter-notebook/intro-to-embeddings.ipynb
-```
+Use the helper script to avoid hand-authoring raw notebook JSON: invoke `$JUPYTER_NOTEBOOK_CLI` with `--kind` (`experiment` or `tutorial`), `--title`, and `--out`.
+Run it with the workspace's locked Python environment; the interpreter, installation and dependency authority is `docs/guides/modeling-environment.md` with `config/python/requirements-modeling.txt`. This skill defines no separate install or run commands.
 
 3. Fill the notebook with small, runnable steps.
 Keep each code cell focused on one step.
@@ -70,9 +57,7 @@ Prefer targeted edits over full rewrites.
 If you must edit raw JSON, review `references/notebook-structure.md` first.
 
 6. Validate the result.
-Run the notebook top-to-bottom when the environment allows.
-If execution is not possible, say so explicitly and call out how to validate locally.
-Use the final pass checklist in `references/quality-checklist.md`.
+Use the final pass checklist in `references/quality-checklist.md`; it is the only place that lists the validation steps.
 
 ## Templates and helper script
 - Templates live in `assets/experiment-template.ipynb` and `assets/tutorial-template.ipynb`.
@@ -83,18 +68,11 @@ Script path:
 
 ## Temp and output conventions
 - Use `var/temp/jupyter-notebook/` for intermediate files; delete when done.
-- Write final modeling notebooks under the relevant project's `03-models/notebooks/` directory.
-- Use stable, descriptive filenames (for example, `ablation-temperature.ipynb`).
+- Place notebooks only at locations allowed by `LAYOUT-001` (`docs/architecture/workspace-layout.md`): notebooks feeding the formal chain go in the corresponding `03-models/<question>/` directory, exploratory notebooks go in `sandbox/` under `WG-TEST-001`. This skill defines no project directory of its own.
+- Name notebooks per `docs/standards/naming.md`.
 
 ## Dependencies (install only when needed)
-Prefer `uv` for dependency management.
-
-Optional Python packages for local notebook execution:
-
-```bash
-uv pip install ipykernel nbclient
-```
-
+All Python dependencies are installed and locked through the workspace environment authority in `docs/guides/modeling-environment.md` and `config/python/requirements-modeling.txt`; this skill adds no installation method of its own.
 The bundled scaffold script uses only the Python standard library and does not require extra dependencies.
 
 ## Environment

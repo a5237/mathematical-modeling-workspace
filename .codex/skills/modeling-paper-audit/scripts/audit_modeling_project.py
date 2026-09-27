@@ -51,7 +51,6 @@ WORKFLOW_FIELD = re.compile(
     r"^\s*(?:[-*]\s*)?([a-z0-9_]+)\s*:\s*(.*?)\s*$", re.MULTILINE
 )
 FINAL_AUDIT_PATH = "07-review/final-audit.md"
-LEGACY_AUDIT_PATH = "07-review/paper-quality-audit.md"
 def workflow_metadata(text: str) -> dict[str, str]:
     fields: dict[str, str] = {}
     for key, raw_value in WORKFLOW_FIELD.findall(text):
@@ -104,14 +103,9 @@ def sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
-def final_audit_path(root: Path) -> tuple[Path | None, bool]:
+def final_audit_path(root: Path) -> Path | None:
     current = root / FINAL_AUDIT_PATH
-    if current.is_file():
-        return current, False
-    legacy = root / LEGACY_AUDIT_PATH
-    if legacy.is_file():
-        return legacy, True
-    return None, False
+    return current if current.is_file() else None
 
 
 def audit_count_fields(fields: dict[str, str], contracts, errors: list[str]) -> None:
@@ -196,21 +190,15 @@ def audit_final_report(
     contracts,
     phase: str,
     errors: list[str],
-    warnings: list[str],
 ) -> None:
-    path, legacy = final_audit_path(root)
+    path = final_audit_path(root)
     if path is None:
         errors.append(f"MAJOR missing final audit report: {FINAL_AUDIT_PATH}")
         return
     text = path.read_text(encoding="utf-8", errors="replace")
     fields = dict(AUDIT_FIELD.findall(text))
 
-    common_fields = {
-        "audit_date", "final_pdf", "final_pdf_sha256", "body_word_count",
-        "body_page_range", "body_page_count", "body_figure_count", "body_table_count",
-        "body_length_and_visual_count_gate", "open_critical", "open_major", "release_decision",
-    }
-    required = common_fields if legacy else set(contracts.final_audit_fields)
+    required = set(contracts.final_audit_fields)
     missing = sorted(required - fields.keys())
     if missing:
         errors.append(f"MAJOR {path}: missing final-audit fields {missing}")
@@ -220,33 +208,6 @@ def audit_final_report(
 
     audit_count_fields(fields, contracts, errors)
     audit_pdf_identity(root, delivery_pdf, fields, errors)
-
-    if legacy:
-        if fields["body_length_and_visual_count_gate"] != contracts.final_audit_pass_status:
-            errors.append(
-                "MAJOR retained body length/page/figure/table gate is not "
-                + contracts.final_audit_pass_status
-            )
-        for key in contracts.final_audit_zero_fields:
-            if fields[key] != contracts.final_audit_no_open_findings_value:
-                errors.append(
-                    f"MAJOR final audit {key}: expected "
-                    f"{contracts.final_audit_no_open_findings_value!r}, found {fields[key]!r}"
-                )
-        if fields["release_decision"] != contracts.release_ready_status:
-            errors.append(f"MAJOR final audit release_decision is {fields['release_decision']!r}")
-        for key in (
-            "paper_writing_compliance",
-            "paper_figure_compliance",
-            "full_pdf_render_review",
-            "overlap_and_clipping",
-        ):
-            if fields.get(key) != "PASS":
-                errors.append(f"MAJOR legacy final audit {key} is not PASS")
-        warnings.append(
-            f"legacy audit report accepted from {LEGACY_AUDIT_PATH}; use {FINAL_AUDIT_PATH} after the next substantive change"
-        )
-        return
 
     for key in contracts.final_audit_pass_fields:
         if fields[key] != contracts.final_audit_pass_status:
@@ -444,7 +405,6 @@ def main() -> int:
             contracts,
             phase,
             errors,
-            warnings,
         )
     else:
         missing_draft = [

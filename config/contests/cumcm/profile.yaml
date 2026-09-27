@@ -11,7 +11,6 @@ contract_keys:
   - body_page_minimum
   - body_page_maximum
   - body_word_minimum
-  - learning_paper_minimum
   - extra_delivery_directories
   - delivery_manifest_path
   - delivery_manifest_title

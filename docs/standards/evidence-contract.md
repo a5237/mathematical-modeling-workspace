@@ -29,7 +29,7 @@ evidence_statuses = ["draft", "verified", "rejected"]
 
 发布前，所有已写入论文的主张必须为 `verified`。同一具体数值只能有一个权威机器可读来源；论文表格和图应由该来源再生，禁止手工改数或把未保存的控制台输出作为唯一依据。
 
-`source_path` 和 `generator` 不得指向 `sandbox/`；该客观字段约束执行 `WG-TEST-001` 的非权威边界，审计脚本据此阻断实验产物进入正式证据链。
+`source_path` 和 `generator` 不得指向 `sandbox/`；该客观字段约束执行 `WG-TEST-001` 的非权威边界，审计脚本据此阻断实验产物进入正式证据链。`verified` 只能来自实际核验，审校阶段不得补造证据条目。
 
 ## 2. 文献台账
 
@@ -40,9 +40,3 @@ evidence_statuses = ["draft", "verified", "rejected"]
 `verified=yes` 仅表示已经打开原始来源，并核对题名、作者、年份以及来源对正文相邻主张的实际支持关系。搜索摘要、AI 生成书目、未打开的二手引用和算法资源库中的候选书目不得直接进入正式参考文献。
 
 论文文献的数量、组成和正文引用方式由 `docs/standards/paper-writing.md` 规定；本契约只负责来源真实性、登记字段和证据状态。
-
-## 3. 执行边界
-
-- 本契约规定证据文件、字段和状态；`docs/standards/workspace-governance.md` 只规定其跨阶段生命周期与生产—审校交接。
-- `.codex/skills/modeling-paper-production/SKILL.md` 负责在生产过程中登记。
-- `.codex/skills/modeling-paper-audit/SKILL.md` 负责核对现有记录，不得在审校时补造证据。

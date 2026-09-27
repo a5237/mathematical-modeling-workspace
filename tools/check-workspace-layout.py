@@ -24,12 +24,6 @@ CONFLICTING_DEPRECATED_PATHS = (
     "tmp",
 )
 
-DEPRECATED_ROOT_DOCUMENTS = (
-    "数学建模工作区_Agent强制规范.md",
-    "数学建模论文写作_Agent强制规范.md",
-    "数模环境说明.md",
-)
-
 RUNTIME_DIRECTORY_NAMES = {
     "__pycache__",
     ".ipynb_checkpoints",
@@ -117,10 +111,6 @@ def main() -> int:
     for relative in CONFLICTING_DEPRECATED_PATHS:
         if (root / relative).exists():
             failures.append(f"conflicting deprecated root path: {relative}")
-
-    for relative in DEPRECATED_ROOT_DOCUMENTS:
-        if (root / relative).exists():
-            warnings.append(f"deprecated root document should be routed under docs/: {relative}")
 
     entries = list(root.iterdir())
     for entry in entries:

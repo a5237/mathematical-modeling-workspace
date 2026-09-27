@@ -15,12 +15,6 @@ __FIGURE_REGISTRY_TABLE__
 
 __FIGURE_RISK_TABLE__
 
-## 三、整组视觉语言（按需）
-
-- style_reference_ids：
-- adopted_style_attributes：
-- explicitly_not_copied：
-
-## 四、交接状态
+## 三、交接状态
 
 - `PW-FIG-001`: `__FIGURE_INITIAL_STATUS__`

@@ -7,6 +7,7 @@ learning_complete_status = "COMPLETE"
 learning_initial_status = "INCOMPLETE"
 learning_sample_columns = ["item", "path_or_source", "problem_type", "structural_lessons", "prohibited_copying", "reviewed"]
 learning_algorithm_columns = ["question_id", "resource_path", "definition_and_assumptions", "applicability", "code_review", "status"]
+learning_paper_minimum = 2
 ```
 
 上方字段只承载稳定、客观的机器参数；学习质量仍由 Agent 和最终审校依据正文判断。
@@ -16,12 +17,11 @@ learning_algorithm_columns = ["question_id", "resource_path", "definition_and_as
 ## 1. 确认学习范围
 
 - 根据题目与各子问题的数学类型，确定需要学习的范文类别和算法类别。
-- 打开 `resources/algorithm-library/index.md`，只读取与当前模型匹配的算法说明。
-- 核对 `03-models/model-selection.md` 已记录实际选用模型、算法资源路径、适用性检查和偏离理由。
+- 核对 `03-models/model-selection.md` 已记录实际选用模型、算法资源路径、适用性检查和偏离理由；算法库检索、候选比较与库外偏离的判定执行 `docs/standards/modeling-execution.md` 的 `WG-MODEL-001`，本文件不重复其规则。
 
 ## 2. 学习同类优秀论文
 
-1. 阅读数量下限取当前项目赛事 profile 工作区设定段声明的 `learning_paper_minimum`。
+1. 阅读数量下限由本文件契约的 `learning_paper_minimum` 固定，对所有赛事一致；赛事 profile 不声明该键，也不得覆盖它。
 2. 结构、摘要组织与篇幅分配的学习只计**同赛事**样本；样本目录按当前 profile 解析（`resources/paper-library/00-format-layout/<profile>/`）。跨赛事样本只可用于数学方法与论证逻辑学习，不计入结构学习数量。
 3. 在 `resources/paper-library/` 的方法类目中检索同题型的优秀论文并实际阅读，只提取摘要组织、问题数学化、模型建立、求解说明、结果分析、验证和图表叙事的逻辑。
 4. 只学习结构、论证方式和表达策略，不复制原文、公式、数据、图表或结论。
@@ -29,9 +29,8 @@ learning_algorithm_columns = ["question_id", "resource_path", "definition_and_as
 
 ## 3. 复核算法知识
 
-- 阅读选用算法对应的资源库文档，确认定义、适用条件、关键假设、输入输出、参数、边界条件、依赖和验证方式。
-- 对准备复用的代码片段进行项目化改写与真实运行，不把资源库示例当作可直接交付代码或结果。
-- 若使用库外算法，补充其权威来源、采用理由、相对库内候选的优势和验证方法。
+- 逐问在学习记录中登记所用算法的资源路径、定义与假设、适用性结论和代码复核状态，并确认其对应 `03-models/model-selection.md` 的选用结果。
+- 算法本身的适用条件判断、库外补充和项目化改写要求执行 `docs/standards/modeling-execution.md`，本文件不重复定义。
 
 ## 4. 完成学习记录
 

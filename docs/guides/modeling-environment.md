@@ -45,7 +45,7 @@ Graphviz 的 Python 接口与系统可执行程序是两个独立依赖；即使
 项目入口推荐使用仓库相对路径，例如：
 
 ```powershell
-.\.venv-modeling\Scripts\python.exe workspace/projects/<project-id>/03-models/q00-run-all.py
+.\.venv-modeling\Scripts\python.exe workspace/projects/<project-id>/03-models/run-all.py
 ```
 
 需要人或 Agent 阅读的结果不要依赖终端显示，写入 `var/temp/` 下的 UTF-8 文件后再读取；不得从截断的终端输出推断数据。

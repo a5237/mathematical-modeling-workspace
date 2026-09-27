@@ -6,11 +6,11 @@
 
 | 主题 | 唯一权威 | 其它文件的职责 |
 |---|---|---|
-| 仓库与项目目录职责、推荐骨架及 `sandbox/` 的空间位置 | `architecture/workspace-layout.md` | 入口导航、初始化器与结构检查执行 |
+| 仓库与项目目录职责、推荐骨架、`var/temp/` 等目录位置及 `sandbox/` 的空间位置 | `architecture/workspace-layout.md` | 入口导航、初始化器与结构检查执行；临时产物的权威性边界只引用 `WG-ROUTE-001` |
 | 跨项目通用工具的使用与命令 | `tools/README.md` | 入口、Skill 与指南只引用，不复制用法 |
 | 文件名、项目 ID 与稳定标签 | `standards/naming.md` | 初始化脚本执行命名 |
-| 跨阶段优先级、Core 与 profile 分层判据、项目生命周期、产物导航与影响传播、正式/实验产物边界、AI 路由、审校交接与交付治理 | `standards/workspace-governance.md` | 架构只给位置；生产与审校 Skill 编排；工具执行 machine contract |
-| 原始数据、数据审计、环境、运行记录、日志、随机种子、稳定产物与复现 | `standards/data-reproducibility.md` | 建模流程调用，脚本执行；`WG-DATA-001` 在此定义 |
+| 跨阶段优先级、Core 与 profile 分层判据、项目生命周期与 inbox—project—archive 迁移归档、产物导航与影响传播、正式/实验产物边界、临时产物治理、AI 路由、审校交接与交付治理 | `standards/workspace-governance.md` | 架构只给位置；生产与审校 Skill 编排；工具执行 machine contract。迁移归档与临时产物分别只引用 `WG-LIFE-001`、`WG-ROUTE-001` |
+| 原始数据、数据审计、环境、运行记录、日志、随机种子、稳定产物、路径与缓存卫生和复现 | `standards/data-reproducibility.md` | 建模流程调用，脚本执行；`WG-DATA-001` 在此定义；交付件匿名性只引用 `paper-writing.md` |
 | 模型与算法选择、实现、正式计算、计算检查、性能记录与验证 | `standards/modeling-execution.md` | 算法库提供候选，生产/审校 Skill 执行；`WG-MODEL-001`、`PW-VAL-001` 在此定义 |
 | 主张证据和文献台账文件、字段、状态与核验契约 | `standards/evidence-contract.md` | 治理规范规定生命周期，脚本校验字段；`WG-EVID-001` 在此定义 |
 | 论文内容组织、结构、建模叙事、结果分析、学术表达、引用、附录内容与匿名性 | `standards/paper-writing.md` | 生产流程引用，质量审查判定 |
@@ -42,7 +42,7 @@
 ## 赛事 Profile
 
 - [CUMCM 官方规则与本赛事工作区约定](../config/contests/cumcm/rules.md)：profile 目录下的 `rules.md` 分官方条款段与工作区设定段，`profile.yaml` 声明该 profile 服务的赛事标识、契约键与论文框架。新增赛事在 `config/contests/` 下新建 profile 目录，不改动 Core。分层判据见 `standards/workspace-governance.md` 的 `WG-LAYER-001`。
-- [MCM/ICM 官方规则基线](../config/contests/mcm-icm/rules.md)：一个 profile 服务 `mcm` 与 `icm` 两个标识，对应 `resources/templates/contests/mcm-icm/paper-framework.tex`。该 profile 目前只有官方条款段，其工作区设定段（章节结构与节名、长度与图表的统计区段、学习样本路径、交付集）尚未建立；建立前该项目按 Core 默认执行，图数与表数下限已由 Core 统一规定。
+- [MCM/ICM 官方规则与本赛事工作区约定](../config/contests/mcm-icm/rules.md)：一个 profile 服务 `mcm` 与 `icm` 两个标识，对应 `resources/templates/contests/mcm-icm/paper-framework.tex`。其工作区设定段固定英文骨架与节名、阿拉伯数字编号、目录与 Keywords 约定、统计区段口径（Summary Sheet 至附录末页，AI 使用报告不计）和单 PDF 交付集；本赛事不设页数与字数下限。
 
 ## 指南
 

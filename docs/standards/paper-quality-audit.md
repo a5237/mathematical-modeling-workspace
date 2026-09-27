@@ -138,7 +138,7 @@ Reviewer 仍可把明确影响正确性、理解或提交安全的缺陷记为 `
 
 ## 4. 保留的篇幅与图表数量门禁
 
-图数与表数下限由 Core 固定为本节契约的 `body_figure_minimum` 和 `body_table_minimum`，对任何赛事与文字系统一律成立；字数下限、页数上下限及其统计口径由当前项目赛事 profile 的工作区设定段提供（`body_word_minimum`、`body_page_minimum`、`body_page_maximum`，`0` 表示该方向不限）。本节只固定这些门禁的存在与执行方式，不冒充任何组委会的统一规定：
+图数与表数下限由 Core 固定为本节契约的 `body_figure_minimum` 和 `body_table_minimum`，对任何赛事与文字系统一律成立；字数下限、页数上下限及其统计口径由当前项目赛事 profile 的工作区设定段提供（`body_word_minimum`、`body_page_minimum`、`body_page_maximum`，缺省或 `0` 表示该方向不限）。本节只固定这些门禁的存在与执行方式：
 
 1. 叙述性正文必须通过 `PW-LEN-001` 的字数下限；
 2. 被统计区段内的编号图不少于 `body_figure_minimum`、编号表不少于 `body_table_minimum`；
@@ -150,7 +150,7 @@ Reviewer 仍可把明确影响正确性、理解或提交安全的缺陷记为 `
 
 ## 5. 一次性最终 PDF 与图片检查
 
-Final Audit 只做一次拟交付 PDF 的逐页渲染，并在同一遍中执行 `PW-FMT-001`、`PW-FIG-001`、论文写作规范的匿名性要求和 `WG-RELEASE-001` 的交付路由。各控制项的具体检查内容只在对应权威文件定义；质量评分、图片过程记录和发布报告不得再维护平行逐图清单。
+Final Audit 只做一次拟交付 PDF 的逐页渲染，并在同一遍中执行 `PW-FMT-001`、`PW-FIG-001`、论文写作规范的匿名性要求和 `WG-RELEASE-001` 的交付路由。图片尺寸、字号与拥挤程度须在该 PDF 的实际显示比例（100%）下判定，不得只按源图或缩放视图判断。各控制项的具体检查内容只在对应权威文件定义；质量评分、图片过程记录和发布报告不得再维护平行逐图清单。
 
 ## 6. 获奖竞争力评分（非阻断）
 
@@ -189,7 +189,7 @@ Final Audit 只做一次拟交付 PDF 的逐页渲染，并在同一遍中执行
 
 ## 8. 最终报告（`PQA-REPORT-001`）
 
-`07-review/final-audit.md` 至少包含以下机器摘要：
+`07-review/final-audit.md` 至少包含以下机器摘要；其字段名与顺序即本文件契约的 `final_audit_fields`，两处必须同序：
 
 ```markdown
 # 最终审查报告

@@ -8,7 +8,7 @@
 
 ```text
 resources/paper-library/
-├── 00-format-layout/              # 按赛事归档的格式与排版样例；不得作为模型或结果来源
+├── 00-format-layout/              # 按赛事归档的格式与排版样例
 │   ├── README.md                  # 样例角色、使用边界与文件校验
 │   ├── cumcm/                     # 结构学习只计同赛事样本，目录键与项目 profile 一致
 │   │   ├── A165.pdf

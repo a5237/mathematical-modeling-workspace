@@ -17,7 +17,7 @@ Contest-specific rules resolve through the audited project's contest profile: re
 2. Run `scripts/audit_modeling_project.py <project> --phase draft` for the early objective inventory.
 3. Execute the RC reproduction and record its evidence under the data/reproducibility authority and the RC lifecycle defined by the audit standard.
 4. Verify `WG-MODEL-001`, `PWL-GATE-001`, `WG-EVID-001`, `PW-VAL-001` and `PW-CITE-001` from substantive evidence.
-5. Render the delivery PDF once and, in the same pass, execute `PW-FMT-001`, `PW-FIG-001`, the paper-writing anonymity control and the current contest profile's official baseline.
+5. Execute the single rendered-final-PDF review pass defined by `docs/standards/paper-quality-audit.md` §5; its check content stays in that authority and the controls it names.
 6. Classify findings and score competitiveness under the audit standard.
 7. Write the single `PQA-REPORT-001` report, run `scripts/audit_modeling_project.py <project> --phase release-candidate`, and determine release only through `PQA-RELEASE-001`.
 

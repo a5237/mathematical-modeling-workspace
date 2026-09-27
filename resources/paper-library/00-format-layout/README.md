@@ -31,8 +31,7 @@
 1. 本样例的唯一预设角色是“格式排版参考”，不得计入同类型优秀论文的内容学习数量，除非项目学习记录另行说明并完成真实阅读。
 2. 实际写作、排版与图片必须分别服从当届官方规则、`docs/standards/paper-writing.md`、`docs/standards/paper-formatting.md` 和 `docs/standards/paper-figures.md`；样例与正式规范不一致时，不得以样例覆盖正式规范。
 3. 样例使用的具体字体不自动继承。字体与版式一律执行 `docs/standards/paper-formatting.md` 的 `PW-FMT-001` 与当前项目赛事 profile，本文件不重复规定。
-4. 可提取版式规律和图表叙事策略，但不得复制样例文字、公式、数据、图表、代码、结论或未经核验的文献。
-5. 在项目 `00-admin/pre-writing-learning.md` 中使用本样例时，来源角色应登记为“格式排版参考”，不得登记为模型依据、结果证据或已核验文献。
+4. 学习数量口径、禁止复制的对象与登记方式只在 `docs/guides/pre-writing-learning.md` 的 `PWL-GATE-001` 定义，本文件不维护第二套。
 
 ## 文件校验
 

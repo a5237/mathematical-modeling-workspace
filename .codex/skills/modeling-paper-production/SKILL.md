@@ -13,15 +13,15 @@ Contest-specific rules, templates and submission requirements resolve through th
 
 ## Execute the gated workflow
 
-1. Execute intake, initialization, problem inventory and inbox handoff under `WG-ROUTE-001`; use the bundled initializer for a new project.
-2. Complete `WG-MODEL-001`, consulting `resources/algorithm-library/index.md` and only the matching algorithm resources. If a reduced comparison is useful, execute it under `WG-TEST-001`.
+1. Execute intake and initialization as defined by `docs/standards/workspace-governance.md` §3; use the bundled initializer for a new project.
+2. Complete `WG-MODEL-001`, consulting `resources/algorithm-library/index.md` and only the matching algorithm resources; experiment artifacts remain governed by `WG-TEST-001`.
 3. Implement data processing, models and formal entry points under `WG-DATA-001` and the remaining requirements of `docs/standards/data-reproducibility.md` and `docs/standards/modeling-execution.md`.
 4. Run formal computations, save their stable outputs, and maintain `00-admin/artifact-map.yaml` under `WG-ROUTE-001`.
 5. Complete `PW-VAL-001`, then register paper claims and sources under `WG-EVID-001`.
 6. Complete `PWL-GATE-001`; draft and revise the initialized `06-paper/main.tex` under the paper-writing authority, adding `PW-FMT-001` whenever formatting is in scope.
-7. Select, register, generate and review figures under `PW-FIG-001`; use the aesthetics guide only after scientific structure and encoding are fixed.
+7. Select, register, generate and review figures under `PW-FIG-001`.
 8. Maintain `WG-AI-001` and apply the current contest profile's official baseline.
-9. Form the production-to-audit handoff under `WG-RELEASE-001`. If upstream formal artifacts change, execute the `WG-ROUTE-001` impact trace before reusing downstream work; experiments remain governed by `WG-TEST-001`.
+9. Form the production-to-audit handoff under `WG-RELEASE-001`; artifact routing and impact tracing are governed by `WG-ROUTE-001` and experiments by `WG-TEST-001`.
 10. Hand the Release Candidate to the independent audit skill and clear `PQA-RELEASE-001` before release.
 
 ## Use bundled resources
@@ -42,4 +42,4 @@ Contest-specific rules, templates and submission requirements resolve through th
 
 ## Stop conditions
 
-Stop on any blocking status from the control item required by the current step. This section adds no thresholds, exceptions or substitute evidence beyond the cited authorities.
+Stop on any blocking status from the control item required by the current step.
