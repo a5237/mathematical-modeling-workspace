@@ -1,0 +1,444 @@
+% !TEX program = xelatex
+% MCM/ICM 论文正式写作框架（电子版）
+% 本文件只实现论文写作与排版权威；占位提示不定义规则。
+% 结构与内容执行 paper-writing.md，纯排版执行 PW-FMT-001，年度规则执行 OFFICIAL-MCM-ICM-001，证据执行 WG-EVID-001。
+% 页面与页眉版式参照开源 mcmthesis（LPPL 1.3c，latexstudio / Liam Huang，
+% https://github.com/latexstudio-org/mcmthesis）针对单一赛事的实现重写为可复用模板。
+
+\documentclass[12pt,letterpaper]{article}
+
+% ---------- 页面、字体与数学字体 ----------
+\usepackage[margin=1in,headheight=15pt]{geometry}
+\usepackage{fontspec}
+\usepackage{unicode-math}
+
+% 字体选择与最终 PDF 字体检查只执行 PW-FMT-001；正文字号下限执行 OFFICIAL-MCM-ICM-001。
+\IfFontExistsTF{Times New Roman}
+  {\setmainfont{Times New Roman}}
+  {\setmainfont{TeX Gyre Termes}}
+\IfFontExistsTF{Consolas}{\setmonofont{Consolas}}{\setmonofont{Latin Modern Mono}}
+\setmathfont{TeX Gyre Termes Math}
+
+% ---------- 公式、图表、列表、代码与引用 ----------
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{subcaption}
+\usepackage{booktabs,longtable,tabularx,array,multirow}
+\usepackage{enumitem}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\usepackage{hyperref}
+\usepackage[nameinlink,noabbrev]{cleveref}
+
+% ---------- 全文样式 ----------
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.5\baselineskip}
+\setlength{\emergencystretch}{2em}
+\setlist{nosep,leftmargin=2em}
+
+% 页眉执行 OFFICIAL-MCM-ICM-001：每页含队控制号与页码，官方示例 Team # 0000000, Page 6 of 25。
+\newcommand{\TeamControlNumber}{\TemplateField{Team Control Number}}
+\newcommand{\ProblemChoice}{\TemplateField{A/B/C/D/E/F}}
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{\small\sffamily Team \#\ \TeamControlNumber}
+\rhead{\small\sffamily Page \thepage\ of \pageref{LastPage}}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+
+\captionsetup{
+  font=small,
+  labelfont=bf,
+  labelsep=quad,
+  justification=centering,
+  singlelinecheck=true
+}
+\captionsetup[subfigure]{font=small,labelfont=normalfont,labelsep=space}
+
+\hypersetup{
+  hidelinks,
+  unicode=true,
+  pdfauthor={},
+  pdfsubject={},
+  pdfkeywords={},
+  pdftitle={MCM/ICM Solution Report}
+}
+
+\crefname{figure}{Figure}{Figures}
+\crefname{table}{Table}{Tables}
+\crefname{equation}{Equation}{Equations}
+\crefname{section}{Section}{Sections}
+
+\lstset{
+  basicstyle=\ttfamily\small,
+  numbers=left,
+  numberstyle=\ttfamily\scriptsize,
+  numbersep=8pt,
+  frame=single,
+  breaklines=true,
+  breakatwhitespace=false,
+  columns=fullflexible,
+  keepspaces=true,
+  showstringspaces=false,
+  tabsize=4,
+  captionpos=t
+}
+
+% ---------- 模板变量与安全占位 ----------
+\newcommand{\TemplateField}[1]{\textbf{[#1]}}
+\newcommand{\PaperTitle}{\TemplateField{Write an accurate and specific paper title}}
+
+% AI 声明状态与内容只执行 WG-AI-001 和 OFFICIAL-MCM-ICM-001。
+\newif\ifusedai
+\usedaitrue
+\newcommand{\AIModelName}{\TemplateField{AI tool name and version}}
+\newcommand{\AIUsageSummary}{\TemplateField{e.g., language polishing, code debugging, and formatting checks}}
+
+% 图片缺失时保持可编译并显示 PW-FIG-001 阻断占位框。
+\newcommand{\safeincludegraphics}[2][]{%
+  \IfFileExists{#2}{%
+    \includegraphics[#1]{#2}%
+  }{%
+    \fbox{%
+      \begin{minipage}[c][4cm][c]{0.82\linewidth}
+        \centering
+        \textbf{Figure placeholder}\par
+        \texttt{\detokenize{#2}}\par
+        Figure missing: PW-FIG-001 is BLOCKED
+      \end{minipage}%
+    }%
+  }%
+}
+
+% 从源文件直接排印完整代码；缺失时显示阻断提示。
+\newcommand{\includecode}[3]{%
+  \IfFileExists{#3}{%
+    \lstinputlisting[language=#1,caption={#2}]{#3}%
+  }{%
+    \par\noindent
+    \fbox{%
+      \begin{minipage}{0.94\linewidth}
+        \textbf{Code missing:}\texttt{\detokenize{#3}} (enforce OFFICIAL-MCM-ICM-001).
+      \end{minipage}%
+    }%
+    \par
+  }%
+}
+
+\begin{document}
+\pagenumbering{arabic}
+\setcounter{page}{1}
+
+% ============================================================
+% Summary Sheet 执行 OFFICIAL-MCM-ICM-001：必须是提交 PDF 第 1 页并计入 25 页。
+% 摘要内容执行 paper-writing.md，版式执行 paper-formatting.md。
+% ============================================================
+\thispagestyle{fancy}
+\begin{center}
+  {\bfseries\large\PaperTitle\par}
+  \vspace{0.6em}
+  {\bfseries Team \#\ \TeamControlNumber\par}
+  {\bfseries Problem \ProblemChoice\par}
+  \vspace{1.0em}
+  {\bfseries\large Summary Sheet\par}
+\end{center}
+
+\TemplateField{Open with two or three sentences summarizing the problem, the overall modeling approach, and the main results.}
+
+For Question 1, \TemplateField{state the task and its key transformation}, we build \textbf{[core model 1]} and obtain \textbf{[key numbers with units or a clear conclusion]} via \TemplateField{solution method}; the result is validated by \TemplateField{validation method and metrics}.
+
+For Question 2, \TemplateField{state what is inherited from Question 1 and the new task}, we construct \textbf{[core model 2]} and obtain \textbf{[final plan, ranking, prediction, or classification]}; \TemplateField{report error, robustness, or constraint checks}.
+
+For Question 3, \TemplateField{state how the scenario changes and how the model adapts}, we apply \textbf{[core model 3]} and obtain \textbf{[key result]}; \TemplateField{report comparison or sensitivity analysis}.
+
+For Question 4, \TemplateField{state the open-ended task or decision goal}, we propose \textbf{[final strategy or plan]}; \TemplateField{state the applicable range, reliability, and main limitations}.
+
+Overall, \textbf{[summarize the value, boundary, and generalizable conclusions of the model system]}.
+
+\vspace{0.6em}
+\textbf{Keywords:} \TemplateField{research object}; \TemplateField{core model}; \TemplateField{algorithm}; \TemplateField{validation method}; \TemplateField{decision theme}
+
+\clearpage
+
+% ============================================================
+% 目录执行 OFFICIAL-MCM-ICM-001：鼓励使用且计入 25 页。
+% ============================================================
+\renewcommand\contentsname{Contents}
+\tableofcontents
+\clearpage
+
+% ============================================================
+% 正文内容执行 paper-writing.md；匿名性执行论文写作规范与 OFFICIAL-MCM-ICM-001。
+% ============================================================
+\section{Introduction}
+
+\subsection{Background}
+\TemplateField{Restate the background, the object under study, and the practical significance in your own words; do not copy the problem statement or preview models and results.}
+\TemplateField{Cite background facts and adjacent literature per PW-CITE-001 and WG-EVID-001, e.g., \cite{topic-ref-1,topic-ref-2}.}
+
+\subsection{Restatement of the Problem}
+\begin{enumerate}[label=\arabic*.]
+  \item \TemplateField{Question 1: state inputs, conditions, constraints, and outputs.}
+  \item \TemplateField{Question 2: state the dependency on Question 1 and new outputs.}
+  \item \TemplateField{Question 3: state the scenario change, constraints, and outputs.}
+  \item \TemplateField{Question 4: state the final decision, deliverable, or evaluation requirement.}
+\end{enumerate}
+
+\section{Analysis of the Problem}
+
+\subsection{Analysis of Question 1}
+\TemplateField{Explain the mathematical essence, data or mechanism features, core difficulty, candidate models, the reason for the chosen one, expected outputs, and the validation path.}
+
+\subsection{Analysis of Question 2}
+\TemplateField{Explain the inherited variables, parameters, and results, plus the new objective, constraints, and validation path.}
+
+\subsection{Analysis of Question 3}
+\TemplateField{Explain how the scenario change maps to parameters, metrics, or model structure.}
+
+\subsection{Analysis of Question 4}
+\TemplateField{Explain how the open-ended task is turned into a computable, evaluable mathematical problem.}
+
+% 单图叙事、位置与图题只执行 PW-FIG-001。
+The overall modeling workflow is shown in \cref{fig:overall-flow}, which illustrates how data and models are inherited across the sub-questions.
+\begin{figure}[htbp]
+  \centering
+  \safeincludegraphics[width=0.72\textwidth]{figures/overall-flow.pdf}
+  \caption{Overall modeling workflow}
+  \label{fig:overall-flow}
+\end{figure}
+\TemplateField{Explain how this figure supports the argument of this section per PW-FIG-001.}
+
+\section{Assumptions and Justifications}
+\begin{enumerate}[label=\textbf{Assumption \arabic*.}]
+  \item \TemplateField{State the assumption and its physical, business, or statistical justification.}
+  \item \TemplateField{State each remaining necessary assumption and its justification.}
+  \item \TemplateField{Flag assumptions with significant impact on the results; revisit them in the sensitivity analysis.}
+\end{enumerate}
+
+\section{Notation}
+% 符号表优先采用“Symbol—Meaning—Unit”三列；局部临时变量可在公式附近定义。
+\begin{table}[htbp]
+  \centering
+  \caption{Main notation and definitions}
+  \label{tab:symbols}
+  \begin{tabularx}{0.88\textwidth}{>{\centering\arraybackslash}p{0.18\textwidth}X>{\centering\arraybackslash}p{0.18\textwidth}}
+    \toprule[1.2pt]
+    Symbol & Meaning & Unit \\
+    \midrule[0.8pt]
+    $x_i$ & \TemplateField{meaning of the $i$-th core variable} & \TemplateField{unit or ---} \\
+    $p_j$ & \TemplateField{meaning of the $j$-th model parameter} & \TemplateField{unit or ---} \\
+    $f(\symbf{x})$ & \TemplateField{objective function or evaluation metric} & \TemplateField{unit or ---} \\
+    \bottomrule[1.2pt]
+  \end{tabularx}
+\end{table}
+
+\section{Model Formulation and Solution}
+
+\subsection{Model and Solution for Question 1}
+
+\subsubsection{Preliminaries}
+\TemplateField{Give the coordinates, geometric criteria, data transformations, metric definitions, preparatory formulas, inheritance relations, or inputs/outputs required before formal modeling.}
+
+\subsubsection{Model Formulation}
+\noindent\TemplateField{Local model name --- its role in Question 1}
+\TemplateField{Define variables and metrics, derive local relations, then consolidate the complete model. State the basis before each equation and explain it after.}
+
+\noindent\textbf{Complete model:}\TemplateField{Consolidate the full model of this question.}
+
+% 下列优化模型仅示范 PW-FMT-001 的排版结构；适用性与内容执行论文写作规范。
+If this question is an optimization problem, the complete model can be written as
+\begin{equation}
+\label{eq:q1-model}
+\begin{aligned}
+\min_{\symbf{x}}\quad & f(\symbf{x}) \\
+\mathrm{s.t.}\quad &
+\left\{
+\begin{aligned}
+g_1(\symbf{x}) &\leq 0,\\
+g_2(\symbf{x}) &\leq 0,\\
+h_1(\symbf{x}) &= 0,\\
+\symbf{x} &\in \Omega .
+\end{aligned}
+\right.
+\end{aligned}
+\end{equation}
+In \cref{eq:q1-model}, $f(\symbf{x})$ denotes \TemplateField{the practical meaning of the objective}, $g_1$, $g_2$, and $h_1$ describe \TemplateField{resource, business, or mechanism constraints}, and $\Omega$ is \TemplateField{the domain of the variables}.\TemplateField{Replace the example with the actual model.}
+
+\subsubsection{Solution}
+\TemplateField{State the solution method, key steps, parameters or tolerances that affect the result, and constraint/boundary checks; complex algorithms may use numbered steps.}
+
+\subsubsection{Results and Analysis}
+First answer this question directly: \textbf{[final numbers with units, plan, or conclusion for Question 1]}.
+
+% 保留的三线结果表写法：表题在上，单位放入表头，小数位和有效数字统一。
+Main results are given in \cref{tab:q1-results}.
+\begin{table}[htbp]
+  \centering
+  \caption{Main results for Question 1}
+  \label{tab:q1-results}
+  \begin{tabular}{cccc}
+    \toprule[1.2pt]
+    Object & Core metric (unit) & Error or status (unit) & Conclusion \\
+    \midrule[0.8pt]
+    \TemplateField{object 1} & \TemplateField{value} & \TemplateField{value or status} & \TemplateField{conclusion} \\
+    \TemplateField{object 2} & \TemplateField{value} & \TemplateField{value or status} & \TemplateField{conclusion} \\
+    \bottomrule[1.2pt]
+  \end{tabular}
+\end{table}
+\TemplateField{Interpret the main findings, practical meaning, criteria, and uncertainties; do not read the table row by row.}
+\TemplateField{Present the validation evidence and judgment for this question per PW-VAL-001.}
+
+\subsection{Model and Solution for Question 2}
+
+\subsubsection{Preliminaries}
+\TemplateField{State what is inherited from Question 1 and the new coordinates, transformations, metrics, constraints, parameters, and outputs.}
+
+\subsubsection{Model Formulation}
+\noindent\TemplateField{Local model name --- its role in Question 2}
+\TemplateField{Complete problem transformation, variables and metrics, local relations, and the consolidated complete model; cite a verified method source for this problem \cite{topic-ref-3}.}
+
+\noindent\textbf{Complete model:}\TemplateField{Consolidate the objective or core equations, constraints or initial/boundary conditions, domain, parameter conditions, inputs, and outputs.}
+
+% 保留的并排子图写法：各子图与总图均有唯一标签。
+The model structure or scenario comparison is shown in \cref{fig:q2-comparison}.
+\begin{figure}[htbp]
+  \centering
+  \begin{subfigure}[t]{0.31\textwidth}
+    \centering
+    \safeincludegraphics[width=0.95\linewidth]{figures/q2-case-a.pdf}
+    \caption{Scenario 1}
+    \label{fig:q2-case-a}
+  \end{subfigure}\hfill
+  \begin{subfigure}[t]{0.31\textwidth}
+    \centering
+    \safeincludegraphics[width=0.95\linewidth]{figures/q2-case-b.pdf}
+    \caption{Scenario 2}
+    \label{fig:q2-case-b}
+  \end{subfigure}\hfill
+  \begin{subfigure}[t]{0.31\textwidth}
+    \centering
+    \safeincludegraphics[width=0.95\linewidth]{figures/q2-case-c.pdf}
+    \caption{Scenario 3}
+    \label{fig:q2-case-c}
+  \end{subfigure}
+  \caption{Comparison of results across scenarios for Question 2}
+  \label{fig:q2-comparison}
+\end{figure}
+\TemplateField{Explain the differences among the subfigures and how they support the conclusion of Question 2.}
+
+\subsubsection{Solution}
+\TemplateField{State the actual algorithm, parameter choices, data splits or solver settings, and constraint, leakage, convergence, or boundary checks.}
+
+\subsubsection{Results and Analysis}
+First answer this question directly: \textbf{[final result for Question 2]}.\TemplateField{Present the validation per PW-VAL-001.}
+
+\subsection{Model and Solution for Question 3}
+
+\subsubsection{Preliminaries}
+\TemplateField{State the variable, parameter, boundary, or data-scope changes implied by the new scenario, and the preparatory relations inherited from earlier questions.}
+
+\subsubsection{Model Formulation}
+\noindent\TemplateField{Local model name --- its role in Question 3}
+\TemplateField{Define new variables and parameters, derive and consolidate the complete model; cite a verified domain-specific source \cite{topic-ref-4}.}
+
+\noindent\textbf{Complete model:}\TemplateField{Consolidate the objective or core equations, constraints or initial/boundary conditions, domain, parameter conditions, inputs, and outputs.}
+
+\subsubsection{Solution}
+\TemplateField{State the solution workflow, key parameters, and feasibility checks.}
+
+\subsubsection{Results and Analysis}
+First answer this question directly: \textbf{[final result for Question 3]}.\TemplateField{Report sensitivity, robustness, error, or other equivalent evidence.}
+
+\subsection{Model and Solution for Question 4}
+
+\subsubsection{Preliminaries}
+\TemplateField{Give the evaluation criteria, candidate plan representation, inputs/outputs, scenario boundaries, or inheritance from earlier questions required before formal modeling.}
+
+\subsubsection{Model Formulation}
+\noindent\TemplateField{Local model name --- its role in Question 4}
+\TemplateField{Provide variables, metrics, local relations, and the consolidated complete model; state how the outputs map to the problem requirements.}
+
+\noindent\textbf{Complete model:}\TemplateField{Consolidate the objective or core equations, constraints or initial/boundary conditions, domain, parameter conditions, inputs, and outputs.}
+
+\subsubsection{Solution}
+\TemplateField{State the actual solution or plan-generation process.}
+
+\subsubsection{Results and Analysis}
+First answer this question directly: \textbf{[final plan or conclusion for Question 4]}.\TemplateField{State the validation, applicable conditions, and main limitations.}
+
+\section{Model Evaluation and Generalization}
+
+\subsection{Sensitivity Analysis}
+\TemplateField{Vary the assumptions and parameters flagged earlier; quantify how key results respond and draw conclusions.}
+
+\subsection{Strengths}
+\TemplateField{Each strength must map to a concrete model structure, run result, or validation evidence; do not write generic praise.}
+
+\subsection{Weaknesses}
+\TemplateField{Honestly state the limits of assumptions, data, parameters, numerical methods, and applicability boundaries.}
+
+\subsection{Model Improvement and Generalization}
+\TemplateField{State what the model generalizes to, which variables and constraints must change, what data is needed, and how the generalized model would be validated.}
+
+\section{Conclusion}
+\TemplateField{Report the results of every question explicitly and concisely, and close with the value and boundary of the model system.}
+
+% ============================================================
+% 参考文献与 AI 工具条目执行 OFFICIAL-MCM-ICM-001、PW-CITE-001 与 WG-EVID-001。
+% ============================================================
+\renewcommand{\refname}{References}
+\begin{thebibliography}{99}
+  \bibitem{modelbook}
+  Giordano F R, Fox W P, Horton S B.
+  \newblock A First Course in Mathematical Modeling[M].
+  \newblock 5th ed. Boston: Cengage Learning, 2013.
+
+  \bibitem{topic-ref-1}
+  \TemplateField{Author. Title directly related to the problem background[Type]. Publisher or journal, year.}
+
+  \bibitem{topic-ref-2}
+  \TemplateField{Author or organization. Verified data, standard, or authoritative resource[Type]. Year. URL/DOI and access date.}
+
+  \bibitem{topic-ref-3}
+  \TemplateField{Author. Title directly related to the core model or algorithm[Type]. Journal or publisher, year. DOI.}
+
+  \bibitem{topic-ref-4}
+  \TemplateField{Author. Title directly related to parameters, validation, or the application scenario[Type]. Journal or publisher, year. DOI.}
+
+  \ifusedai
+  \bibitem{ai-tool}
+  \AIModelName.
+  \newblock AI tool used for \AIUsageSummary; details in the Report on Use of AI.
+  \fi
+\end{thebibliography}
+
+% ============================================================
+% 附录计入 25 页执行 OFFICIAL-MCM-ICM-001；代码在 PDF 内排印（不单独提交程序文件）。
+% ============================================================
+\appendix
+\section{Code}
+% 路径按“模板已复制到项目 06-paper/”设置，必要时按项目实际结构调整。
+\subsection{Code for Question 1}
+This program solves \TemplateField{the sub-problem and its correspondence to the equations, tables, and figures in the body}.
+\includecode{Python}{Complete source code for Question 1}{../03-models/q1.py}
+
+\subsection{Code for Question 2}
+This program solves \TemplateField{the sub-problem and its correspondence to the equations, tables, and figures in the body}.
+\includecode{Python}{Complete source code for Question 2}{../03-models/q2.py}
+
+% 若存在问题三、问题四或绘图、数据处理程序，应继续逐一完整列出。
+
+% ============================================================
+% Report on Use of AI 执行 OFFICIAL-MCM-ICM-001：置于 25 页方案之后，不计页数且无页数限制。
+% ============================================================
+\clearpage
+\section{Report on Use of AI}
+\ifusedai
+\TemplateField{State which AI tool and version was used, for what purpose and at which stage, the main prompting approach and usage process, what was adopted, what was manually revised, and how outputs were verified.}
+\else
+This team did not use any AI tools while working on this problem.
+\fi
+
+\end{document}
