@@ -58,8 +58,7 @@ workspace/projects/cumcm-2026-a/
 │   ├── figures/
 │   └── tables/
 ├── 07-review/              # 独立审校记录和最终审查报告
-├── 08-delivery/            # 最终提交文件；这里只保留真正要交付的成品
-│   └── support-materials/
+├── 08-delivery/            # 最终提交文件；只保留真正要交付的成品，赛事附加子目录与清单见当前 profile 交付集
 └── sandbox/                # 可选实验沙盒，与 00—08 并列，不是第 09 步
 ```
 

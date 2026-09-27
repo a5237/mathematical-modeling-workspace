@@ -9,7 +9,6 @@
 ```toml machine-contract
 figure_registry_columns = ["figure_label", "question_or_purpose", "authoritative_source", "generator", "selected_structure_or_chart", "result_artifact", "paper_copy", "final_pdf_page", "final_pdf_check"]
 figure_risk_columns = ["figure_label", "risk_trigger", "scientific_necessity", "alternatives_considered", "parameters_and_scope", "disclosure_location", "validation", "decision"]
-figure_final_pdf_statuses = ["PASS", "BLOCKED"]
 figure_initial_status = "PENDING"
 ```
 
@@ -160,7 +159,7 @@ Agent 自主选图时，不得仅为图形“干净”、风格统一或符合�
 
 图片遵循“前文引入目的—呈现图片—后文解释发现与作用”，靠近首次引用处且先引用后出现；同一结果图不在多章重复。结果部分先给答案或核心判断，再按“核心结果图—必要精确值表—验证或诊断图”展开，图后解释方向、数量级、原因或决策含义，不得只写“由图可知结果良好”。
 
-1. 图题置于图下，统一为“图 x  标题”，图号连续且正文引用一致。
+1. 图题置于图下，编号与该语言的题注词由论文框架统一（中文如“图 x  标题”），图号连续且正文引用一致。
 2. 图题应能独立说明对象、指标、条件、情景、样本或数据口径；多面板图还需说明各面板差异。
 3. 正式论文中的普通单图默认不在图内用 `ax.set_title()` 或等效方式重复完整图题；图内主要保留坐标轴、单位、图例、色标、阈值、基准线和必要注释，完整标题交由图下图题管理。多面板图可保留“(a)”“(b)”及简短面板说明。
 4. 图题与图片不得跨页拆散；字体、字号及图内中西文字体执行 `docs/standards/paper-formatting.md` 的 `PW-FMT-001`，不保留绘图软件默认字体。
@@ -185,7 +184,7 @@ Agent 自主选图时，不得仅为图形“干净”、风格统一或符合�
 3. 位图在最终插入尺寸下原则上不低于 **300 dpi**，必要时使用 600 dpi；改写 DPI 标签或转格式不能增加真实清晰度。
 4. PDF 须检查字体嵌入和裁切边界；PNG 须为 PDF 的渲染，并承担彩色与灰度自检预览。两个版本的内容、坐标、标签和数据必须一致。
 5. 图片必须由最终数据、程序或已核对的模型定义生成，不得使用软件界面截图或手工修改数据、坐标和标签。
-6. 正式产物、论文副本和预览按 `docs/architecture/workspace-layout.md` 与 `docs/standards/data-reproducibility.md` 路由；`06-paper/figures/` 只保存实际引用副本，临时预览不得作为唯一证据或交付物；交付件匿名性执行 `docs/standards/paper-writing.md` 的“匿名性”要求。
+6. 正式产物、论文副本和预览按 `docs/architecture/workspace-layout.md` 与 `docs/standards/data-reproducibility.md` 路由；`06-paper/figures/` 只保存实际引用副本，临时预览不得作为唯一证据或交付物；交付件匿名性执行 `docs/standards/paper-writing.md` 的“匿名性与官方标识”要求。
 
 ## 9. 视觉检查
 

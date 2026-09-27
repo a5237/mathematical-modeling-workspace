@@ -3,7 +3,6 @@
 > control_id: `PWL-GATE-001`
 
 ```toml machine-contract
-learning_paper_minimum = 2
 learning_complete_status = "COMPLETE"
 learning_initial_status = "INCOMPLETE"
 learning_sample_columns = ["item", "path_or_source", "problem_type", "structural_lessons", "prohibited_copying", "reviewed"]
@@ -22,10 +21,11 @@ learning_algorithm_columns = ["question_id", "resource_path", "definition_and_as
 
 ## 2. 学习同类优秀论文
 
-1. 在 `resources/paper-library/` 中检索并实际阅读至少 2 篇同类型优秀论文。
-2. 分别提取摘要组织、问题数学化、模型建立、求解说明、结果分析、验证和图表叙事的逻辑。
-3. 只学习结构、论证方式和表达策略，不复制原文、公式、数据、图表或结论。
-4. 范文仅用于学习时记录在学习表；若要在正式论文中引用，仍须单独登记到 `05-evidence/literature-ledger.csv` 并核验其对具体主张的支持。
+1. 阅读数量下限取当前项目赛事 profile 工作区设定段声明的 `learning_paper_minimum`。
+2. 结构、摘要组织与篇幅分配的学习只计**同赛事**样本；样本目录按当前 profile 解析（`resources/paper-library/00-format-layout/<profile>/`）。跨赛事样本只可用于数学方法与论证逻辑学习，不计入结构学习数量。
+3. 在 `resources/paper-library/` 的方法类目中检索同题型的优秀论文并实际阅读，只提取摘要组织、问题数学化、模型建立、求解说明、结果分析、验证和图表叙事的逻辑。
+4. 只学习结构、论证方式和表达策略，不复制原文、公式、数据、图表或结论。
+5. 范文仅用于学习时记录在学习表；若要在正式论文中引用，仍须单独登记到 `05-evidence/literature-ledger.csv` 并核验其对具体主张的支持。
 
 ## 3. 复核算法知识
 

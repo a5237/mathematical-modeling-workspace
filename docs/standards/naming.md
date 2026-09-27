@@ -4,7 +4,7 @@
 
 ## 项目标识
 
-- 项目目录：`<contest>-<year>-<problem>`，全部小写，例如 `cumcm-2026-a`；`contest` 必须是 `config/contests/<profile>/profile.yaml` 中 `contests` 列表声明的赛事标识。
+- 项目目录：`<contest>-<year>-<problem>`，全部小写。`contest` 必须是 `config/contests/<profile>/profile.yaml` 中 `contests` 列表声明的赛事标识，`year` 为四位年份，`problem` 为该赛事的题目标识（例如单个小写字母）。
 - 项目赛事身份：`00-admin/project.yaml` 写入 `contest` 与 `profile`；`profile` 是 `config/contests/` 下的目录键，一个 profile 可服务多个赛事（如 `mcm` 与 `icm` 共用 `mcm-icm`）。
 - 子问题编号：`q01`、`q02`，不要使用“问题1”“第一问”等不稳定路径名。
 - 文件名仅使用小写 ASCII 字母、数字和连字符；扩展名保持小写。

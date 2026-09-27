@@ -35,7 +35,7 @@ AUDIT_SCRIPT = (
 LAYOUT_SCRIPT = WORKSPACE_ROOT / "tools" / "check-workspace-layout.py"
 sys.path.insert(0, str(WORKSPACE_ROOT / "tools"))
 
-from control_contracts import load_workspace_contracts
+from control_contracts import contract_optional_list, load_workspace_contracts
 
 
 def run(*args: str, cwd: Path = WORKSPACE_ROOT) -> subprocess.CompletedProcess[str]:
@@ -128,6 +128,16 @@ class V2InfrastructureSmokeTest(unittest.TestCase):
 
             for relative in contracts.recommended_project_directories:
                 self.assertTrue((project / relative).is_dir(), relative)
+
+            contest_contracts = load_workspace_contracts(WORKSPACE_ROOT, contest="cumcm")
+            for relative in contract_optional_list(
+                contest_contracts, "extra_delivery_directories"
+            ):
+                self.assertTrue((project / relative).is_dir(), relative)
+            self.assertTrue(
+                (project / contest_contracts.delivery_manifest_path).is_file(),
+                "the profile's delivery manifest is created by the initializer",
+            )
 
             map_path = project / "00-admin" / "artifact-map.yaml"
             artifact_map = yaml.safe_load(map_path.read_text(encoding="utf-8"))

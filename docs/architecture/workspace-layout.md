@@ -17,12 +17,12 @@ recommended_project_directories = [
   "06-paper/figures",
   "06-paper/tables",
   "07-review",
-  "08-delivery/support-materials",
+  "08-delivery",
   "sandbox",
 ]
 ```
 
-上方数组是初始化器使用的推荐项目骨架；它不把推荐树升级为审计 schema。目录职责仍由本文件正文解释，跨阶段状态与产物权威性由 `WG-ROUTE-001` 和 `WG-TEST-001` 管理。
+上方数组是初始化器使用的推荐项目骨架；它不把推荐树升级为审计 schema。交付阶段的赛事专属子目录由当前项目赛事 profile 的 `extra_delivery_directories` 声明，初始化器在创建本骨架后追加。目录职责仍由本文件正文解释，跨阶段状态与产物权威性由 `WG-ROUTE-001` 和 `WG-TEST-001` 管理。
 
 ## 设计原则（`LAYOUT-001`）
 
@@ -103,8 +103,7 @@ recommended_project_directories = [
 │   ├── figures/
 │   └── tables/
 ├── 07-review/              # 审稿记录与 RC/Final 唯一最终审查报告
-├── 08-delivery/            # 仅保留可提交成品
-│   └── support-materials/  # 当届要求的可运行代码与支撑材料
+├── 08-delivery/            # 仅保留可提交成品；本赛事附加子目录与交付清单见当前 profile 的交付集
 └── sandbox/                # 可由任一阶段调用的轻量实验沙盒，不属于线性阶段
 ```
 

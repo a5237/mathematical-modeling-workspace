@@ -20,7 +20,13 @@ import yaml
 WORKSPACE_ROOT = Path(__file__).resolve().parents[4]
 sys.path.insert(0, str(WORKSPACE_ROOT / "tools"))
 
-from control_contracts import ContractError, load_workspace_contracts
+from control_contracts import (
+    ContractError,
+    contract_int,
+    contract_optional_int,
+    contract_optional_str,
+    load_workspace_contracts,
+)
 
 
 def project_contest(root: Path) -> str:
@@ -35,7 +41,11 @@ def project_contest(root: Path) -> str:
     return contest
 
 
-PLACEHOLDER = re.compile(r"TODO|TBD|FIXME|待填写|待补|占位|XX+", re.IGNORECASE)
+# Workspace records are authored in the workspace's own record language, so the
+# unfilled markers are matched by word. The paper source is language-independent:
+# an unfilled slot is the template macro itself, never a Chinese word.
+RECORD_PLACEHOLDER = re.compile(r"TODO|TBD|FIXME|待填写|待补|占位|XX+", re.IGNORECASE)
+SOURCE_PLACEHOLDER = re.compile(r"\\TemplateField\{|TODO|TBD|FIXME")
 AUDIT_FIELD = re.compile(r"^\s*-\s*([a-z0-9_]+):\s*`([^`]*)`\s*$", re.MULTILINE)
 WORKFLOW_FIELD = re.compile(
     r"^\s*(?:[-*]\s*)?([a-z0-9_]+)\s*:\s*(.*?)\s*$", re.MULTILINE
@@ -50,6 +60,16 @@ def workflow_metadata(text: str) -> dict[str, str]:
             value = value[1:-1].strip()
         fields[key] = value
     return fields
+
+
+def required_release_files(contracts) -> list[str]:
+    """Core release artifacts plus the ones this contest's profile declares."""
+
+    files = list(contracts.release_core_files)
+    manifest = contract_optional_str(contracts, "delivery_manifest_path")
+    if manifest:
+        files.append(manifest)
+    return files
 
 
 def audit_workflow_gate(
@@ -72,7 +92,7 @@ def audit_workflow_gate(
     fields = workflow_metadata(text)
     if fields.get(status_key) != expected_status:
         errors.append(f"MAJOR workflow gate {relative}: {status_key} must be {expected_status}")
-    if PLACEHOLDER.search(text):
+    if RECORD_PLACEHOLDER.search(text):
         errors.append(f"MAJOR unresolved placeholder in {relative}")
 
 
@@ -95,11 +115,21 @@ def final_audit_path(root: Path) -> tuple[Path | None, bool]:
 
 
 def audit_count_fields(fields: dict[str, str], contracts, errors: list[str]) -> None:
+    """Compare the report's counted quantities against the contract budgets.
+
+    A budget of ``0`` means the contract sets no limit in that direction; the
+    counted region itself is defined by the profile, not by this script.
+    """
+
+    page_minimum = contract_optional_int(contracts, "body_page_minimum") or 0
+    page_maximum = contract_optional_int(contracts, "body_page_maximum") or 0
+    if page_minimum and page_maximum and page_minimum > page_maximum:
+        raise ContractError("body_page_minimum cannot exceed body_page_maximum")
     integer_limits = {
-        "body_word_count": (contracts.body_word_minimum, None),
-        "body_page_count": (contracts.body_page_minimum, contracts.body_page_maximum),
-        "body_figure_count": (contracts.body_figure_minimum, None),
-        "body_table_count": (contracts.body_table_minimum, None),
+        "narrative_word_count": (contract_optional_int(contracts, "body_word_minimum") or 0, 0),
+        "counted_page_count": (page_minimum, page_maximum),
+        "counted_figure_count": (contract_int(contracts, "body_figure_minimum"), 0),
+        "counted_table_count": (contract_int(contracts, "body_table_minimum"), 0),
     }
     parsed_counts: dict[str, int] = {}
     for key, (minimum, maximum) in integer_limits.items():
@@ -109,19 +139,25 @@ def audit_count_fields(fields: dict[str, str], contracts, errors: list[str]) -> 
             errors.append(f"MAJOR final audit field {key} must be an integer")
             continue
         parsed_counts[key] = value
-        if value < minimum or (maximum is not None and value > maximum):
-            expected_range = f">= {minimum}" if maximum is None else f"{minimum}..{maximum}"
-            errors.append(f"MAJOR final audit field {key}: expected {expected_range}, found {value}")
+        if minimum and value < minimum:
+            if maximum:
+                errors.append(
+                    f"MAJOR final audit field {key}: expected {minimum}..{maximum}, found {value}"
+                )
+            else:
+                errors.append(f"MAJOR final audit field {key}: expected >= {minimum}, found {value}")
+        elif maximum and value > maximum:
+            errors.append(f"MAJOR final audit field {key}: expected <= {maximum}, found {value}")
 
-    page_range = re.fullmatch(r"\s*(\d+)\s*[-–—]\s*(\d+)\s*", fields.get("body_page_range", ""))
+    page_range = re.fullmatch(r"\s*(\d+)\s*[-–—]\s*(\d+)\s*", fields.get("counted_page_range", ""))
     if page_range is None:
-        errors.append("MAJOR final audit field body_page_range must use <start>-<end>")
+        errors.append("MAJOR final audit field counted_page_range must use <start>-<end>")
     else:
         start_page, end_page = map(int, page_range.groups())
         if end_page < start_page:
-            errors.append("MAJOR final audit body_page_range ends before it starts")
-        elif "body_page_count" in parsed_counts and end_page - start_page + 1 != parsed_counts["body_page_count"]:
-            errors.append("MAJOR final audit body_page_range does not match body_page_count")
+            errors.append("MAJOR final audit counted_page_range ends before it starts")
+        elif "counted_page_count" in parsed_counts and end_page - start_page + 1 != parsed_counts["counted_page_count"]:
+            errors.append("MAJOR final audit counted_page_range does not match counted_page_count")
 
 
 def audit_pdf_identity(
@@ -179,7 +215,7 @@ def audit_final_report(
     if missing:
         errors.append(f"MAJOR {path}: missing final-audit fields {missing}")
         return
-    if PLACEHOLDER.search(text):
+    if RECORD_PLACEHOLDER.search(text):
         errors.append(f"MAJOR unresolved placeholder in {path.relative_to(root)}")
 
     audit_count_fields(fields, contracts, errors)
@@ -315,9 +351,9 @@ def main() -> int:
         return 2
 
     if release_phase:
-        for relative in contracts.release_core_files:
+        for relative in required_release_files(contracts):
             if not (root / relative).is_file():
-                errors.append(f"MAJOR missing core release artifact: {relative}")
+                errors.append(f"MAJOR missing release artifact: {relative}")
         audit_workflow_gate(
             root,
             "03-models/model-selection.md",
@@ -367,17 +403,41 @@ def main() -> int:
             if locator and not (locator.startswith("http://") or locator.startswith("https://") or locator.startswith("10.")):
                 errors.append(f"MAJOR literature row {line}: invalid DOI/URL")
 
-    for relative in ("01-problem/problem-checklist.md", "06-paper/main.tex", "08-delivery/file-list.md"):
-        path = root / relative
-        if path.is_file() and release_phase and PLACEHOLDER.search(path.read_text(encoding="utf-8", errors="replace")):
-            errors.append(f"MAJOR unresolved placeholder in {relative}")
+    manifest = contract_optional_str(contracts, "delivery_manifest_path")
+    record_paths = ["01-problem/problem-checklist.md"]
+    if manifest:
+        record_paths.append(manifest)
+    if release_phase:
+        for relative in record_paths:
+            path = root / relative
+            if path.is_file() and RECORD_PLACEHOLDER.search(
+                path.read_text(encoding="utf-8", errors="replace")
+            ):
+                errors.append(f"MAJOR unresolved placeholder in {relative}")
+        paper_source = root / "06-paper/main.tex"
+        if paper_source.is_file() and SOURCE_PLACEHOLDER.search(
+            paper_source.read_text(encoding="utf-8", errors="replace")
+        ):
+            errors.append("MAJOR unfilled template slot remains in 06-paper/main.tex")
 
     pdfs = list((root / "08-delivery").glob("*.pdf")) if (root / "08-delivery").is_dir() else []
     if release_phase:
         if len(pdfs) != 1:
             errors.append(f"MAJOR delivery must contain exactly one PDF, found {len(pdfs)}")
-        elif pdfs[0].stat().st_size > contracts.paper_maximum_bytes:
-            errors.append("CRITICAL delivery PDF exceeds the contest profile paper size limit")
+        else:
+            paper_limit = contract_int(contracts, "paper_maximum_bytes")
+            if pdfs[0].stat().st_size > paper_limit:
+                errors.append("CRITICAL delivery PDF exceeds the contest profile paper size limit")
+            archive_limit = contract_optional_int(contracts, "archive_maximum_bytes")
+            if archive_limit:
+                for archive in sorted((root / "08-delivery").rglob("*")):
+                    if not archive.is_file() or archive.suffix.lower() not in {".zip", ".rar"}:
+                        continue
+                    if archive.stat().st_size > archive_limit:
+                        errors.append(
+                            "CRITICAL delivery archive exceeds the contest profile archive size limit: "
+                            + archive.relative_to(root).as_posix()
+                        )
         audit_final_report(
             root,
             pdfs[0] if len(pdfs) == 1 else None,
@@ -388,7 +448,7 @@ def main() -> int:
         )
     else:
         missing_draft = [
-            relative for relative in contracts.release_core_files if not (root / relative).is_file()
+            relative for relative in required_release_files(contracts) if not (root / relative).is_file()
         ]
         if missing_draft:
             warnings.append(

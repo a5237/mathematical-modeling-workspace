@@ -18,6 +18,10 @@ from control_contracts import (
     ContractError,
     PROFILE_CONFIG_NAME,
     available_contests,
+    contract_optional_int,
+    contract_optional_str,
+    contract_optional_list,
+    contract_str,
     load_workspace_contracts,
     resolve_profile,
 )
@@ -31,7 +35,6 @@ BASE_FILES = {
     "00-admin/project.yaml": "project_id: {project_id}\ncontest: {contest}\nprofile: {profile}\nyear: {year}\nproblem: {problem}\nstatus: intake\nrandom_seed: 20260721\n",
     "00-admin/runbook.md": "# 运行手册\n\n> 按 `docs/standards/data-reproducibility.md` 维护。\n",
     "06-paper/references.bib": "",
-    "08-delivery/file-list.md": "# 支撑材料文件清单\n\n> 按 `WG-RELEASE-001`、`PQA-RELEASE-001` 与当前项目赛事 profile 的官方规则基线维护。\n",
     "sandbox/README.md": "# 实验区\n\n> 目录位置执行 `LAYOUT-001`；产物边界执行 `WG-TEST-001`；实验比较与采纳执行 `WG-MODEL-001`。\n",
 }
 
@@ -51,14 +54,14 @@ def learning_record(contracts) -> str:
         + " | ".join(
             {
                 "item": f"sample-{index:02d}",
-                "path_or_source": "resources/paper-library/待填写",
+                "path_or_source": "resources/paper-library/00-format-layout/{profile}/待填写",
                 "prohibited_copying": "待填写",
                 "reviewed": "no",
             }.get(column, "待填写")
             for column in contracts.learning_sample_columns
         )
         + " |\n"
-        for index in range(1, contracts.learning_paper_minimum + 1)
+        for index in range(1, (contract_optional_int(contracts, "learning_paper_minimum") or 0) + 1)
     )
     return (
         "# 写作前学习记录\n\n"
@@ -122,7 +125,7 @@ def project_files(contracts) -> dict[str, str]:
         "# AI 工具实质使用台账\n\n> 按 `WG-AI-001` 维护。\n\n"
         + markdown_table(contracts.ai_log_columns)
     )
-    return {
+    files = {
         **BASE_FILES,
         "01-problem/problem-checklist.md": problem_checklist,
         "02-data/data-audit.md": data_audit,
@@ -133,6 +136,14 @@ def project_files(contracts) -> dict[str, str]:
         "05-evidence/ai-tool-log.md": ai_tool_log,
         "07-review/review-log.md": "# 审稿记录\n\n> 字段语义执行 `PQA-REPORT-001`。\n\n" + markdown_table(contracts.review_log_columns),
     }
+    manifest = contract_optional_str(contracts, "delivery_manifest_path")
+    if manifest:
+        title = contract_str(contracts, "delivery_manifest_title")
+        files[manifest] = (
+            f"# {title}\n\n> 按 `WG-RELEASE-001`、`PQA-RELEASE-001` 与当前项目赛事 profile 的"
+            "官方规则基线维护。\n"
+        )
+    return files
 
 
 def figure_selection_record(contracts, project_id: str) -> str:
@@ -229,6 +240,8 @@ def main() -> int:
 
     for item in contracts.recommended_project_directories:
         (project / item).mkdir(parents=True, exist_ok=False)
+    for item in contract_optional_list(contracts, "extra_delivery_directories"):
+        (project / item).mkdir(parents=True, exist_ok=False)
     values = {
         "project_id": project_id,
         "contest": contest,
@@ -245,6 +258,10 @@ def main() -> int:
     )
     artifact_map_text = ARTIFACT_MAP_TEMPLATE.read_text(encoding="utf-8").replace(
         "__PROJECT_ID__", project_id, 1
+    ).replace(
+        "__DELIVERY_INDEX__",
+        contract_optional_str(contracts, "delivery_manifest_path") or "08-delivery/",
+        1,
     )
     (project / "00-admin/artifact-map.yaml").write_text(
         artifact_map_text, encoding="utf-8", newline="\n"

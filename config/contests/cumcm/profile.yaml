@@ -3,9 +3,18 @@
 contests:
   - cumcm
 
-# Machine-contract keys contributed by this profile's rules.md.
+# Machine-contract keys contributed by this profile's rules.md, covering both
+# its official-limits segment and its contest-side workspace-settings segment.
 contract_keys:
   - paper_maximum_bytes
+  - archive_maximum_bytes
+  - body_page_minimum
+  - body_page_maximum
+  - body_word_minimum
+  - learning_paper_minimum
+  - extra_delivery_directories
+  - delivery_manifest_path
+  - delivery_manifest_title
 
 # Paper framework template, relative to resources/templates/.
 paper_framework: contests/cumcm/paper-framework.tex
