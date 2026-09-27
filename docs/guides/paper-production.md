@@ -4,7 +4,7 @@
 
 ## 快速使用
 
-创建新项目（`--contest` 取值只认 `config/contests/<profile>/profile.yaml` 中 `contests` 列表声明的赛事标识，当前为 `cumcm`、`mcm`、`icm`；profile 目录名如 `mcm-icm` 不是赛事标识）：
+创建新项目（`--contest` 取值见 `docs/standards/naming.md`，当前为 `cumcm`、`mcm`、`icm`）：
 
 ```powershell
 .\.venv-modeling\Scripts\python.exe .\.codex\skills\modeling-paper-production\scripts\init_modeling_project.py --root workspace\projects --contest cumcm --year 2026 --problem a

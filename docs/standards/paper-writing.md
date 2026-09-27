@@ -128,7 +128,7 @@ Core 固定的是每个一级区块**回答什么**以及先后次序。具体�
 
 ### 3.1 正文字数门禁（`PW-LEN-001`）
 
-叙述性正文不得少于当前项目赛事 profile 声明的 `body_word_minimum`；被统计区段及其计入、排除范围由该 profile 的工作区设定段与页数口径一并声明，并在论文源中以 `text:counted-first` 与 `text:counted-last` 定界（页数与编号图表的区段另由 `page:counted-*` 定界，两者口径可以不同）。计数法：中文汉字、独立英文单词和数字串均按 1 字计；注释、公式与浮动体内容不计入。字数与区段页码由审计脚本按 `docs/standards/paper-quality-audit.md` 第 4 节从论文源、`main.aux` 与拟交付 PDF 导出，不得自报。不得用无关背景、重复论述或空泛文字凑足篇幅。
+叙述性正文不得少于当前项目赛事 profile 声明的 `body_word_minimum`；被统计区段及其计入、排除范围由该 profile 的工作区设定段与页数口径一并声明。计数法：中文汉字、独立英文单词和数字串均按 1 字计。区段定界与导出方式只以 `docs/standards/paper-quality-audit.md` 第 4 节为准，不得自报。不得用无关背景、重复论述或空泛文字凑足篇幅。
 
 ### 3.2 结构适配边界
 

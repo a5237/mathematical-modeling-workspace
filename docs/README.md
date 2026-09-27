@@ -41,7 +41,7 @@
 
 ## 赛事 Profile
 
-- [CUMCM 官方规则与本赛事工作区约定](../config/contests/cumcm/rules.md)：profile 目录下的 `rules.md` 分官方条款段与工作区设定段，`profile.yaml` 声明该 profile 服务的赛事标识、契约键与论文框架。新增赛事在 `config/contests/` 下新建 profile 目录，不改动 Core。分层判据见 `standards/workspace-governance.md` 的 `WG-LAYER-001`。
+- [CUMCM 官方规则与本赛事工作区约定](../config/contests/cumcm/rules.md)：profile 目录下的 `rules.md` 分官方条款段与工作区设定段，`profile.yaml` 声明该 profile 服务的赛事标识、契约键与论文框架。接入新赛事的步骤见 [新增赛事 profile](guides/adding-a-contest-profile.md)。
 - [MCM/ICM 官方规则与本赛事工作区约定](../config/contests/mcm-icm/rules.md)：一个 profile 服务 `mcm` 与 `icm` 两个标识，对应 `resources/templates/contests/mcm-icm/paper-framework.tex`。其工作区设定段固定英文骨架与节名、阿拉伯数字编号、目录与 Keywords 约定、统计区段口径（Summary Sheet 至附录末页，AI 使用报告不计）和单 PDF 交付集；本赛事不设页数与字数下限。
 
 ## 指南

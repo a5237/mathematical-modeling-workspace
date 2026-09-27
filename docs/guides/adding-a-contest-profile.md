@@ -6,7 +6,7 @@
 
 `config/contests/<profile>/profile.yaml`：
 
-- `contests`：本 profile 服务的赛事标识列表，项目 ID 的 `<contest>` 段只认这里的值；全工作区各 profile 之间不得重复。
+- `contests`：本 profile 服务的赛事标识列表；标识唯一性与项目 ID 的对应关系以 `docs/standards/naming.md` 为准。
 - `contract_keys`：本 profile `rules.md` 内 machine-contract 块提供的键，须与块内键完全一致。
 - `paper_framework`：相对 `resources/templates/` 的论文框架路径。同一论文形状家族的多个 profile 可指向同一份框架。
 
@@ -14,13 +14,11 @@
 
 - 第一部分 官方条款：`last_verified` 与本段的 machine-contract 块（页数与体积上限等官方值），块必须位于本段之内。
 - 第二部分 本赛事下的工作区设定：章节结构与节名、标题编号样式与对齐、统计区段口径与长度线、交付集（`extra_delivery_directories`、`delivery_manifest_path`、`delivery_manifest_title`，无则不声明）、学习样本目录与题号映射、本赛事要求携带的官方标识。
-- profile 目录只允许这两个文件；多余的 markdown 会被契约加载器当成权威并直接报错。
+- profile 目录只允许这两份文件，其余文件会被契约加载器拒绝。
 
 ## 机器口径
 
-- 页数与编号图表区段：框架内在区段起止处放 `\label{page:counted-first}`、`\label{page:counted-last}`。
-- 叙述字数区段：仅当声明 `body_word_minimum` 时需要 `\label{text:counted-first}`、`\label{text:counted-last}`，其口径可以与页数区段不同。
-- 两组标签的页号从 `06-paper/main.aux` 读取，所以最终审校必须在论文编译之后、中间文件清理之前执行。
+统计区段的定界标签、导出方式与"审校须排在编译之后"的次序约束，只以 `docs/standards/paper-quality-audit.md` 第 4 节为准；框架按该节给出的标签名放置标签即可，本指南不复述。
 
 ## 语料与验证
 

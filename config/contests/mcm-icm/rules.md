@@ -48,11 +48,11 @@ body_page_maximum = 25
 
 ## 第二部分 本赛事下的工作区设定
 
-本部分是工作区为该赛事设定的门禁、结构与交付集，不冒充官方统一要求，因此**不新增机器契约键**：本赛事不设页数与字数下限（`body_page_minimum`、`body_word_minimum` 缺省即不限），编号图与编号表下限由 Core 的 `body_figure_minimum`、`body_table_minimum` 统一规定。
+本部分是工作区为该赛事设定的门禁、结构与交付集，不冒充官方统一要求，因此**不新增机器契约键**：本赛事不设页数与字数下限（`body_page_minimum`、`body_word_minimum` 缺省即不限）。
 
 ### 3. 论文结构
 
-COMAP 官方只规定第 1 页必须是 Summary Sheet、其后依次为正文、参考文献与附录，并要求"Provide a conclusion and report results explicitly."（见第一部分），未规定正文内部的节名。下列英文骨架由本工作区为该赛事固定；`## 7. Conclusion` 即承载官方的结论要求，Core `docs/standards/paper-writing.md` 第 3.2 节允许在官方要求下调整职责序列，其九项职责在本骨架中全部保留。`docs/standards/paper-writing.md` 第 3 节规定每个区块承担的职责，本节规定它在 MCM/ICM 论文中的节名、层级与编号。
+COMAP 官方只规定第 1 页必须是 Summary Sheet、其后依次为正文、参考文献与附录，并要求"Provide a conclusion and report results explicitly."（见第一部分），未规定正文内部的节名。下列英文骨架由本工作区为该赛事固定，`## 7. Conclusion` 即承载上文的官方结论要求。`docs/standards/paper-writing.md` 第 3 节规定每个区块承担的职责，本节规定它在 MCM/ICM 论文中的节名、层级与编号。
 
 ```markdown
 # Title
@@ -99,7 +99,7 @@ COMAP 官方只规定第 1 页必须是 Summary Sheet、其后依次为正文、
 ### 4. 统计区段与长度线
 
 - 页数门禁执行第一部分官方条款：整个提交 PDF 不超过 25 页，`Report on Use of AI` 不计页。本赛事不设官方页数下限，工作区亦不加设下限。
-- 叙述性字数：本赛事不设下限，`body_word_minimum` 不声明，因此论文框架不需要 `text:counted-*` 定界标签；摘要与逐问结论仍须按 Core 给出可核验数值。
+- 叙述性字数：本赛事不设下限，`body_word_minimum` 不声明；摘要与逐问结论仍须按 Core 给出可核验数值。
 - 编号图与编号表的统计区段与页数口径一致：从 Summary Sheet 起至附录末页，`Report on Use of AI` 一节不计入。
 
 ### 5. 交付集
