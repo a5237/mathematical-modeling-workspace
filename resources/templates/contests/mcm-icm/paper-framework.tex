@@ -28,7 +28,6 @@
 \usepackage{listings}
 \usepackage{xcolor}
 \usepackage{fancyhdr}
-\usepackage{lastpage}
 \usepackage{hyperref}
 \usepackage[nameinlink,noabbrev]{cleveref}
 
@@ -39,13 +38,14 @@
 \setlist{nosep,leftmargin=2em}
 
 % 页眉版式只执行 OFFICIAL-MCM-ICM-001。
+% 总页数取正文末标签 page:counted-last，不用文档物理末页。
 \newcommand{\TeamControlNumber}{\TemplateField{Team Control Number}}
 \newcommand{\ProblemChoice}{\TemplateField{A/B/C/D/E/F}}
 \pagestyle{fancy}
 \fancyhf{}
-\lhead{\small\sffamily Team \#\ \TeamControlNumber}
-\rhead{\small\sffamily Page \thepage\ of \pageref{LastPage}}
-\renewcommand{\headrulewidth}{0pt}
+\lhead{\small Team \#\ \TeamControlNumber}
+\rhead{\small Page \thepage\ of \pageref{page:counted-last}}
+\renewcommand{\headrulewidth}{0.4pt}
 \renewcommand{\footrulewidth}{0pt}
 
 \captionsetup{
@@ -250,7 +250,7 @@ The overall modeling workflow is shown in \cref{fig:overall-flow}, which illustr
 % 下列优化模型仅示范 PW-FMT-001 的排版结构；适用性与内容执行论文写作规范。
 If this question is an optimization problem, the complete model can be written as
 \begin{equation}
-\label{eq:q1-model}
+\label{eq:q01-model}
 \begin{aligned}
 \min_{\symbf{x}}\quad & f(\symbf{x}) \\
 \mathrm{s.t.}\quad &
@@ -264,7 +264,7 @@ h_1(\symbf{x}) &= 0,\\
 \right.
 \end{aligned}
 \end{equation}
-In \cref{eq:q1-model}, $f(\symbf{x})$ denotes \TemplateField{the practical meaning of the objective}, $g_1$, $g_2$, and $h_1$ describe \TemplateField{resource, business, or mechanism constraints}, and $\Omega$ is \TemplateField{the domain of the variables}.\TemplateField{Replace the example with the actual model.}
+In \cref{eq:q01-model}, $f(\symbf{x})$ denotes \TemplateField{the practical meaning of the objective}, $g_1$, $g_2$, and $h_1$ describe \TemplateField{resource, business, or mechanism constraints}, and $\Omega$ is \TemplateField{the domain of the variables}.\TemplateField{Replace the example with the actual model.}
 
 \subsubsection{Solution}
 \TemplateField{State the solution method, key steps, parameters or tolerances that affect the result, and constraint/boundary checks; complex algorithms may use numbered steps.}
@@ -273,11 +273,11 @@ In \cref{eq:q1-model}, $f(\symbf{x})$ denotes \TemplateField{the practical meani
 First answer this question directly: \textbf{[final numbers with units, plan, or conclusion for Question 1]}.
 
 % 三线结果表版式只执行 PW-FMT-001。
-Main results are given in \cref{tab:q1-results}.
+Main results are given in \cref{tab:q01-results}.
 \begin{table}[htbp]
   \centering
   \caption{Main results for Question 1}
-  \label{tab:q1-results}
+  \label{tab:q01-results}
   \begin{tabular}{cccc}
     \toprule[1.2pt]
     Object & Core metric (unit) & Error or status (unit) & Conclusion \\
@@ -302,29 +302,29 @@ Main results are given in \cref{tab:q1-results}.
 \noindent\textbf{Complete model:}\TemplateField{Consolidate the objective or core equations, constraints or initial/boundary conditions, domain, parameter conditions, inputs, and outputs.}
 
 % 并排子图版式只执行 PW-FIG-001。
-The model structure or scenario comparison is shown in \cref{fig:q2-comparison}.
+The model structure or scenario comparison is shown in \cref{fig:q02-comparison}.
 \begin{figure}[htbp]
   \centering
   \begin{subfigure}[t]{0.31\textwidth}
     \centering
-    \safeincludegraphics[width=0.95\linewidth]{figures/q2-case-a.pdf}
+    \safeincludegraphics[width=0.95\linewidth]{figures/q02-figure-001-case-a.pdf}
     \caption{Scenario 1}
-    \label{fig:q2-case-a}
+    \label{fig:q02-case-a}
   \end{subfigure}\hfill
   \begin{subfigure}[t]{0.31\textwidth}
     \centering
-    \safeincludegraphics[width=0.95\linewidth]{figures/q2-case-b.pdf}
+    \safeincludegraphics[width=0.95\linewidth]{figures/q02-figure-001-case-b.pdf}
     \caption{Scenario 2}
-    \label{fig:q2-case-b}
+    \label{fig:q02-case-b}
   \end{subfigure}\hfill
   \begin{subfigure}[t]{0.31\textwidth}
     \centering
-    \safeincludegraphics[width=0.95\linewidth]{figures/q2-case-c.pdf}
+    \safeincludegraphics[width=0.95\linewidth]{figures/q02-figure-001-case-c.pdf}
     \caption{Scenario 3}
-    \label{fig:q2-case-c}
+    \label{fig:q02-case-c}
   \end{subfigure}
   \caption{Comparison of results across scenarios for Question 2}
-  \label{fig:q2-comparison}
+  \label{fig:q02-comparison}
 \end{figure}
 \TemplateField{Explain the differences among the subfigures and how they support the conclusion of Question 2.}
 
@@ -390,11 +390,6 @@ First answer this question directly: \textbf{[final plan or conclusion for Quest
 % ============================================================
 \renewcommand{\refname}{References}
 \begin{thebibliography}{99}
-  \bibitem{modelbook}
-  Giordano F R, Fox W P, Horton S B.
-  \newblock A First Course in Mathematical Modeling[M].
-  \newblock 5th ed. Boston: Cengage Learning, 2013.
-
   \bibitem{topic-ref-1}
   \TemplateField{Author. Title directly related to the problem background[Type]. Publisher or journal, year.}
 
@@ -422,19 +417,22 @@ First answer this question directly: \textbf{[final plan or conclusion for Quest
 % 路径按“模板已复制到项目 06-paper/”设置，必要时按项目实际结构调整。
 \subsection{Code for Question 1}
 This program solves \TemplateField{the sub-problem and its correspondence to the equations, tables, and figures in the body}.
-\includecode{Python}{Complete source code for Question 1}{../03-models/q1.py}
+\includecode{Python}{Complete source code for Question 1}{../03-models/q01-solve.py}
 
 \subsection{Code for Question 2}
 This program solves \TemplateField{the sub-problem and its correspondence to the equations, tables, and figures in the body}.
-\includecode{Python}{Complete source code for Question 2}{../03-models/q2.py}
+\includecode{Python}{Complete source code for Question 2}{../03-models/q02-solve.py}
 
 % 若存在问题三、问题四或绘图、数据处理程序，应继续逐一完整列出。
 
+\label{page:counted-last}
+
 % ============================================================
 % Report on Use of AI 只执行 OFFICIAL-MCM-ICM-001。
+% 该节不计页，用无编号节排在附录编号序列之外。
 % ============================================================
 \clearpage
-\section{Report on Use of AI}
+\section*{Report on Use of AI}
 \ifusedai
 \TemplateField{State which AI tool and version was used, for what purpose and at which stage, the main prompting approach and usage process, what was adopted, what was manually revised, and how outputs were verified.}
 \else

@@ -57,7 +57,7 @@ COMAP 官方只规定第 1 页必须是 Summary Sheet、其后依次为正文、
 # Title
 ## Summary Sheet（Team 与 Problem 标识、总体概述、逐问任务—模型—关键结果—检验、总体结论、Keywords）
 
-——分页与页眉执行本文件第一部分官方条款——
+——分页与页眉执行本文件第一部分官方条款与下文页眉口径——
 
 ## Contents（目录，可选；如设置则计入 25 页）
 
@@ -90,6 +90,9 @@ COMAP 官方只规定第 1 页必须是 Summary Sheet、其后依次为正文、
 - 预备条件职责在本赛事由 `5.x.1 Preliminaries` 承担；该小节内容较少时可删除，把预备量并入 `Model Formulation` 开头，Core 只要求该职责被就近交代。
 - Summary Sheet 的 `Keywords` 设 4—6 个，用分号分隔，不使用 `mathematical modeling`、`MATLAB` 等过宽词；这是本赛事的页面组织设定，官方未逐条规定。
 - 目录可选；官方把目录页计入 25 页，设置目录前必须确认全篇页数有余量。
+- 页眉左右分置：左上为 `Team # <队控制号>`，右上为 `Page <当前页> of <总页数>`，页眉下方画 0.4 pt 横线；含 Summary Sheet 在内的每一页都带页眉。
+- `<总页数>` 取最后一个计入 25 页口径的页面，不含 “Report on Use of AI”；该节自身页码继续递增，页眉仍显示该总页数。
+- “Report on Use of AI” 排在附录之后，不参与附录编号序列。
 - `resources/templates/contests/mcm-icm/paper-framework.tex` 是本结构的 LaTeX 实现，不另行定义规则。
 
 ### 4. 统计区段与长度线
