@@ -35,7 +35,12 @@ AUDIT_SCRIPT = (
 LAYOUT_SCRIPT = WORKSPACE_ROOT / "tools" / "check-workspace-layout.py"
 sys.path.insert(0, str(WORKSPACE_ROOT / "tools"))
 
-from control_contracts import contract_optional_list, load_workspace_contracts
+from control_contracts import (
+    available_contests,
+    contract_optional_list,
+    contract_optional_str,
+    load_workspace_contracts,
+)
 
 
 def run(*args: str, cwd: Path = WORKSPACE_ROOT) -> subprocess.CompletedProcess[str]:
@@ -107,8 +112,12 @@ class V2InfrastructureSmokeTest(unittest.TestCase):
             all(len(paths) == 1 for paths in definitions.values()),
             f"duplicate control definitions: {definitions}",
         )
-        temporary_root: Path | None = None
 
+        for contest in available_contests(WORKSPACE_ROOT):
+            with self.subTest(contest=contest):
+                self._run_project_lifecycle(contracts, contest)
+
+    def _run_project_lifecycle(self, contracts, contest: str) -> None:
         with tempfile.TemporaryDirectory(dir=TEMP_ROOT, prefix="v2-smoke-") as temporary:
             temporary_root = Path(temporary)
             projects = temporary_root / "projects"
@@ -117,27 +126,29 @@ class V2InfrastructureSmokeTest(unittest.TestCase):
                 "--root",
                 str(projects),
                 "--contest",
-                "cumcm",
+                contest,
                 "--year",
                 "2099",
                 "--problem",
                 "e2e",
             )
             self.assertEqual(initialized.returncode, 0, initialized.stdout + initialized.stderr)
-            project = projects / "cumcm-2099-e2e"
+            project = projects / f"{contest}-2099-e2e"
 
             for relative in contracts.recommended_project_directories:
                 self.assertTrue((project / relative).is_dir(), relative)
 
-            contest_contracts = load_workspace_contracts(WORKSPACE_ROOT, contest="cumcm")
+            contest_contracts = load_workspace_contracts(WORKSPACE_ROOT, contest=contest)
             for relative in contract_optional_list(
                 contest_contracts, "extra_delivery_directories"
             ):
                 self.assertTrue((project / relative).is_dir(), relative)
-            self.assertTrue(
-                (project / contest_contracts.delivery_manifest_path).is_file(),
-                "the profile's delivery manifest is created by the initializer",
-            )
+            manifest = contract_optional_str(contest_contracts, "delivery_manifest_path")
+            if manifest:
+                self.assertTrue(
+                    (project / manifest).is_file(),
+                    "the profile's delivery manifest is created by the initializer",
+                )
 
             map_path = project / "00-admin" / "artifact-map.yaml"
             artifact_map = yaml.safe_load(map_path.read_text(encoding="utf-8"))
@@ -259,7 +270,6 @@ class V2InfrastructureSmokeTest(unittest.TestCase):
             self.assertEqual(layout.returncode, 0, layout.stdout + layout.stderr)
             self.assertIn("RESULT: PASS", layout.stdout)
 
-        self.assertIsNotNone(temporary_root)
         self.assertFalse(temporary_root.exists(), "temporary smoke project was not removed")
 
 
