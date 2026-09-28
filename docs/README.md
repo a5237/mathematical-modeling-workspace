@@ -14,7 +14,7 @@
 | 模型与算法选择、实现、正式计算、计算检查、性能记录与验证 | `standards/modeling-execution.md` | 算法库提供候选，生产/审校 Skill 执行；`WG-MODEL-001`、`PW-VAL-001` 在此定义 |
 | 主张证据和文献台账文件、字段、状态与核验契约 | `standards/evidence-contract.md` | 治理规范规定生命周期，脚本校验字段；`WG-EVID-001` 在此定义 |
 | 论文内容组织、结构、建模叙事、结果分析、学术表达、引用、附录内容与匿名性 | `standards/paper-writing.md` | 生产流程引用，质量审查判定 |
-| LaTeX、页面、字体、字号、段落、公式、表格、单位、有效数字与纯版式 | `standards/paper-formatting.md` | 模板实现，生产与审校流程核验；`PW-FMT-001` 在此定义 |
+| LaTeX、页面、字体、字号、段落、公式、表格、单位、有效数字与纯版式 | `standards/paper-formatting.md` + 按 profile `language` 分派的 `../config/languages/<family>/formatting.md` | 模板实现，生产与审校流程核验；`PW-FMT-001` 在此定义；文字系统专属条款只在家族文件维护 |
 | 论文图片与科研可视化的选择、生成、排版、导出和视觉审校 | `standards/paper-figures.md` | 生产与审校 Skill 执行；`PW-FIG-001` 在此定义 |
 | 科研图片审美参考的选择、提取与使用方法 | `guides/scientific-figure-aesthetics.md` | 引用 `PW-FIG-001`，不另设阈值；样例资产由参考库承载 |
 | 写作前学习流程与完成状态 | `guides/pre-writing-learning.md` | 其它文件只引用 `PWL-GATE-001` |
@@ -41,7 +41,7 @@
 
 ## 赛事 Profile
 
-- [CUMCM 官方规则与本赛事工作区约定](../config/contests/cumcm/rules.md)：profile 目录下的 `rules.md` 分官方条款段与工作区设定段，`profile.yaml` 声明该 profile 服务的赛事标识、契约键与论文框架。接入新赛事的步骤见 [新增赛事 profile](guides/adding-a-contest-profile.md)。
+- [CUMCM 官方规则与本赛事工作区约定](../config/contests/cumcm/rules.md)：profile 目录下的 `rules.md` 分官方条款段与工作区设定段，`profile.yaml` 声明该 profile 服务的赛事标识、契约键、语言家族与论文框架。接入新赛事的步骤见 [新增赛事 profile](guides/adding-a-contest-profile.md)。
 - [MCM/ICM 官方规则与本赛事工作区约定](../config/contests/mcm-icm/rules.md)：一个 profile 服务 `mcm` 与 `icm` 两个标识，对应 `resources/templates/contests/mcm-icm/paper-framework.tex`；官方页数与体积上限、本赛事的长度线与统计区段口径、英文骨架与交付集都在该文件内声明，Core 与他处不复述其值。
 
 ## 指南

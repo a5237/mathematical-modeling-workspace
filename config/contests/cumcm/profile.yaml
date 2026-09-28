@@ -15,5 +15,8 @@ contract_keys:
   - delivery_manifest_path
   - delivery_manifest_title
 
+# Writing-system family for language-specific typesetting clauses.
+language: zh
+
 # Paper framework template, relative to resources/templates/.
 paper_framework: contests/cumcm/paper-framework.tex

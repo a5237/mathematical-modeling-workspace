@@ -9,6 +9,7 @@
 - `contests`：本 profile 服务的赛事标识列表；标识唯一性与项目 ID 的对应关系以 `docs/standards/naming.md` 为准。
 - `contract_keys`：本 profile `rules.md` 内 machine-contract 块提供的键，须与块内键完全一致。
 - `paper_framework`：相对 `resources/templates/` 的论文框架路径。同一论文形状家族的多个 profile 可指向同一份框架。
+- `language`：文字系统家族代码（如 `zh`、`en`），必须存在对应的 `config/languages/<language>/formatting.md`；只对某一文字系统成立的排版与措辞条款只在家族文件维护，不写入赛事 profile 或 Core。
 
 `config/contests/<profile>/rules.md`：
 

@@ -195,6 +195,13 @@ def _load_profile_config(root: Path, profile: str) -> dict[str, object]:
         raise ContractError(f"contest profile {profile} must declare a 'contract_keys' string list")
     if not isinstance(paper_framework, str) or not paper_framework:
         raise ContractError(f"contest profile {profile} must declare a 'paper_framework' path")
+    language = config.get("language")
+    if not isinstance(language, str) or not language:
+        raise ContractError(f"contest profile {profile} must declare a 'language' family")
+    if not (root / "config" / "languages" / language / "formatting.md").is_file():
+        raise ContractError(
+            f"contest profile {profile} language family '{language}' has no config/languages/{language}/formatting.md"
+        )
     return config
 
 

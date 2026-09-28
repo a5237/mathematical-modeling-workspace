@@ -11,5 +11,8 @@ contract_keys:
   - body_page_maximum
   - body_word_minimum
 
+# Writing-system family for language-specific typesetting clauses.
+language: en
+
 # Paper framework template, relative to resources/templates/.
 paper_framework: contests/mcm-icm/paper-framework.tex

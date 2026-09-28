@@ -9,6 +9,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
+import yaml
 
 WORKSPACE_ROOT = Path(__file__).resolve().parents[2]
 PYTHON = sys.executable
@@ -22,8 +23,12 @@ from control_contracts import (
     CONTRACT_BLOCK,
     CORE_DOCUMENTS,
     ContractError,
+    available_contests,
+    available_profiles,
     check_profile_registry,
+    contract_optional_list,
     load_workspace_contracts,
+    resolve_profile,
 )
 
 
@@ -57,8 +62,11 @@ def write_profile(
     profile.mkdir(parents=True)
     profile_yaml = "contests:\n" + "".join(f"  - {item}\n" for item in contests)
     keys = "contract_keys:\n" + "".join(f"  - {item}\n" for item in contract_keys) if contract_keys else "contract_keys: []\n"
+    family = root / "config" / "languages" / "en"
+    family.mkdir(parents=True, exist_ok=True)
+    (family / "formatting.md").write_text("# 西文排版族（测试桩）\n", encoding="utf-8")
     (profile / "profile.yaml").write_text(
-        profile_yaml + keys + "paper_framework: x/paper-framework.tex\n", encoding="utf-8"
+        profile_yaml + keys + "language: en\npaper_framework: x/paper-framework.tex\n", encoding="utf-8"
     )
     (profile / "rules.md").write_text(rules, encoding="utf-8")
     for filename, body in (extra_files or {}).items():
@@ -81,6 +89,19 @@ def run(*args: str) -> subprocess.CompletedProcess[str]:
         capture_output=True,
         check=False,
     )
+
+
+def profile_yaml(name: str) -> dict:
+    path = WORKSPACE_ROOT / "config" / "contests" / name / "profile.yaml"
+    return yaml.safe_load(path.read_text(encoding="utf-8"))
+
+
+def profile_contract_keys(name: str) -> tuple[str, ...]:
+    return tuple(profile_yaml(name).get("contract_keys") or ())
+
+
+def any_contest() -> str:
+    return available_contests(WORKSPACE_ROOT)[0]
 
 
 class LayoutTests(unittest.TestCase):
@@ -114,20 +135,32 @@ class ContractTests(unittest.TestCase):
         with tempfile.TemporaryDirectory(dir=TEMP_ROOT) as temporary:
             root = core_scaffold(Path(temporary))
             contracts = load_workspace_contracts(root)
-            contest_keys = (
-                "body_word_minimum",
-                "body_page_minimum",
-                "body_page_maximum",
-                "paper_maximum_bytes",
-            )
-            for key in contest_keys:
+            contest_keys = {
+                key
+                for profile in available_profiles(WORKSPACE_ROOT)
+                for key in profile_contract_keys(profile)
+            }
+            self.assertTrue(contest_keys, "no profile declares contract keys")
+            for key in sorted(contest_keys):
                 self.assertFalse(hasattr(contracts, key), key)
             self.assertIn("sandbox", contracts.recommended_project_directories)
             self.assertEqual(contracts.artifact_impact_defaults["results"]["effect"], "STALE")
 
-            merged = vars(load_workspace_contracts(WORKSPACE_ROOT, contest="cumcm"))
-            for key in contest_keys:
-                self.assertIn(key, merged, key)
+            for contest in available_contests(WORKSPACE_ROOT):
+                merged = vars(load_workspace_contracts(WORKSPACE_ROOT, contest=contest))
+                declared = profile_contract_keys(resolve_profile(WORKSPACE_ROOT, contest))
+                self.assertTrue(declared, f"{contest}: profile declares no keys")
+                for key in declared:
+                    self.assertIn(key, merged, key)
+
+    def test_every_installed_profile_declares_an_existing_language_family(self) -> None:
+        profiles = available_profiles(WORKSPACE_ROOT)
+        self.assertTrue(profiles, "no contest profile installed")
+        for profile in profiles:
+            language = profile_yaml(profile).get("language")
+            self.assertTrue(language, f"{profile}: profile.yaml must declare 'language'")
+            family = WORKSPACE_ROOT / "config" / "languages" / language / "formatting.md"
+            self.assertTrue(family.is_file(), f"{profile}: missing {family.relative_to(WORKSPACE_ROOT)}")
 
     def test_two_profiles_cannot_claim_one_contest(self) -> None:
         with tempfile.TemporaryDirectory(dir=TEMP_ROOT) as temporary:
@@ -168,7 +201,7 @@ class ContractTests(unittest.TestCase):
                 "aaa",
                 ("xx",),
                 contract_keys=("paper_maximum_bytes",),
-                rules=block(archive_maximum_bytes="1"),
+                rules=block(synthetic_contest_value="1"),
             )
             with self.assertRaises(ContractError) as caught:
                 load_workspace_contracts(root, contest="xx")
@@ -230,19 +263,20 @@ class IntakeWorkflowTests(unittest.TestCase):
             (inbox / "statement.pdf").write_bytes(b"statement")
             (inbox / "data.xlsx").write_bytes(b"data")
 
+            contest = any_contest()
             result = run(
                 str(INIT_SCRIPT),
                 "--root",
                 str(projects),
                 "--contest",
-                "cumcm",
+                contest,
                 "--year",
                 "2026",
                 "--problem",
                 "a",
             )
             self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
-            project = projects / "cumcm-2026-a"
+            project = projects / f"{contest}-2026-a"
 
             shutil.copy2(inbox / "statement.pdf", project / "01-problem" / "attachments" / "statement.pdf")
             shutil.copy2(inbox / "data.xlsx", project / "02-data" / "raw" / "data.xlsx")
@@ -259,7 +293,7 @@ class IntakeWorkflowTests(unittest.TestCase):
             artifact_map = project / "00-admin" / "artifact-map.yaml"
             self.assertTrue(artifact_map.is_file())
             artifact_map_text = artifact_map.read_text(encoding="utf-8")
-            self.assertIn('project_id: "cumcm-2026-a"', artifact_map_text)
+            self.assertIn(f'project_id: "{project.name}"', artifact_map_text)
             self.assertIn("questions:\n  q01:", artifact_map_text)
             self.assertNotIn("impact_defaults:", artifact_map_text)
             self.assertIn("paper_assets:", artifact_map_text)
@@ -333,7 +367,7 @@ def write_pdf(path: Path, pages: int) -> None:
     document.close()
 
 
-def build_release_project(project: Path, contracts, contest: str = "cumcm") -> Path:
+def build_release_project(project: Path, contracts, contest: str) -> Path:
     """Write a release-candidate project that passes the static preflight.
 
     Returns the evidence result artifact so a caller can delete it to probe the
@@ -453,7 +487,7 @@ class ReleasePreflightTests(unittest.TestCase):
             artifact.parent.mkdir(parents=True)
             (project / "00-admin").mkdir(exist_ok=True)
             (project / "00-admin/project.yaml").write_text(
-                "project_id: fixture\ncontest: cumcm\nprofile: cumcm\nyear: 2026\nproblem: a\nstatus: intake\n",
+                f"project_id: fixture\ncontest: {any_contest()}\nyear: 2026\nproblem: a\nstatus: intake\n",
                 encoding="utf-8",
             )
             artifact.write_text('{"value": 1}', encoding="utf-8")
@@ -469,10 +503,11 @@ class ReleasePreflightTests(unittest.TestCase):
             self.assertIn("generator points into reserved sandbox/", result.stdout)
 
     def test_extra_directories_and_low_score_do_not_block_release(self) -> None:
-        contracts = load_workspace_contracts(WORKSPACE_ROOT, contest="cumcm")
+        contest = any_contest()
+        contracts = load_workspace_contracts(WORKSPACE_ROOT, contest=contest)
         with tempfile.TemporaryDirectory(dir=TEMP_ROOT) as temporary:
             project = Path(temporary) / "project with flexible layout"
-            result_artifact = build_release_project(project, contracts)
+            result_artifact = build_release_project(project, contracts, contest)
 
             self.assertFalse((project / "00-admin/artifact-map.yaml").exists())
             result = run(str(AUDIT_SCRIPT), str(project), "--phase", "release-candidate")
@@ -497,7 +532,8 @@ class GateIntegrityTests(unittest.TestCase):
     """Each gate below must reject a concrete bypass that used to pass."""
 
     def setUp(self) -> None:
-        self.contracts = load_workspace_contracts(WORKSPACE_ROOT, contest="cumcm")
+        self.contest = any_contest()
+        self.contracts = load_workspace_contracts(WORKSPACE_ROOT, contest=self.contest)
 
     def audit(self, project: Path, phase: str = "release-candidate"):
         return run(str(AUDIT_SCRIPT), str(project), "--phase", phase)
@@ -506,7 +542,7 @@ class GateIntegrityTests(unittest.TestCase):
         temporary = tempfile.mkdtemp(dir=TEMP_ROOT)
         self.addCleanup(shutil.rmtree, temporary, True)
         project = Path(temporary) / case
-        build_release_project(project, self.contracts)
+        build_release_project(project, self.contracts, self.contest)
         return project
 
     def test_repeated_final_audit_fields_are_rejected(self) -> None:
@@ -621,13 +657,31 @@ class GateIntegrityTests(unittest.TestCase):
         self.assertIn("must be 'verified' at the final phase", final.stdout)
 
     def test_profile_delivery_directory_must_hold_content(self) -> None:
-        project = self.project_in("empty-support")
-        shutil.rmtree(project / "08-delivery" / "support-materials")
+        declared = [
+            contest
+            for contest in available_contests(WORKSPACE_ROOT)
+            if contract_optional_list(
+                load_workspace_contracts(WORKSPACE_ROOT, contest=contest),
+                "extra_delivery_directories",
+            )
+        ]
+        if not declared:
+            self.skipTest("no installed profile declares extra delivery directories")
+        contest = declared[0]
+        contracts = load_workspace_contracts(WORKSPACE_ROOT, contest=contest)
+        delivery_dir = contract_optional_list(contracts, "extra_delivery_directories")[0]
+
+        temporary = tempfile.mkdtemp(dir=TEMP_ROOT)
+        self.addCleanup(shutil.rmtree, temporary, True)
+        project = Path(temporary) / "empty-profile-delivery"
+        build_release_project(project, contracts, contest)
+
+        shutil.rmtree(project / delivery_dir)
         missing = self.audit(project)
         self.assertNotEqual(missing.returncode, 0)
         self.assertIn("missing profile-declared delivery directory", missing.stdout)
 
-        (project / "08-delivery" / "support-materials").mkdir()
+        (project / delivery_dir).mkdir()
         empty = self.audit(project)
         self.assertNotEqual(empty.returncode, 0)
         self.assertIn("delivery directory is empty", empty.stdout)
@@ -663,23 +717,36 @@ class GateIntegrityTests(unittest.TestCase):
 
     def test_declared_profile_must_match_contest(self) -> None:
         project = self.project_in("profile-mismatch")
+        resolved = resolve_profile(WORKSPACE_ROOT, self.contest)
+        mismatched = next(
+            (name for name in available_profiles(WORKSPACE_ROOT) if name != resolved),
+            "no-such-profile",
+        )
         (project / "00-admin/project.yaml").write_text(
-            "project_id: fixture\ncontest: mcm\nprofile: cumcm\nyear: 2027\nproblem: a\nstatus: intake\n",
+            f"project_id: fixture\ncontest: {self.contest}\nprofile: {mismatched}\n"
+            "year: 2026\nproblem: a\nstatus: intake\n",
             encoding="utf-8",
         )
         blocked = self.audit(project)
         self.assertNotEqual(blocked.returncode, 0)
-        self.assertIn("resolves to 'mcm-icm'", blocked.stdout)
-        self.assertIn("Audit profile: mcm-icm", blocked.stdout)
+        self.assertIn(f"resolves to '{resolved}'", blocked.stdout)
+        self.assertIn(f"Audit profile: {resolved}", blocked.stdout)
 
     def test_profile_directory_name_is_not_a_contest(self) -> None:
+        directory_names = [
+            name
+            for name in available_profiles(WORKSPACE_ROOT)
+            if name not in profile_yaml(name)["contests"]
+        ]
+        if not directory_names:
+            self.skipTest("every profile directory name is also its contest id")
         with tempfile.TemporaryDirectory(dir=TEMP_ROOT) as temporary:
             result = run(
                 str(INIT_SCRIPT),
                 "--root",
                 temporary,
                 "--contest",
-                "mcm-icm",
+                directory_names[0],
                 "--year",
                 "2027",
                 "--problem",
@@ -703,26 +770,34 @@ class ProfileGateTests(unittest.TestCase):
         return project
 
     def test_compliant_project_passes_for_every_declared_contest(self) -> None:
-        for contest in ("cumcm", "mcm", "icm"):
+        for contest in available_contests(WORKSPACE_ROOT):
             with self.subTest(contest=contest), tempfile.TemporaryDirectory(dir=TEMP_ROOT) as temporary:
                 project = self.build(temporary, contest)
                 result = run(str(AUDIT_SCRIPT), str(project), "--phase", "release-candidate")
                 self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
     def test_page_floor_only_applies_where_the_profile_declares_it(self) -> None:
-        for contest, blocked in (("cumcm", True), ("mcm", False)):
+        for contest in available_contests(WORKSPACE_ROOT):
+            contracts = load_workspace_contracts(WORKSPACE_ROOT, contest=contest)
+            floor = getattr(contracts, "body_page_minimum", 0) or 0
+            last_page = min(7, contracts.body_page_maximum)
             with self.subTest(contest=contest), tempfile.TemporaryDirectory(dir=TEMP_ROOT) as temporary:
                 project = self.build(temporary, contest)
-                (project / "06-paper/main.aux").write_text(write_aux((2, 7)), encoding="utf-8")
+                (project / "06-paper/main.aux").write_text(
+                    write_aux((2, last_page)), encoding="utf-8"
+                )
                 result = run(str(AUDIT_SCRIPT), str(project), "--phase", "release-candidate")
-                if blocked:
+                if floor and last_page < floor:
                     self.assertNotEqual(result.returncode, 0)
                     self.assertIn("below body_page_minimum", result.stdout)
                 else:
                     self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
     def test_narrative_floor_blocks_every_contest_that_declares_it(self) -> None:
-        for contest in ("cumcm", "mcm", "icm"):
+        for contest in available_contests(WORKSPACE_ROOT):
+            contracts = load_workspace_contracts(WORKSPACE_ROOT, contest=contest)
+            if not (getattr(contracts, "body_word_minimum", 0) or 0):
+                continue
             with self.subTest(contest=contest), tempfile.TemporaryDirectory(dir=TEMP_ROOT) as temporary:
                 project = self.build(temporary, contest, narrative_units=5)
                 result = run(str(AUDIT_SCRIPT), str(project), "--phase", "release-candidate")
@@ -730,7 +805,7 @@ class ProfileGateTests(unittest.TestCase):
                 self.assertIn("narrative length", result.stdout)
 
     def test_visual_floor_is_shared_across_contests(self) -> None:
-        for contest in ("cumcm", "mcm"):
+        for contest in available_contests(WORKSPACE_ROOT):
             with self.subTest(contest=contest), tempfile.TemporaryDirectory(dir=TEMP_ROOT) as temporary:
                 project = self.build(temporary, contest, figures=1, tables=1)
                 result = run(str(AUDIT_SCRIPT), str(project), "--phase", "release-candidate")
@@ -738,30 +813,36 @@ class ProfileGateTests(unittest.TestCase):
                 self.assertIn("counted figures", result.stdout)
                 self.assertIn("counted tables", result.stdout)
 
-    def test_icm_project_initializes_and_audits(self) -> None:
-        with tempfile.TemporaryDirectory(dir=TEMP_ROOT) as temporary:
-            created = run(
-                str(INIT_SCRIPT),
-                "--root",
-                temporary,
-                "--contest",
-                "icm",
-                "--year",
-                "2027",
-                "--problem",
-                "f",
-            )
-            self.assertEqual(created.returncode, 0, created.stdout + created.stderr)
-            project = Path(temporary) / "icm-2027-f"
-            self.assertTrue((project / "07-review/final-audit.md").is_file())
-            self.assertFalse((project / "08-delivery/support-materials").exists())
-            draft = run(str(AUDIT_SCRIPT), str(project), "--phase", "draft")
-            self.assertEqual(draft.returncode, 0, draft.stdout + draft.stderr)
-            self.assertIn("Audit profile: mcm-icm", draft.stdout)
+    def test_every_contest_project_initializes_and_audits(self) -> None:
+        for contest in available_contests(WORKSPACE_ROOT):
+            with self.subTest(contest=contest), tempfile.TemporaryDirectory(dir=TEMP_ROOT) as temporary:
+                created = run(
+                    str(INIT_SCRIPT),
+                    "--root",
+                    temporary,
+                    "--contest",
+                    contest,
+                    "--year",
+                    "2027",
+                    "--problem",
+                    "a",
+                )
+                self.assertEqual(created.returncode, 0, created.stdout + created.stderr)
+                project = Path(temporary) / f"{contest}-2027-a"
+                self.assertTrue((project / "07-review/final-audit.md").is_file())
+                contracts = load_workspace_contracts(WORKSPACE_ROOT, contest=contest)
+                for relative in contract_optional_list(contracts, "extra_delivery_directories"):
+                    self.assertTrue((project / relative).is_dir(), relative)
+                draft = run(str(AUDIT_SCRIPT), str(project), "--phase", "draft")
+                self.assertEqual(draft.returncode, 0, draft.stdout + draft.stderr)
+                self.assertIn(
+                    f"Audit profile: {resolve_profile(WORKSPACE_ROOT, contest)}",
+                    draft.stdout,
+                )
 
 
 class FrameworkTests(unittest.TestCase):
-    """The two paper frameworks are the implementation of the profiles' shapes."""
+    """Each paper framework implements its own profile's shape."""
 
     NON_PADDED_QUESTION = re.compile(r"(?<![\d:])q[1-9](?![\d])")
     LITERAL_PLACEHOLDER = re.compile(r"\\textbf\{【|\\textbf\{\[")
@@ -771,14 +852,14 @@ class FrameworkTests(unittest.TestCase):
         return path.read_text(encoding="utf-8")
 
     def test_paths_and_labels_use_padded_question_numbers(self) -> None:
-        for profile in ("cumcm", "mcm-icm"):
+        for profile in available_profiles(WORKSPACE_ROOT):
             with self.subTest(profile=profile):
                 found = self.NON_PADDED_QUESTION.findall(self.framework(profile))
                 self.assertEqual(found, [], f"{profile}: non-padded question tokens {found[:5]}")
 
     def test_frameworks_reach_the_shared_visual_floor(self) -> None:
-        contracts = load_workspace_contracts(WORKSPACE_ROOT, contest="mcm")
-        for profile in ("cumcm", "mcm-icm"):
+        contracts = load_workspace_contracts(WORKSPACE_ROOT)
+        for profile in available_profiles(WORKSPACE_ROOT):
             with self.subTest(profile=profile):
                 text = self.framework(profile)
                 self.assertGreaterEqual(
@@ -795,7 +876,7 @@ class FrameworkTests(unittest.TestCase):
             "text:counted-first",
             "text:counted-last",
         )
-        for profile in ("cumcm", "mcm-icm"):
+        for profile in available_profiles(WORKSPACE_ROOT):
             with self.subTest(profile=profile):
                 text = self.framework(profile)
                 for label in labels:
@@ -804,7 +885,7 @@ class FrameworkTests(unittest.TestCase):
                 self.assertLess(text.index("\\label{text:counted-last}"), text.index("\\label{page:counted-last}"))
 
     def test_only_the_macro_definition_may_render_literal_brackets(self) -> None:
-        for profile in ("cumcm", "mcm-icm"):
+        for profile in available_profiles(WORKSPACE_ROOT):
             with self.subTest(profile=profile):
                 lines = [
                     line
@@ -818,15 +899,17 @@ class FrameworkTests(unittest.TestCase):
                 )
 
     def test_text_region_ends_before_the_bibliography(self) -> None:
-        text = self.framework("cumcm")
-        self.assertLess(
-            text.index("\\label{text:counted-last}"),
-            text.index("\\begin{thebibliography}"),
-            "the narrative word region must exclude the reference list",
-        )
-        self.assertLess(
-            text.index("\\label{text:counted-last}"), text.index("\\label{page:counted-last}")
-        )
+        for profile in available_profiles(WORKSPACE_ROOT):
+            with self.subTest(profile=profile):
+                text = self.framework(profile)
+                self.assertLess(
+                    text.index("\\label{text:counted-last}"),
+                    text.index("\\begin{thebibliography}"),
+                    "the narrative word region must exclude the reference list",
+                )
+                self.assertLess(
+                    text.index("\\label{text:counted-last}"), text.index("\\label{page:counted-last}")
+                )
 
 
 if __name__ == "__main__":

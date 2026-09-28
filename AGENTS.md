@@ -17,7 +17,7 @@
 | inbox—project—archive 生命周期、产物地图、影响传播或 `sandbox/` 与正式链路边界 | `docs/standards/workspace-governance.md` 的 `WG-LIFE-001`、`WG-ROUTE-001`、`WG-TEST-001` | 涉及目录位置再读工作区架构；涉及实验比较再读建模执行规范 |
 | AI 使用记录 | `docs/standards/workspace-governance.md` 的 `WG-AI-001` | 追加当前项目赛事 profile 的 `config/contests/<profile>/rules.md` 核对当届披露要求 |
 | 论文内容、结构、建模叙事、结果分析、学术表达 | `docs/standards/paper-writing.md` | 启动正式写作时追加 `docs/guides/pre-writing-learning.md`；不要因纯排版任务加载它 |
-| LaTeX、公式、表格、字体、页面与版式 | `docs/standards/paper-formatting.md` | 内容同时变化时才追加论文写作规范 |
+| LaTeX、公式、表格、字体、页面与版式 | `docs/standards/paper-formatting.md` 与其按 `language` 分派的 `config/languages/<family>/formatting.md` | 内容同时变化时才追加论文写作规范 |
 | 论文图片、科研可视化、流程图或最终 PDF 图片检查 | `docs/standards/paper-figures.md` | 生成或改善视觉质量时追加 `docs/guides/scientific-figure-aesthetics.md` 和 `resources/figure-style-library/README.md`，只选少量相关参考 |
 | 完整数学建模生产流程 | `.codex/skills/modeling-paper-production/SKILL.md` | 按 Skill 所列阶段加载对应权威文件 |
 | 最终审校、评分或发布门禁 | `.codex/skills/modeling-paper-audit/SKILL.md`、`docs/standards/paper-quality-audit.md` | 按实际审校范围加载数据、模型、证据、写作、排版、图片和现行规则 |
