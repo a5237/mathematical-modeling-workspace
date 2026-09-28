@@ -32,8 +32,9 @@
 \usepackage[nameinlink,noabbrev]{cleveref}
 
 % ---------- 全文样式 ----------
-\setlength{\parindent}{0pt}
-\setlength{\parskip}{0.5\baselineskip}
+% 段落制度取西文缩进制，段间距为零以优先页数效率；PW-FMT-001 允许两种制度。
+\setlength{\parindent}{1.5em}
+\setlength{\parskip}{0pt}
 \setlength{\emergencystretch}{2em}
 \setlist{nosep,leftmargin=2em}
 
@@ -112,21 +113,6 @@
   }%
 }
 
-% 从源文件直接排印完整代码；缺失时显示阻断提示。
-\newcommand{\includecode}[3]{%
-  \IfFileExists{#3}{%
-    \lstinputlisting[language=#1,caption={#2}]{#3}%
-  }{%
-    \par\noindent
-    \fbox{%
-      \begin{minipage}{0.94\linewidth}
-        \textbf{Code missing:}\texttt{\detokenize{#3}} (enforce OFFICIAL-MCM-ICM-001).
-      \end{minipage}%
-    }%
-    \par
-  }%
-}
-
 \begin{document}
 \pagenumbering{arabic}
 \setcounter{page}{1}
@@ -164,7 +150,7 @@ Overall, \TemplateField{summarize the value, boundary, and generalizable conclus
 \clearpage
 
 % ============================================================
-% 目录只执行 OFFICIAL-MCM-ICM-001。
+% 目录只执行 OFFICIAL-MCM-ICM-001；独占一页执行 paper-library 版式样本基线。
 % ============================================================
 \renewcommand\contentsname{Contents}
 \tableofcontents
@@ -448,21 +434,10 @@ The main result of Question 4 is shown in \cref{fig:q04-result}.
 \end{thebibliography}
 
 % ============================================================
-% 附录范围、代码排印方式与页数口径只执行 OFFICIAL-MCM-ICM-001。
+% 附录范围与页数口径只执行 OFFICIAL-MCM-ICM-001。
+% 近两届学习样本均不贴完整源码且收录即计入 25 页，本模板默认无代码附录；
+% 题目确有需要时在此加 \appendix 与 Code 节，并把 page:counted-last 移到附录末页。
 % ============================================================
-\appendix
-\section{Code}
-% 路径按“模板已复制到项目 06-paper/”设置，必要时按项目实际结构调整。
-\subsection{Code for Question 1}
-This program solves \TemplateField{the sub-problem and its correspondence to the equations, tables, and figures in the body}.
-\includecode{Python}{Complete source code for Question 1}{../03-models/q01-solve.py}
-
-\subsection{Code for Question 2}
-This program solves \TemplateField{the sub-problem and its correspondence to the equations, tables, and figures in the body}.
-\includecode{Python}{Complete source code for Question 2}{../03-models/q02-solve.py}
-
-% 若存在问题三、问题四或绘图、数据处理程序，应继续逐一完整列出。
-
 \label{page:counted-last}
 
 % ============================================================
