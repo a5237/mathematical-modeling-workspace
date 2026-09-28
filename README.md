@@ -1,6 +1,8 @@
 # 数学建模工作区
 
-这是一个面向长期复用的多赛事数学建模工作区。仓库按“文档、配置、工具、资源、工作数据、运行时产物”分层，正式赛题在各自项目内使用 `00-admin` 至 `08-delivery` 的可复现生产结构，并在编号阶段旁设置可选的 `sandbox/` 实验沙盒。赛事差异通过 `config/contests/<profile>/` 的赛事 profile 表达：支持哪些赛事由该目录下已建立的 profile 决定，本入口不维护赛事清单；新增赛事只需新建 profile 目录，无需改动通用内核。
+这是一个面向长期复用的多赛事数学建模工作区：把一道赛题从题面一路做到最终提交件，全过程可追溯、可复现、可审计。仓库按“文档、配置、工具、资源、工作数据、运行时产物”分层；一道赛题对应一个项目，项目内使用 `00-admin` 至 `08-delivery` 的可复现生产结构，并在编号阶段旁设置可选的 `sandbox/` 实验沙盒。
+
+赛事差异全部通过赛事 profile 表达：`config/contests/<profile>/` 下一个目录就是一个赛事，声明它服务的赛事标识、排版语言家族和论文框架模板；支持哪些赛事由该目录下已建立的 profile 决定，本入口不维护赛事清单。接入新赛事只需新建一个 profile 目录，通用内核不用改动，步骤见[新增赛事 profile](docs/guides/adding-a-contest-profile.md)。论文排版则按语言家族归组在 `config/languages/<family>/`，中英文各自的版式条款互不掺入。
 
 ## 目录
 
@@ -32,7 +34,7 @@
 
 ### 第2步：看懂一个赛题项目
 
-`config/`、`docs/`、`resources/` 和 `tools/` 服务整个仓库；真正属于某一道赛题的材料都放在 `workspace/projects/<project-id>/`。初始化后的项目大致如下：
+`config/`、`docs/`、`resources/` 和 `tools/` 服务整个仓库；真正属于某一道赛题的材料都放在 `workspace/projects/<project-id>/`。项目 ID 形如 `<赛事>-<年份>-<题号>`（例如 `cumcm-2026-a`、`mcm-2027-c`）。初始化后的项目大致如下：
 
 ```text
 workspace/projects/cumcm-2026-a/
@@ -55,7 +57,7 @@ workspace/projects/cumcm-2026-a/
 │   ├── figures/
 │   └── tables/
 ├── 07-review/              # 独立审校记录和最终审查报告
-├── 08-delivery/            # 最终提交文件；只保留真正要交付的成品，赛事附加子目录与清单见当前 profile 交付集
+├── 08-delivery/            # 最终提交文件；赛事附加子目录与清单见当前 profile 的交付集
 └── sandbox/                # 可选实验沙盒，与 00—08 并列，不是第 09 步
 ```
 
@@ -70,9 +72,9 @@ workspace/projects/cumcm-2026-a/
 
    > 请处理 `workspace/inbox/cumcm-2026-a/` 中的新赛题，先按本仓库的 `AGENTS.md` 初始化正式项目、分类题面与原始数据并核对问题清单，再推进完整的数学建模生产流程。
 
-3. Agent 会在 `workspace/projects/cumcm-2026-a/` 创建上面的项目骨架，将题面和非数据附件归入 `01-problem/`、原始数据归入 `02-data/raw/`；确认项目副本完整后，才清理对应的 inbox 临时目录。也可以按[论文生产流程](docs/guides/paper-production.md)给出的项目初始化命令手动创建骨架。
+3. Agent 会在 `workspace/projects/cumcm-2026-a/` 创建上面的项目骨架，将题面和非数据附件归入 `01-problem/`、原始数据归入 `02-data/raw/`；确认项目副本完整后，才清理对应的 inbox 临时目录。也可以按[论文生产流程](docs/guides/paper-production.md)给出的命令手动初始化项目。
 4. 后续工作沿 `01` 到 `08` 推进，`00-admin/artifact-map.yaml` 用于快速定位关键产物。需要试验模型或局部改动时使用 `sandbox/`，确认采用后再回到 `03-models/`、`04-results/` 等正式目录实现和运行。
-5. 形成 Release Candidate 后，Agent 先完成规范化检查，人类再对论文表达、建模洞察、结果说服力和最终交付作最后判断。详细分工见下方的[论文审校与交付](#论文审校与交付)。
+5. 形成候选交付稿后，Agent 先完成规范化检查，人类再对论文表达、建模洞察、结果说服力和最终交付作最后判断。详细分工见下方的[论文审校与交付](#论文审校与交付)。
 
 ## 去哪找规则与命令
 
@@ -81,8 +83,9 @@ workspace/projects/cumcm-2026-a/
 - 仓库与项目目录职责、放置决策、`sandbox/` 的空间位置：[工作区架构](docs/architecture/workspace-layout.md)。
 - 跨项目通用工具及其可执行命令（环境自检、根目录布局检查、Excel/PDF 提取、产物影响分析）：[通用工具](tools/README.md)。
 - 各主题规范的唯一权威分工、文档索引与跨项目资源入口：[文档中心](docs/README.md)。
-- 项目初始化和 Draft/RC/Final 阶段的用户命令：[论文生产流程](docs/guides/paper-production.md)。
+- 项目初始化和各阶段检查命令：[论文生产流程](docs/guides/paper-production.md)。
 - Python 环境安装、依赖同步与自检：[建模环境指南](docs/guides/modeling-environment.md)。
+- 当届赛事的官方规则与本赛事的工作区约定：`config/contests/<profile>/rules.md`。
 
 ## 接下来做什么？
 
@@ -90,7 +93,7 @@ workspace/projects/cumcm-2026-a/
 
 1. 跑完 `setup.bat`，确认环境正常
 2. 把新赛题的材料放入 `workspace/inbox/`
-3. 按 `00-admin` → `01-problem` → ... → `08-delivery` 的正式链路推进；任一阶段需要快速试错时可调用并列的 `sandbox/`，但实验产物不能代替正式结果或门禁
+3. 按 `00-admin` → `01-problem` → ... → `08-delivery` 的正式链路推进；任一阶段需要快速试错时可调用并列的 `sandbox/`，但实验产物不能代替正式结果
    - 以下为默认排期，仅用于说明阶段重心，可按当届赛程增减，不构成赛程规定：
      - Day 1-2：关注建模和代码(人类定方向，Agent 执行)
      - Day 3-4：关注审校和交付(Agent 生成草稿，人类检查逻辑、图表、排版、字体)
@@ -99,7 +102,7 @@ workspace/projects/cumcm-2026-a/
 
 #### 论文审校与交付
 
-Agent 生成 Release Candidate 后，应依据[最终审查标准](docs/standards/paper-quality-audit.md)完成证据、复现、内容一致性、排版、图表和最终 PDF 渲染检查，并提交可追溯的审查结果。具体要求分别以[论文写作规范](docs/standards/paper-writing.md)、[论文排版规范](docs/standards/paper-formatting.md)和[论文图片规范](docs/standards/paper-figures.md)为准，人类无需重复执行这些规范化检查。
+Agent 生成候选交付稿后，会依据[最终审查标准](docs/standards/paper-quality-audit.md)完成证据、复现、内容一致性、排版、图表和最终 PDF 渲染检查，并提交可追溯的审查结果。具体要求分别以[论文写作规范](docs/standards/paper-writing.md)、[论文排版规范](docs/standards/paper-formatting.md)和[论文图片规范](docs/standards/paper-figures.md)为准，人类无需重复执行这些规范化检查。
 
 人类审校重点放在规范难以穷尽的高层质量判断：
 
@@ -133,17 +136,21 @@ Agent 负责:读取数据、运行模型、生成代码、渲染图表、起草�
 
 **2. 证据可追溯**
 
-项目使用 `04-results/` 保存正式结果，并用 `05-evidence/` 连接论文主张与可核查来源；具体来源类型、字段和状态只执行 `WG-EVID-001`。
+项目用 `04-results/` 保存正式结果，用 `05-evidence/` 把论文里的每个数值主张、每条引用连回可核查的来源；字段与核验方式见[证据契约](docs/standards/evidence-contract.md)。
 
 **3. 工程与论文分离**
 
-工程记录与论文内容的边界执行 `WG-ROUTE-001` 和论文写作规范；本入口只解释为何两者分离。
+运行日志、实验记录、配置说明属于工程侧，论文正文只保留读者理解论证所需要的内容；放置边界见[工作区治理](docs/standards/workspace-governance.md)的产物路由条款。分离的目的是让论文保持论证密度，也让工程证据随时可以回查。
+
+#### 为什么赛事是插件
+
+通用内核（目录结构、生产流程、审校标准）对所有赛事相同；页数上限、语言、论文骨架、交付清单这些差异全部收在 `config/contests/<profile>/` 一个目录里。这意味着一个只服务单一赛事的团队和一个同时打 CUMCM 与 MCM/ICM 的团队用的是同一套仓库——差异可增可删，才谈得上“多赛事”。
 
 #### 为什么要独立审校？
 
 写作和审校由同一方完成时，盲点是无法避免的。写作者天然倾向于相信自己写的东西没问题。
 
-因此工作区将生产与独立审校分开；交接、报告与修复路由分别执行 `WG-RELEASE-001` 和 `PQA-REPORT-001`。
+因此工作区把生产和审校分开：审校由独立流程执行，检查结论写回项目的 `07-review/`，修复按阶段路由，分工见[最终审查标准](docs/standards/paper-quality-audit.md)。
 
 #### 为什么 Agent 要先读人类思路？
 
@@ -194,7 +201,7 @@ Agent 的最大风险是“自说自话”——它可能选错方向、编造�
 - 结果表格化呈现，精确度保留到整数位即可
 ```
 
-人类在 Day 1 完成这份笔记后，将其放入 `workspace/inbox/cumcm-2021-b/`（inbox 目录沿用与项目 ID 相同的 `<contest>-<year>-<problem>` 形式）。Day 2 启动 Agent 时，第一件事就是读取这份笔记，然后基于人类确定的框架开始工作。
+人类在 Day 1 完成这份笔记后，将其放入 `workspace/inbox/cumcm-2021-b/`（inbox 目录与项目 ID 使用同一命名形式）。Day 2 启动 Agent 时，第一件事就是读取这份笔记，然后基于人类确定的框架开始工作。
 
 Agent 不需要理解化学机理，它只需要:
 1. 读取人类确认的约束条件(禁止外推、禁止神经网络)
@@ -204,10 +211,10 @@ Agent 不需要理解化学机理，它只需要:
 
 这就是“人类决策 + Agent 执行”模式的核心实践。
 
-### 审校分两层：自动审校 + 人工审校
+#### 审校分两层：自动审校 + 人工审校
 
-自动检查、独立 Reviewer 与人工最终判断的分工只以[最终审查标准](docs/standards/paper-quality-audit.md)为准。
+自动检查、独立 Reviewer 与人工最终判断的分工见[最终审查标准](docs/standards/paper-quality-audit.md)。
 
 ## 最后提醒
 
-具体项目的计算、编译和审校命令按数据复现规范维护。文件放置和根目录机器阻断边界只以[工作区架构](docs/architecture/workspace-layout.md)为准。
+具体项目的计算、编译和审校命令按[数据与复现规范](docs/standards/data-reproducibility.md)维护。文件放置和根目录边界只以[工作区架构](docs/architecture/workspace-layout.md)为准。
